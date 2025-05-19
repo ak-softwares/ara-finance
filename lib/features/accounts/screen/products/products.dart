@@ -1,4 +1,3 @@
-import 'package:fincom/utils/constants/sizes.dart';
 import 'package:line_icons/line_icons.dart';
 
 import '../../../../common/dialog_box_massages/animation_loader.dart';
@@ -12,6 +11,7 @@ import 'package:get/get.dart';
 
 import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/navigation_bar/appbar.dart';
+import '../../../../utils/constants/sizes.dart';
 import '../../../settings/app_settings.dart';
 import '../../controller/product/product_controller.dart';
 import '../search/search.dart';

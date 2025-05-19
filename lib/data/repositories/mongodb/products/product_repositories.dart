@@ -55,7 +55,7 @@ class MongoProductRepo extends GetxController {
 
       return products;
     } catch (e) {
-      throw 'Failed to fetch products: $e';
+      rethrow;
     }
   }
 

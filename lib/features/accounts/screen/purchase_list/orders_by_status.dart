@@ -1,7 +1,7 @@
-import 'package:fincom/common/navigation_bar/appbar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../common/layout_models/product_grid_layout.dart';
+import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';

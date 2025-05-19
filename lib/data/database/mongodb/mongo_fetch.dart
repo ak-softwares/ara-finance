@@ -527,11 +527,11 @@ class MongoFetch extends MongoDatabase {
 
   Future<Map<String, dynamic>?> findOne({
     required String collectionName,
-    required Map<String, dynamic> query,
+    required Map<String, dynamic> filter,
   }) async {
     await _ensureConnected();
     try {
-      return await db!.collection(collectionName).findOne(query);
+      return await db!.collection(collectionName).findOne(filter);
     } catch (e) {
       throw Exception('Failed to find document: $e');
     }

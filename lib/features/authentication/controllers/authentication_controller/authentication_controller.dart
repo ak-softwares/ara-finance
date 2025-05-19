@@ -10,6 +10,8 @@ import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/authentication/authentication_repositories.dart';
 import '../../../../data/repositories/woocommerce/customers/woo_customer_repository.dart';
+import '../../../../utils/constants/api_constants.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/local_storage_constants.dart';
 import '../../../../utils/exceptions/firebase_auth_exceptions.dart';
 import '../../../../utils/exceptions/format_exceptions.dart';
@@ -35,7 +37,6 @@ class AuthenticationController extends GetxController {
   final verifyPassword = TextEditingController();
   GlobalKey<FormState> reAuthFormKey = GlobalKey<FormState>();
 
-  final wooCustomersRepository = Get.put(WooCustomersRepository());
   final mongoAuthenticationRepository = Get.put(MongoAuthenticationRepository());
 
   @override
@@ -43,6 +44,23 @@ class AuthenticationController extends GetxController {
     super.onInit();
     checkIsAdminLogin();
   }
+
+  Future<void> initializeEcommercePlatformCredentials() async {
+    try {
+      if (admin.value.email == null || admin.value.email!.isEmpty) {
+        final String localAuthUserToken = await fetchLocalAuthToken();
+        final userData = await mongoAuthenticationRepository.fetchUserById(userId: localAuthUserToken);
+        admin(userData);
+      }
+
+      if (admin.value.ecommercePlatform == EcommercePlatform.woocommerce) {
+        APIConstant.initializeWooCommerceCredentials(user: admin.value);
+      }
+    } catch (e) {
+      debugPrint('Failed to initialize platform credentials: $e');
+    }
+  }
+
 
   // Check if the user is logged in
   Future<void> checkIsAdminLogin() async {
@@ -161,6 +179,7 @@ class AuthenticationController extends GetxController {
     isAdminLogin.value = true; //make user login
     saveLocalAuthToken(user.id!);
     AppMassages.showToastMessage(message: 'Login successfully!'); //show massage for successful login
+    await initializeEcommercePlatformCredentials();
     await Future.delayed(Duration(milliseconds: 300)); // Add delay
     NavigationHelper.navigateToBottomNavigation(); //navigate to other screen
   }

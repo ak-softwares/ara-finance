@@ -435,6 +435,10 @@ class UserFieldConstants {
   static const String recentItems = 'recent_items';
   static const String items = 'items';
   static const String customerOrders = 'customer_orders';
+  static const String ecommercePlatform = 'ecommerce_platform';
+  static const String wooCommerceCredentials = 'woo_commerce_credentials';
+  static const String shopifyCredentials = 'shopify_credentials';
+  static const String amazonCredentials = 'amazon_credentials';
 
   // User Roles
   static const String roleCustomer = 'customer';
@@ -448,6 +452,12 @@ class UserFieldConstants {
   static const String balance = 'balance';
   static const String openingBalance = 'opening_balance';
   static const String userType = 'user_type';
+}
+
+class WoocommerceFieldName {
+  static const String domain = 'domain';
+  static const String key = 'key';
+  static const String secret = 'secret';
 }
 
 class AddressFieldName {

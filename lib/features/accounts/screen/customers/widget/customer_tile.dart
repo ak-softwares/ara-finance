@@ -1,14 +1,8 @@
-import 'package:fincom/common/widgets/custom_shape/image/circular_image.dart';
-import 'package:fincom/features/personalization/models/user_model.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-import '../../../../../common/styles/shadows.dart';
 import '../../../../../common/styles/spacing_style.dart';
-import '../../../../../utils/constants/icons.dart';
 import '../../../../../utils/constants/sizes.dart';
-import '../../../../personalization/screens/user_profile/user_profile.dart';
-import '../single_customer.dart';
+import '../../../../personalization/models/user_model.dart';
 
 
 class CustomerTile extends StatelessWidget {

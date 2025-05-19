@@ -1,19 +1,17 @@
-import 'package:fincom/common/widgets/custom_shape/image/circular_image.dart';
-import 'package:fincom/features/settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../common/text/section_heading.dart';
+import '../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../common/widgets/shimmers/user_shimmer.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/constants/text_strings.dart';
 import '../../../authentication/screens/check_login_screen/check_login_screen.dart';
-import '../../../authentication/screens/create_account/signup.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../settings/app_settings.dart';
 import '../user_profile/user_profile.dart';
 import 'widgets/menu.dart';
 

@@ -1,4 +1,3 @@
-import 'package:fincom/utils/formatters/formatters.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,6 +7,7 @@ import '../../../../../common/styles/shadows.dart';
 import '../../../../../utils/constants/enums.dart';
 import '../../../../../utils/constants/icons.dart';
 import '../../../../../utils/constants/sizes.dart';
+import '../../../../../utils/formatters/formatters.dart';
 import '../../../models/transaction_model.dart'; // Updated import
 import '../single_transaction.dart'; // Updated import
 

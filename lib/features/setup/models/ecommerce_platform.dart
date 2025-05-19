@@ -1,11 +1,7 @@
-enum EcommercePlatform {
-  none,
-  woocommerce,
-  shopify,
-  amazon,
-}
+import '../../../utils/constants/db_constants.dart';
+import '../../../utils/helpers/encryption_hepler.dart';
+import 'ecommerce_platform.dart';
 
-// models/woocommerce_credentials.dart
 class WooCommerceCredentials {
   final String domain;
   final String key;
@@ -18,18 +14,17 @@ class WooCommerceCredentials {
   });
 
   Map<String, dynamic> toJson() => {
-    'domain': domain,
-    'key': key,
-    'secret': secret,
+    WoocommerceFieldName.domain: domain,
+    WoocommerceFieldName.key: EncryptionHelper.encryptText(key),
+    WoocommerceFieldName.secret: EncryptionHelper.encryptText(secret),
   };
 
   factory WooCommerceCredentials.fromJson(Map<String, dynamic> json) => WooCommerceCredentials(
-    domain: json['domain'],
-    key: json['key'],
-    secret: json['secret'],
+    domain: json[WoocommerceFieldName.domain],
+    key: EncryptionHelper.decryptText(json[WoocommerceFieldName.key]),
+    secret: EncryptionHelper.decryptText(json[WoocommerceFieldName.secret]),
   );
 }
-
 // models/shopify_credentials.dart
 class ShopifyCredentials {
   final String storeName;

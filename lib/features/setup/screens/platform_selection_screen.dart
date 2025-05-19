@@ -1,12 +1,12 @@
-import 'package:fincom/common/widgets/custom_shape/image/circular_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../common/layout_models/product_grid_layout.dart';
 import '../../../common/navigation_bar/appbar.dart';
+import '../../../common/widgets/custom_shape/image/circular_image.dart';
+import '../../../utils/constants/enums.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../controllers/setup_controller.dart';
-import '../models/ecommerce_platform.dart';
 import 'platform_form_screen.dart';
 
 
@@ -73,42 +73,50 @@ class _PlatformCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Get.put(AuthenticationController());
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: SizedBox(
-        height: 150,
-        width: double.infinity,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            Get.put(SetupController()).selectPlatform(platform);
-            if (platform == EcommercePlatform.none) {
-              Get.find<SetupController>().saveSettings();
-            } else {
-              Get.to(() => PlatformFormScreen());
-            }
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RoundedImage(
-                width: 200,
-                image: image,
+      child: Stack(
+        children: [
+          SizedBox(
+            height: 150,
+            width: double.infinity,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                Get.put(SetupController()).selectPlatform(platform);
+                Get.to(() => PlatformFormScreen());
+              },
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RoundedImage(
+                    width: 200,
+                    image: image,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          if(auth.admin.value.ecommercePlatform == platform)
+            Positioned(
+            top: 15,
+            right: 20,
+            child: Icon(Icons.check_circle, color: Colors.green, size: 25,),
+          )
+        ],
       ),
     );
   }

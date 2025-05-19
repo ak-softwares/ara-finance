@@ -37,7 +37,7 @@ class SignUpScreen extends StatelessWidget {
                         //Name
                         TextFormField(
                           controller: controller.fullName,
-                          validator: (value) => Validator.validateEmptyText(AppTexts.firstName, value),
+                          validator: (value) => Validator.validateEmptyText(fieldName: AppTexts.firstName, value: value),
                           decoration: const InputDecoration(prefixIcon: Icon(Iconsax.user), labelText: AppTexts.firstName),
                         ),
                         const SizedBox(height: AppSizes.inputFieldSpace),

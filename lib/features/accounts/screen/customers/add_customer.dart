@@ -1,7 +1,7 @@
-import 'package:fincom/common/navigation_bar/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/validators/validation.dart';
 import '../../../personalization/models/user_model.dart';
@@ -52,7 +52,7 @@ class AddCustomer extends StatelessWidget {
                 ),
                 TextFormField(
                   controller: controller.nameController,
-                  validator: (value) => Validator.validateEmptyText('Customer Name', value),
+                  validator: (value) => Validator.validateEmptyText(fieldName: 'Customer Name', value: value),
                   decoration: InputDecoration(
                     labelText: 'Customer Name*',
                     border: OutlineInputBorder(),

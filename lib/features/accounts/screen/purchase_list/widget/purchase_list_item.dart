@@ -1,6 +1,6 @@
-import 'package:fincom/common/widgets/custom_shape/image/circular_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../models/purchase_item_model.dart';
 

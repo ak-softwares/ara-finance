@@ -1,11 +1,10 @@
-import 'package:fincom/common/widgets/custom_shape/image/circular_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/text/section_heading.dart';
+import '../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';

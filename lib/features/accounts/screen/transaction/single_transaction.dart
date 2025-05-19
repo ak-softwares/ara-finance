@@ -1,4 +1,3 @@
-import 'package:fincom/utils/formatters/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,6 +7,7 @@ import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../../utils/formatters/formatters.dart';
 import '../../controller/transaction/transaction_controller.dart';
 import '../../models/transaction_model.dart'; // Updated import
 import 'add_transaction.dart'; // Updated import

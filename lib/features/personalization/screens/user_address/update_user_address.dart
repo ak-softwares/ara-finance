@@ -50,7 +50,7 @@ class UpdateAddressScreen extends StatelessWidget {
                     Expanded(
                         child: TextFormField(
                           controller: addressController.firstName,
-                          validator: (value) => Validator.validateEmptyText('First Name', value),
+                          validator: (value) => Validator.validateEmptyText(fieldName: 'First Name',value: value),
                           decoration: const InputDecoration(prefixIcon: Icon(Iconsax.user), labelText: 'First Name*'),
                         )
                     ),
@@ -69,7 +69,7 @@ class UpdateAddressScreen extends StatelessWidget {
                 const SizedBox(height: AppSizes.inputFieldSpace),
                 TextFormField(
                     controller: addressController.address1,
-                    validator: (value) => Validator.validateEmptyText('Street address', value),
+                    validator: (value) => Validator.validateEmptyText(fieldName: 'Street address', value: value),
                     decoration: const InputDecoration(prefixIcon: Icon(Iconsax.building), labelText: 'Street Address*')
                 ),
 
@@ -87,7 +87,7 @@ class UpdateAddressScreen extends StatelessWidget {
                     Expanded(
                         child: TextFormField(
                           controller: addressController.city,
-                          validator: (value) => Validator.validateEmptyText('City', value),
+                          validator: (value) => Validator.validateEmptyText(fieldName: 'City', value: value),
                           decoration: const InputDecoration(prefixIcon: Icon(Iconsax.building), labelText: 'City*'),
                         )
                     ),
@@ -115,7 +115,7 @@ class UpdateAddressScreen extends StatelessWidget {
                   }).toList(),
                   value: addressController.state.text.isNotEmpty ? addressController.state.text : null,
                   onChanged: (value) {addressController.state.text = value!;},
-                  validator: (value) => Validator.validateEmptyText('State', value),
+                  validator: (value) => Validator.validateEmptyText(fieldName: 'State', value: value),
                   decoration: const InputDecoration(prefixIcon: Icon(Iconsax.activity), labelText: 'State*'),
                 ),
 

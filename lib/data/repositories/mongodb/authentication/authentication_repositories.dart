@@ -5,7 +5,6 @@ import '../../../../features/personalization/models/user_model.dart';
 import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/helpers/encryption_hepler.dart';
-import '../../../database/mongodb/mongodb.dart';
 import '../../../database/mongodb/mongo_delete.dart';
 import '../../../database/mongodb/mongo_fetch.dart';
 import '../../../database/mongodb/mongo_insert.dart';
@@ -13,6 +12,7 @@ import '../../../database/mongodb/mongo_update.dart';
 
 class MongoAuthenticationRepository extends GetxController {
   static MongoAuthenticationRepository get instance => Get.find();
+
   final MongoFetch _mongoFetch = MongoFetch();
   final MongoInsert _mongoInsert = MongoInsert();
   final MongoUpdate _mongoUpdate = MongoUpdate();
@@ -27,7 +27,7 @@ class MongoAuthenticationRepository extends GetxController {
       // Check if a user with the same email or phone already exists
       final existingUser = await _mongoFetch.findOne(
         collectionName: collectionName,
-         query : {
+         filter : {
                     r'$or': [
                       {UserFieldConstants.email: user.email},
                       {UserFieldConstants.phone: user.phone},
@@ -51,12 +51,11 @@ class MongoAuthenticationRepository extends GetxController {
       // Check if a user with the provided email exists
       final existingUser = await _mongoFetch.findOne(
         collectionName: collectionName,
-        query: {
+        filter: {
           UserFieldConstants.email: email,
           UserFieldConstants.userType: userType.name,
         },
       );
-
       if (existingUser == null) {
         throw 'Invalid email or password'; // User not found
       }
@@ -82,7 +81,7 @@ class MongoAuthenticationRepository extends GetxController {
       // Check if a user with the provided email exists
       final existingUser = await _mongoFetch.findOne(
         collectionName: collectionName,
-        query: {
+        filter: {
           UserFieldConstants.phone: phone,
           UserFieldConstants.userType: userType.name, // assuming you're storing userType as a string like 'admin'
         },
@@ -108,7 +107,7 @@ class MongoAuthenticationRepository extends GetxController {
       // Check if a user with the provided email exists
       final existingUser = await _mongoFetch.findOne(
         collectionName: collectionName,
-        query: {
+        filter: {
           UserFieldConstants.email: email,
           UserFieldConstants.userType: userType.name, // assuming you're storing userType as a string like 'admin'
         },
@@ -153,7 +152,7 @@ class MongoAuthenticationRepository extends GetxController {
       // Check if a user with the provided email exists
       final existingUser = await _mongoFetch.findOne(
           collectionName: collectionName,
-          query: {UserFieldConstants.email: email});
+          filter: {UserFieldConstants.email: email});
 
       if (existingUser == null) {
         throw 'Invalid user found for this email'; // User not found
@@ -165,6 +164,19 @@ class MongoAuthenticationRepository extends GetxController {
         collectionName: collectionName,
         filter: {'email': email},
         updatedData: user.toMap()
+      );
+    } catch (e) {
+      throw 'Failed to update user: $e';
+    }
+  }
+
+  // Update a user document in a collection
+  Future<void> updateUserById({required String id, required UserModel user}) async {
+    try {
+      await _mongoUpdate.updateDocumentById(
+          collectionName: collectionName,
+          id: id,
+          updatedData: user.toMap()
       );
     } catch (e) {
       throw 'Failed to update user: $e';

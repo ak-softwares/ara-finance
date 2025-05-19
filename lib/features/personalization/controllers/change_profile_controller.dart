@@ -9,6 +9,7 @@ import '../../../common/widgets/network_manager/network_manager.dart';
 import '../../../data/repositories/mongodb/authentication/authentication_repositories.dart';
 import '../../../data/repositories/woocommerce/customers/woo_customer_repository.dart';
 import '../../../utils/constants/db_constants.dart';
+import '../../../utils/constants/enums.dart';
 import '../../../utils/constants/image_strings.dart';
 import '../../../utils/constants/local_storage_constants.dart';
 import '../../../utils/constants/sizes.dart';
@@ -19,7 +20,7 @@ import '../../authentication/controllers/authentication_controller/authenticatio
 class ChangeProfileController extends GetxController {
   static ChangeProfileController get instance => Get.find();
 
-  ///variables
+  // variables
   final fullName = TextEditingController();
   final email = TextEditingController();
   final phone = TextEditingController();
@@ -32,11 +33,11 @@ class ChangeProfileController extends GetxController {
   GlobalKey<FormState> updatePhoneFormKey = GlobalKey<FormState>();
 
   final localStorage = GetStorage();
-  final userController = Get.put(AuthenticationController());
+  final auth = Get.put(AuthenticationController());
   final wooCustomersRepository = Get.put(WooCustomersRepository());
   final mongoAuthenticationRepository = Get.put(MongoAuthenticationRepository());
 
-  //Woocommerce update profile details
+  // Mongo update profile details
   Future<void> mongoChangeProfileDetails() async {
     try {
       //Start Loading
@@ -55,14 +56,15 @@ class ChangeProfileController extends GetxController {
 
       //update single field user
       final updatedUser = UserModel(
+          userType: UserType.admin,
           name: fullName.text.trim(),
           email: email.text.trim(),
           phone: phone.text.trim(),
       );
-      await mongoAuthenticationRepository.updateUserByEmail(email: email.text.trim(), user: updatedUser);
+      await mongoAuthenticationRepository.updateUserById(id: auth.userId, user: updatedUser);
 
       //update the Rx user value
-      userController.admin(updatedUser);
+      auth.admin(updatedUser);
 
       // update email to local storage too
       localStorage.write(LocalStorage.rememberMeEmail, email.text.trim());
@@ -82,81 +84,6 @@ class ChangeProfileController extends GetxController {
     }
   }
 
-  // Woocommerce update phone number
-  Future<void> wooUpdatePhoneNo() async {
-    try {
-      isPhoneUpdating.value = true;
-      // Form Validation
-      if (!updatePhoneFormKey.currentState!.validate()) {
-        isPhoneUpdating.value = false;
-        return;
-      }
-      //update single field user
-      Map<String, dynamic> updateField = {
-        UserFieldConstants.billing: {AddressFieldName.phone: updatePhone.text.trim()},
-      };
-      final userId = userController.admin.value.documentId.toString();
-      final UserModel customer = await wooCustomersRepository.updateCustomerById(userID: userId, data: updateField);
-      userController.admin(customer);
-      // UserController.instance.fetchUserRecord();
-      AppMassages.showToastMessage(message: 'Phone updated successfully!');
-      isPhoneUpdating.value = false;
-      isPhoneVerified.value = true;
-    } catch (error) {
-      isPhoneUpdating.value = false;
-      AppMassages.errorSnackBar(title: 'Error', message: error.toString());
-    }
-  }
-
-  //Woocommerce update user meta value
-  Future<UserModel> wooUpdateUserMeta({required String userId, required String key, required dynamic value}) async {
-    try {
-      //update single field user
-      Map<String, dynamic> updateField = {
-        UserFieldConstants.metaData: [
-          {
-            "key": key,
-            "value": value
-          }
-        ]
-      };
-      final UserModel customer = await wooCustomersRepository.updateCustomerById(userID: userId, data: updateField);
-      return customer;
-    } catch (error) {
-      rethrow;
-    }
-  }
-
-  //update mobile number
-  Future<dynamic> updateMobilePopup(BuildContext context) {
-    return showModalBottomSheet(
-        context: context,
-        builder: (_) => Container(
-          padding: const EdgeInsets.all(AppSizes.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TSectionHeading(title: 'Select Address',
-                onPressed: () {},
-                seeActionButton: true,
-                buttonTitle: 'Add new address',
-              ),
-              const Expanded(
-                child: Text('hi'),
-              ),
-              const SizedBox(height: AppSizes.defaultSpace * 2),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Select Address'),
-                ),
-              )
-            ],
-          ),
-        )
-    );
-  }
 
 }
 

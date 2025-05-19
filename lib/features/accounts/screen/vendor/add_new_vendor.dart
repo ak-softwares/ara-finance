@@ -1,7 +1,7 @@
-import 'package:fincom/common/navigation_bar/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/validators/validation.dart';
 import '../../../personalization/models/user_model.dart';
@@ -50,7 +50,7 @@ class AddVendorPage extends StatelessWidget {
                 ),
                 TextFormField(
                   controller: controller.companyController,
-                  validator: (value) => Validator.validateEmptyText('Company Name', value),
+                  validator: (value) => Validator.validateEmptyText(fieldName: 'Company Name',value: value),
                   decoration: InputDecoration(
                     labelText: 'Company Name*',
                     border: OutlineInputBorder(),

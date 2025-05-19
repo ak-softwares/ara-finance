@@ -1,4 +1,3 @@
-import 'package:fincom/utils/constants/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,6 +7,7 @@ import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../common/widgets/network_manager/network_manager.dart';
 import '../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
 import '../../../../utils/constants/db_constants.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../personalization/models/user_model.dart';

@@ -1,11 +1,11 @@
-import 'package:fincom/common/layout_models/product_grid_layout.dart';
-import 'package:fincom/common/navigation_bar/appbar.dart';
-import 'package:fincom/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../../../common/layout_models/product_grid_layout.dart';
+import '../../../../../common/navigation_bar/appbar.dart';
 import '../../../../../common/widgets/common/input_field_with_button.dart';
+import '../../../../../utils/constants/sizes.dart';
 import '../../../../settings/app_settings.dart';
 import '../../../controller/sales_controller/add_sale_controller.dart';
 import '../../../controller/sales_controller/sale_return_controller.dart';

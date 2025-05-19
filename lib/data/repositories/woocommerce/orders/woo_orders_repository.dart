@@ -11,6 +11,14 @@ import '../../../../utils/constants/api_constants.dart';
 class WooOrdersRepository extends GetxController {
   static WooOrdersRepository get instance => Get.find();
 
+  void _ensureCredentialsInitialized() {
+    if (APIConstant.wooBaseDomain.isEmpty ||
+        APIConstant.wooConsumerKey.isEmpty ||
+        APIConstant.wooConsumerSecret.isEmpty) {
+      throw Exception('WooCommerce credentials are not initialized.');
+    }
+  }
+
   // Fetch Orders Count
   Future<int> fetchOrdersCount() async {
     try {
@@ -53,6 +61,7 @@ class WooOrdersRepository extends GetxController {
   // fetchShippedOrders
   Future<List<OrderModel>> fetchOrdersByStatus({required List<String> status, required String page}) async {
     try{
+      _ensureCredentialsInitialized();
       final Map<String, String> queryParams = {
         'status': status.join(','), // Joins list elements into a single string
         'orderby': 'date', //date, id, include, title, slug, price, popularity and rating. Default is date.

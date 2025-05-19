@@ -1,15 +1,15 @@
-import 'package:fincom/common/dialog_box_massages/snack_bar_massages.dart';
-import 'package:fincom/features/settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../../common/navigation_bar/appbar.dart';
 import '../../../../../common/styles/spacing_style.dart';
 import '../../../../../common/widgets/common/input_field_with_button.dart';
 import '../../../../../utils/constants/colors.dart';
 import '../../../../../utils/constants/sizes.dart';
+import '../../../../settings/app_settings.dart';
 import '../../../controller/sales_controller/payment_controller.dart';
 import '../widget/barcode_sale_tile.dart';
 

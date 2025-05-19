@@ -1,5 +1,3 @@
-import 'package:fincom/features/authentication/controllers/authentication_controller/authentication_controller.dart';
-import 'package:fincom/features/personalization/controllers/user_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
@@ -7,6 +5,7 @@ import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../utils/constants/enums.dart';
+import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/order_model.dart';
 import '../product/product_controller.dart';
 

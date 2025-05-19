@@ -44,7 +44,7 @@ class ChangeUserProfile extends StatelessWidget {
                           //Name
                           TextFormField(
                             controller: changeProfileController.fullName,
-                            validator: (value) => Validator.validateEmptyText('Full Name', value),
+                            validator: (value) => Validator.validateEmptyText(fieldName: 'Full Name',value: value),
                             decoration: const InputDecoration(prefixIcon: Icon(Iconsax.user), labelText: 'First Name*'),
                           ),
                           const SizedBox(height: AppSizes.inputFieldSpace),

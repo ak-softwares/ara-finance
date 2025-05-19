@@ -1,8 +1,8 @@
-import 'package:fincom/common/widgets/shimmers/order_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../../features/accounts/screen/orders/widgets/order_tile.dart';
+import '../../features/accounts/screen/sales/widget/sale_tile_simmer.dart';
 import '../../utils/constants/enums.dart';
 import '../../utils/constants/image_strings.dart';
 import '../../utils/constants/sizes.dart';

@@ -59,7 +59,7 @@ class EmailLoginScreen extends StatelessWidget {
                           Obx(
                                 () => TextFormField(
                                   controller: controller.password,
-                                  validator: (value) => Validator.validateEmptyText('Password', value),
+                                  validator: (value) => Validator.validateEmptyText(fieldName: 'Password',value: value),
                                   obscureText: controller.hidePassword.value,
                                   decoration: InputDecoration(
                                       prefixIcon: const Icon(Iconsax.password_check),

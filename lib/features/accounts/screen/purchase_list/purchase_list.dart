@@ -1,19 +1,18 @@
-import 'package:fincom/common/layout_models/product_grid_layout.dart';
-import 'package:fincom/common/navigation_bar/appbar.dart';
-import 'package:fincom/features/accounts/screen/sales/widget/sale_tile.dart';
-import 'package:fincom/utils/formatters/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/dialog_box_massages/animation_loader.dart';
+import '../../../../common/layout_models/product_grid_layout.dart';
+import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../../utils/formatters/formatters.dart';
 import '../../controller/purchase_list_controller/purchase_list_controller.dart';
 import '../../models/purchase_item_model.dart';
-import '../orders/widgets/order_tile.dart';
+import '../sales/widget/sale_tile.dart';
 import 'orders_by_status.dart';
 import 'widget/purchase_list_item.dart';
 import 'widget/purchase_list_shimmer.dart';

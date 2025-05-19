@@ -1,9 +1,9 @@
-import 'package:fincom/utils/constants/db_constants.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../../features/accounts/models/transaction_model.dart';
 import '../../../../utils/constants/api_constants.dart';
+import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../database/mongodb/mongodb.dart';
 import '../../../database/mongodb/mongo_delete.dart';
@@ -110,7 +110,7 @@ class MongoTransactionRepo extends GetxController {
       // Fetch the transaction linked to the given purchase ID
       final transaction = await _mongoFetch.findOne(
         collectionName: collectionName,
-        query: {TransactionFieldName.purchaseId: purchaseId},
+        filter: {TransactionFieldName.purchaseId: purchaseId},
       );
 
       if (transaction == null) {
@@ -135,7 +135,7 @@ class MongoTransactionRepo extends GetxController {
       // Fetch the transaction linked to the given purchase ID
       final transactionData = await _mongoFetch.findOne(
         collectionName: collectionName,
-        query: {TransactionFieldName.purchaseId: purchaseId},
+        filter: {TransactionFieldName.purchaseId: purchaseId},
       );
 
       if (transactionData == null) {

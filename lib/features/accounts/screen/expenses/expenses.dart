@@ -1,4 +1,3 @@
-import 'package:fincom/features/settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
@@ -10,6 +9,7 @@ import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../settings/app_settings.dart';
 import '../../controller/expenses/expenses_controller.dart';
 import 'add_expenses.dart';
 import 'single_expense.dart';

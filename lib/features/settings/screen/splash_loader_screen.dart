@@ -10,7 +10,6 @@ import '../../authentication/controllers/authentication_controller/authenticatio
 import '../../authentication/screens/phone_otp_login/mobile_login_screen.dart';
 import '../app_settings.dart';
 
-
 class SplashLoaderScreen extends StatelessWidget {
   const SplashLoaderScreen({super.key});
 
@@ -24,6 +23,7 @@ class SplashLoaderScreen extends StatelessWidget {
       // Initialize your auth controller
       final auth = Get.put(AuthenticationController());
       final isAdmin = auth.isAdminLogin.value;
+      await auth.initializeEcommercePlatformCredentials();
       return isAdmin ? const BottomNavigation() : const MobileLoginScreen();
     } catch (e) {
       return const ErrorScreen();

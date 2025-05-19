@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:fincom/common/dialog_box_massages/snack_bar_massages.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+
+import '../../dialog_box_massages/snack_bar_massages.dart';
 
 //manages the network connectivity status and provides method to checl and handel connectivity changes
 class NetworkManager extends GetxController {

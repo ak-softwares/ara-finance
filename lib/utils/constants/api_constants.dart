@@ -1,13 +1,28 @@
-
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../../features/personalization/models/user_model.dart';
+
 class APIConstant {
 
+  static late String wooBaseDomain;
+  static late String wooConsumerKey;
+  static late String wooConsumerSecret;
+
+  static String get authorization => 'Basic ${base64Encode(utf8.encode('$wooConsumerKey:$wooConsumerSecret'))}';
+
+  static void initializeWooCommerceCredentials({required UserModel user}) {
+    wooBaseDomain     = user.wooCommerceCredentials?.domain ?? '';
+    wooConsumerKey    = user.wooCommerceCredentials?.key ?? '';
+    wooConsumerSecret = user.wooCommerceCredentials?.secret ?? '';
+  }
+
   // WooCommerce API Constant
-  static final String wooBaseDomain            =  dotenv.get('WOO_API_URL', fallback: '');
-  static final String authorization         = 'Basic ${base64Encode(utf8.encode('${dotenv.env['WOO_CONSUMER_KEY']}:${dotenv.env['WOO_CONSUMER_SECRET']}'))}';
+  // static final String wooBaseDomain         =  dotenv.get('WOO_API_URL', fallback: '');
+  // static final String wooConsumerKey        =  dotenv.get('WOO_CONSUMER_KEY', fallback: '');
+  // static final String wooConsumerSecret     =  dotenv.get('WOO_CONSUMER_SECRET', fallback: '');
+  // static final String authorization         = 'Basic ${base64Encode(utf8.encode('$wooConsumerKey:$wooConsumerSecret'))}';
 
   static const String itemsPerPage          = '10';
   static const String itemsPerPageSync      = '50';

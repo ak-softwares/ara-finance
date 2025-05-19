@@ -206,7 +206,7 @@ class MongoOrderRepo extends GetxController {
       // Check if a user with the provided email exists
       final saleData = await _mongoFetch.findOne(
         collectionName: collectionName,
-        query: {
+        filter: {
           OrderFieldName.orderId: orderId,
           OrderFieldName.orderType: orderType.name, // assuming you're storing userType as a string like 'admin'
         },

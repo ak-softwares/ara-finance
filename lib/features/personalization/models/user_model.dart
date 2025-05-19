@@ -2,6 +2,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
 import '../../../utils/constants/enums.dart';
+import '../../setup/models/ecommerce_platform.dart';
 import 'address_model.dart';
 
 class UserModel {
@@ -35,6 +36,10 @@ class UserModel {
   List<dynamic>? wishlistItems;
   List<dynamic>? recentItems;
   List<dynamic>? customerOrders;
+  EcommercePlatform? ecommercePlatform;
+  WooCommerceCredentials? wooCommerceCredentials;
+  ShopifyCredentials? shopifyCredentials;
+  AmazonCredentials? amazonCredentials;
 
   UserModel({
     this.id,
@@ -67,6 +72,10 @@ class UserModel {
     this.wishlistItems,
     this.recentItems,
     this.customerOrders,
+    this.ecommercePlatform,
+    this.wooCommerceCredentials,
+    this.shopifyCredentials,
+    this.amazonCredentials,
   });
 
   static UserModel empty() => UserModel();
@@ -84,6 +93,11 @@ class UserModel {
     final UserType userType = UserType.values.firstWhere(
           (e) => e.name == json[UserFieldConstants.userType],
       orElse: () => UserType.customer, // or a default fallback
+    );
+
+    final EcommercePlatform platform = EcommercePlatform.values.firstWhere(
+          (e) => e.name == json[UserFieldConstants.ecommercePlatform],
+      orElse: () => EcommercePlatform.none,
     );
 
     return UserModel(
@@ -125,6 +139,16 @@ class UserModel {
       wishlistItems: json[UserFieldConstants.wishlistItems] as List<dynamic>?,
       recentItems: json[UserFieldConstants.recentItems] as List<dynamic>?,
       customerOrders: json[UserFieldConstants.customerOrders] as List<dynamic>?,
+      ecommercePlatform: platform,
+      wooCommerceCredentials: json[UserFieldConstants.wooCommerceCredentials] != null
+          ? WooCommerceCredentials.fromJson(json[UserFieldConstants.wooCommerceCredentials])
+          : null,
+      shopifyCredentials: json[UserFieldConstants.shopifyCredentials] != null
+          ? ShopifyCredentials.fromJson(json[UserFieldConstants.shopifyCredentials])
+          : null,
+      amazonCredentials: json[UserFieldConstants.amazonCredentials] != null
+          ? AmazonCredentials.fromJson(json[UserFieldConstants.amazonCredentials])
+          : null,
     );
   }
 
@@ -158,6 +182,10 @@ class UserModel {
     addIfNotNull(UserFieldConstants.wishlistItems, wishlistItems);
     addIfNotNull(UserFieldConstants.recentItems, recentItems);
     addIfNotNull(UserFieldConstants.customerOrders, customerOrders);
+    addIfNotNull(UserFieldConstants.ecommercePlatform, ecommercePlatform?.name);
+    addIfNotNull(UserFieldConstants.wooCommerceCredentials, wooCommerceCredentials?.toJson());
+    addIfNotNull(UserFieldConstants.shopifyCredentials, shopifyCredentials?.toJson());
+    addIfNotNull(UserFieldConstants.amazonCredentials, amazonCredentials?.toJson());
 
     final metaDataList = <Map<String, dynamic>>[];
 

@@ -1,8 +1,7 @@
-import 'package:fincom/common/layout_models/product_grid_layout.dart';
-import 'package:fincom/features/settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/layout_models/product_list_layout.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/navigation_bar/tabbar.dart';
@@ -11,6 +10,7 @@ import '../../../../common/widgets/custom_shape/containers/rounded_container.dar
 import '../../../../common/widgets/shimmers/order_shimmer.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../settings/app_settings.dart';
 import '../../controller/financial/financial_controller.dart';
 
 class Financials extends StatelessWidget {
@@ -60,7 +60,10 @@ class Financials extends StatelessWidget {
                           final option = controller.short[index];
                           final isSelected = option == controller.selectedOption.value;
                           return InkWell(
-                            onTap: () => controller.selectedOption.value = option,
+                            onTap: () async {
+                                controller.selectedOption.value = option;
+                                await controller.selectDate();
+                            },
                             child: Padding(
                               padding: const EdgeInsets.only(right: AppSizes.sm, top: AppSizes.sm, bottom: AppSizes.sm),
                               child: RoundedContainer(

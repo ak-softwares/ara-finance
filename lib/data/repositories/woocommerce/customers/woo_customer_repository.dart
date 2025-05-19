@@ -12,6 +12,14 @@ import '../../../../utils/constants/api_constants.dart';
 class WooCustomersRepository extends GetxController {
   static WooCustomersRepository get instance => Get.find();
 
+  void _ensureCredentialsInitialized() {
+    if (APIConstant.wooBaseDomain.isEmpty ||
+        APIConstant.wooConsumerKey.isEmpty ||
+        APIConstant.wooConsumerSecret.isEmpty) {
+      throw Exception('WooCommerce credentials are not initialized.');
+    }
+  }
+
   // Fetch Customers Count
   Future<int> fetchCustomerCount() async {
     try {

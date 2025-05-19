@@ -1,4 +1,3 @@
-import 'package:fincom/utils/constants/sizes.dart';
 import 'package:line_icons/line_icons.dart';
 
 import '../../../../common/dialog_box_massages/animation_loader.dart';
@@ -7,6 +6,7 @@ import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
+import '../../../../utils/constants/sizes.dart';
 import '../../controller/customer/customer_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

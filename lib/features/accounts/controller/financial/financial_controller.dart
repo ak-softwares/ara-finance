@@ -1,10 +1,10 @@
-import 'package:fincom/features/accounts/models/coupon_model.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
-import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../models/coupon_model.dart';
 import '../../models/expense_model.dart';
 import '../../models/order_model.dart';
 import '../account/account_controller.dart';
@@ -70,13 +70,12 @@ class FinancialController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    ever(selectedOption, (_) => selectDate());
     initFunctions();
   }
 
 
-  Future<void> initFunctions() async {
-    await selectDate();
+  Future<void> initFunctions({bool isRefresh = false}) async {
+    await selectDate(isRefresh: isRefresh);
     await calculateStock();
     await calculateCash();
     await calculateAccountsPayable();
@@ -87,14 +86,37 @@ class FinancialController extends GetxController {
       sales.clear();
       purchases.clear();
       expenses.clear();
-      await initFunctions();
+      await initFunctions(isRefresh : true);
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error in Payment Methods getting', message: e.toString());
     }
   }
 
-  Future<void> selectDate() async {
+  Future<void> selectDate({bool isRefresh = false}) async {
     final now = DateTime.now();
+
+    if (selectedOption.value == 'Custom') {
+      if(!isRefresh){
+        final picked = await showDateRangePicker(
+          context: Get.context!,
+          firstDate: DateTime(now.year - 5),
+          lastDate: DateTime(now.year + 1),
+          initialDateRange: DateTimeRange(start: startDate.value, end: endDate.value),
+        );
+        if (picked != null) {
+          startDate.value = picked.start;
+          endDate.value = picked.end;
+          await getSalesByShortcut();
+        }
+      }else {
+        startDate.value = DateTime.now();
+        endDate.value = DateTime.now();
+        await getSalesByShortcut();
+      }
+
+      return;
+    }
+
     switch (selectedOption.value) {
       case 'Today':
         startDate.value = DateTime(now.year, now.month, now.day);
@@ -130,10 +152,6 @@ class FinancialController extends GetxController {
       case 'Last Year':
         startDate.value = DateTime(now.year - 1, 1, 1);
         endDate.value = DateTime(now.year - 1, 12, 31, 23, 59, 59);
-        break;
-      case 'Custom':
-        startDate.value = startDate.value;
-        endDate.value = endDate.value;
         break;
       default:
         return;

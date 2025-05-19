@@ -1,8 +1,8 @@
-import 'package:fincom/features/settings/app_settings.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../../utils/constants/sizes.dart';
+import '../../../../settings/app_settings.dart';
 import '../../../models/product_model.dart';
 import '../single_product.dart';
 import 'product_title.dart';

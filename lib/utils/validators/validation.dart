@@ -55,6 +55,23 @@ class Validator {
     return tenDigitNumber.length == 10 ? tenDigitNumber : null;
   }
 
+  static String? validateDomain(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Domain is required.';
+    }
+
+    // Regular expression for domain validation (e.g., example.com)
+    final domainRegExp = RegExp(
+        r"^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$"
+    );
+
+    if (!domainRegExp.hasMatch(value)) {
+      return 'Invalid domain name.';
+    }
+
+    return null;
+  }
+
   static String? validateEmail(String? value) {
     if(value == null || value.isEmpty) {
       return 'Email is required.';
@@ -120,7 +137,7 @@ class Validator {
     return null;
   }
 
-  static String? validateEmptyText(String? fieldName, String? value) {
+  static String? validateEmptyText({String? fieldName, String? value}) {
     if(value == null || value.isEmpty){
       return '$fieldName is required';
     }

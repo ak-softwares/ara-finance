@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../common/navigation_bar/appbar.dart';
+import '../../../utils/constants/enums.dart';
+import '../../../utils/constants/sizes.dart';
+import '../../../utils/validators/validation.dart';
 import '../controllers/setup_controller.dart';
 import '../models/ecommerce_platform.dart';
 
 class PlatformFormScreen extends StatelessWidget {
   const PlatformFormScreen({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     final SetupController controller = Get.find();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Obx(() => Text(
-          controller.selectedPlatform.value == EcommercePlatform.woocommerce
+      appBar: AppAppBar(
+        title: controller.selectedPlatform.value == EcommercePlatform.woocommerce
               ? 'WooCommerce Setup'
               : controller.selectedPlatform.value == EcommercePlatform.shopify
-              ? 'Shopify Setup'
-              : 'Amazon Setup',
-        )),
+                  ? 'Shopify Setup'
+                  : 'Amazon Setup',
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -46,101 +47,94 @@ class _WooCommerceForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          'Enter your WooCommerce credentials',
-          style: TextStyle(fontSize: 16),
-        ),
-        SizedBox(height: 24),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Store Domain (e.g., mystore.com)',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.public),
+    return Form(
+      key: _controller.woocommercePlatformFormKey,
+      child: Column(
+        spacing: AppSizes.spaceBtwItems,
+        children: [
+          Text('Enter your WooCommerce credentials', style: TextStyle(fontSize: 16)),
+          TextFormField(
+              controller: _controller.wooCommerceDomain,
+              validator: (value) => Validator.validateDomain(value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.public),
+                  labelText: 'Store Domain (e.g., mystore.com)'
+              )
           ),
-          onChanged: _controller.wooCommerceDomain,
-        ),
-        SizedBox(height: 16),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Consumer Key',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.vpn_key),
+          TextFormField(
+              controller: _controller.wooCommerceKey,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'Consumer Key', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.vpn_key),
+                  labelText: 'Consumer Key'
+              )
           ),
-          onChanged: _controller.wooCommerceKey,
-        ),
-        SizedBox(height: 16),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Consumer Secret',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.security),
+          TextFormField(
+              controller: _controller.wooCommerceSecret,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'Consumer Secret', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.security),
+                  labelText: 'Consumer Secret'
+              )
           ),
-          obscureText: true,
-          onChanged: _controller.wooCommerceSecret,
-        ),
-        SizedBox(height: 32),
-        ElevatedButton(
-          onPressed: _controller.saveSettings,
-          style: ElevatedButton.styleFrom(
-            minimumSize: Size(double.infinity, 50),
+          ElevatedButton(
+            onPressed: () => _controller.saveWooCommerceSettings(),
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(double.infinity, 50),
+            ),
+            child: Text('Connect Store'),
           ),
-          child: Text('Connect Store'),
-        ),
-      ],
+        ],
+      ),
     );
-  }
-}
+  }}
 
 class _ShopifyForm extends StatelessWidget {
   final SetupController _controller = Get.find();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          'Enter your Shopify credentials',
-          style: TextStyle(fontSize: 16),
-        ),
-        SizedBox(height: 24),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Store Name (e.g., mystore.myshopify.com)',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.store),
+    return Form(
+      key: _controller.shopifyPlatformFormKey,
+      child: Column(
+        spacing: AppSizes.spaceBtwItems,
+        children: [
+          Text(
+            'Enter your Shopify credentials',
+            style: TextStyle(fontSize: 16),
           ),
-          onChanged: _controller.shopifyStoreName,
-        ),
-        SizedBox(height: 16),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'API Key',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.vpn_key),
+          TextFormField(
+              controller: _controller.shopifyStoreName,
+              validator: (value) => Validator.validateDomain(value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.store),
+                  labelText: 'Store Name (e.g., mystore.myshopify.com)'
+              )
           ),
-          onChanged: _controller.shopifyApiKey,
-        ),
-        SizedBox(height: 16),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Password',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.security),
+          TextFormField(
+              controller: _controller.shopifyApiKey,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'API Key', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.vpn_key),
+                  labelText: 'API Key'
+              )
           ),
-          obscureText: true,
-          onChanged: _controller.shopifyPassword,
-        ),
-        SizedBox(height: 32),
-        ElevatedButton(
-          onPressed: _controller.saveSettings,
-          child: Text('Connect Store'),
-          style: ElevatedButton.styleFrom(
-            minimumSize: Size(double.infinity, 50),
+          TextFormField(
+              controller: _controller.shopifyPassword,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'Password', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.security),
+                  labelText: 'Password'
+              )
           ),
-        ),
-      ],
+
+          ElevatedButton(
+            onPressed: () => _controller.saveShopifySettings(),
+            style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
+            child: Text('Connect Store'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -150,49 +144,49 @@ class _AmazonForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          'Enter your Amazon Seller credentials',
-          style: TextStyle(fontSize: 16),
-        ),
-        SizedBox(height: 24),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Seller ID',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.person),
+    return Form(
+      key: _controller.amazonPlatformFormKey,
+      child: Column(
+        spacing: AppSizes.spaceBtwItems,
+        children: [
+          Text(
+            'Enter your Amazon Seller credentials',
+            style: TextStyle(fontSize: 16),
           ),
-          onChanged: _controller.amazonSellerId,
-        ),
-        SizedBox(height: 16),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Auth Token',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.security),
+          TextFormField(
+              controller: _controller.amazonSellerId,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'Seller ID', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.store),
+                  labelText: 'Seller ID'
+              )
           ),
-          obscureText: true,
-          onChanged: _controller.amazonAuthToken,
-        ),
-        SizedBox(height: 16),
-        TextField(
-          decoration: InputDecoration(
-            labelText: 'Marketplace ID',
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.public),
+          TextFormField(
+              controller: _controller.amazonAuthToken,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'Auth Token', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.security),
+                  labelText: 'Auth Token'
+              )
           ),
-          onChanged: _controller.amazonMarketplaceId,
-        ),
-        SizedBox(height: 32),
-        ElevatedButton(
-          onPressed: _controller.saveSettings,
-          child: Text('Connect Store'),
-          style: ElevatedButton.styleFrom(
-            minimumSize: Size(double.infinity, 50),
+          TextFormField(
+              controller: _controller.amazonMarketplaceId,
+              validator: (value) => Validator.validateEmptyText(fieldName: 'Marketplace ID', value: value),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.public),
+                  labelText: 'Marketplace ID'
+              )
           ),
-        ),
-      ],
+
+          ElevatedButton(
+            onPressed: () => _controller.saveAmazonSettings(),
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(double.infinity, 50),
+            ),
+            child: Text('Connect Store'),
+          ),
+        ],
+      ),
     );
   }
 }

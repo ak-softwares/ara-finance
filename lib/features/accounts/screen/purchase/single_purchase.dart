@@ -1,11 +1,11 @@
-import 'package:fincom/common/layout_models/product_list_layout.dart';
-import 'package:fincom/common/widgets/custom_shape/image/circular_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/layout_models/product_grid_layout.dart';
+import '../../../../common/layout_models/product_list_layout.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
+import '../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';

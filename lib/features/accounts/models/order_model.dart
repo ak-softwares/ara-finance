@@ -1,7 +1,7 @@
-import 'package:fincom/utils/constants/enums.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
+import '../../../utils/constants/enums.dart';
 import '../../personalization/models/address_model.dart';
 import '../../personalization/models/user_model.dart';
 import '../../settings/app_settings.dart';

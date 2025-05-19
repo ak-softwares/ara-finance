@@ -7,6 +7,8 @@ enum OrderType { purchase, sale, }
 
 enum OrientationType {horizontal, vertical}
 
+enum EcommercePlatform { none, woocommerce, shopify, amazon}
+
 // Enum to specify search type
 enum SearchType { products, customers, orders, vendor, paymentMethod}
 

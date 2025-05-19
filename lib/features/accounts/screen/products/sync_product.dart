@@ -1,8 +1,8 @@
-import 'package:fincom/common/widgets/custom_shape/containers/rounded_container.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/navigation_bar/appbar.dart';
+import '../../../../common/widgets/custom_shape/containers/rounded_container.dart';
 import '../../../../common/widgets/shimmers/shimmer_effect.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';

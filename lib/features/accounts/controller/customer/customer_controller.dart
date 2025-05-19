@@ -1,4 +1,3 @@
-import 'package:fincom/utils/constants/enums.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
@@ -6,6 +5,7 @@ import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/user/user_repositories.dart';
 import '../../../../data/repositories/woocommerce/customers/woo_customer_repository.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../personalization/models/user_model.dart';
 

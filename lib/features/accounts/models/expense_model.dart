@@ -1,9 +1,9 @@
-import 'package:fincom/features/accounts/models/transaction_model.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
 import '../../../utils/constants/enums.dart';
 import 'account_model.dart';
+import 'transaction_model.dart';
 
 class ExpenseModel {
   final String? id;
