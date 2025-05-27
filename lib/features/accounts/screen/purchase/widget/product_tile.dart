@@ -143,7 +143,22 @@ class PurchaseProductCard extends StatelessWidget {
                 icon: const Icon(Icons.close, size: 15),
               ),
             ),
-          )
+          ),
+          if(cartItem.stockQuantity != null && cartItem.stockQuantity != 0)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.sm, vertical: AppSizes.xs),
+                decoration: BoxDecoration(
+                  color: Colors.lightGreen,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(8), // adjust the radius as needed
+                  ),
+                ),
+                child: Text(cartItem.stockQuantity.toString(), style: TextStyle(color: Colors.white, fontSize: 12),),
+              ),
+            ),
         ],
       );
     });

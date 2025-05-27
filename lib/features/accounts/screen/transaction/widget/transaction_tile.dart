@@ -1,15 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
-import '../../../../../common/styles/shadows.dart';
 import '../../../../../utils/constants/enums.dart';
-import '../../../../../utils/constants/icons.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/formatters/formatters.dart';
-import '../../../models/transaction_model.dart'; // Updated import
-import '../single_transaction.dart'; // Updated import
+import '../../../models/transaction_model.dart';
+import '../single_transaction.dart';
 
 class TransactionTile extends StatelessWidget {
   const TransactionTile({super.key, required this.transaction});
@@ -75,7 +71,7 @@ class TransactionTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Payment Method', style: TextStyle(fontSize: 14)),
-                Text(transaction.transactionType?.name ?? '', style: const TextStyle(fontSize: 14)),
+                Text(transaction.transactionType?.name.capitalizeFirst ?? '', style: const TextStyle(fontSize: 14)),
               ],
             ),
             if(transaction.transactionType == TransactionType.purchase)

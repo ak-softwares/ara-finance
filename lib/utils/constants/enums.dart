@@ -12,29 +12,9 @@ enum EcommercePlatform { none, woocommerce, shopify, amazon}
 // Enum to specify search type
 enum SearchType { products, customers, orders, vendor, paymentMethod}
 
-enum TransactionType { payment, refund, transfer, purchase, delete, expense}
+enum TransactionType { payment, refund, transfer, purchase, delete, expense, sale}
 
-extension TransactionTypeExtension on TransactionType {
-
-  String get name {
-    switch (this) {
-      case TransactionType.payment:
-        return 'payment';
-      case TransactionType.refund:
-        return 'refund';
-      case TransactionType.transfer:
-        return 'transfer';
-      case TransactionType.purchase:
-        return 'purchase';
-      case TransactionType.delete:
-        return 'delete';
-      case TransactionType.expense:
-        return 'expense';
-    }
-  }
-}
-
-enum PurchaseListType { vendors, purchasable, purchased, notAvailable }
+enum PurchaseListType { purchasable, purchased, notAvailable, vendors }
 
 enum EntityType { vendor, account, customer, expense }
 extension EntityTypeExtension on EntityType {

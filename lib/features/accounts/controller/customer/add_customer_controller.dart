@@ -173,4 +173,18 @@ class AddCustomerController extends GetxController{
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
+
+  Future<void> updateCustomerAddressById({required String id, required UserType userType, required AddressModel address}) async {
+    try {
+      final user = UserModel(
+        id: id,
+        billing: address,
+        userType: userType
+      );
+      await mongoCustomersRepo.updateUser(user: user);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }

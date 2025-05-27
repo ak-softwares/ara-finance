@@ -17,70 +17,70 @@ class ChangeUserProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    final changeProfileController = Get.put(ChangeProfileController());
-    final userController = Get.put(AuthenticationController());
-    changeProfileController.fullName.text = userController.admin.value.name ?? '';
-    changeProfileController.email.text = userController.admin.value.email ?? '';
-    changeProfileController.phone.text = Validator.getFormattedTenDigitNumber(userController.admin.value.phone ?? '') ?? '';
-
+    final controller = Get.put(ChangeProfileController());
     return Scaffold(
       appBar: const AppAppBar(title: "Update Profile", showBackArrow: true),
-      body: RefreshIndicator(
-        color: AppColors.refreshIndicator,
-        onRefresh: () async => userController.refreshAdmin(),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: AppSpacingStyle.paddingWidthAppbarHeight,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Form(
-                    key: changeProfileController.changeProfileFormKey,
-                    child: Column(
-                        children: [
-                          const SizedBox(height: AppSizes.spaceBtwSection),
-                          //Name
-                          TextFormField(
-                            controller: changeProfileController.fullName,
-                            validator: (value) => Validator.validateEmptyText(fieldName: 'Full Name',value: value),
-                            decoration: const InputDecoration(prefixIcon: Icon(Iconsax.user), labelText: 'First Name*'),
-                          ),
-                          const SizedBox(height: AppSizes.inputFieldSpace),
-                          //email
-                          TextFormField(
-                              controller: changeProfileController.email,
-                              validator: (value) => Validator.validateEmail(value),
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Iconsax.direct_right),
-                                labelText: AppTexts.tEmail,
-                              )
-                          ),
-                          const SizedBox(height: AppSizes.inputFieldSpace),
-                          // phone
-                          TextFormField(
-                              controller: changeProfileController.phone,
-                              validator: (value) => Validator.validatePhoneNumber(value),
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Iconsax.call),
-                                labelText: AppTexts.tPhone,
-                              )
-                          ),
-                          const SizedBox(height: AppSizes.spaceBtwSection),
-                          // save button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              child: const Text('Update'),
-                              onPressed: () => changeProfileController.mongoChangeProfileDetails(),
-                            ),
-                          ),
-                        ]
-                    )
-                ),
-              ],
-            ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(AppSizes.defaultSpace),
+        child: ElevatedButton(
+          child: const Text('Update'),
+          onPressed: () => controller.mongoChangeProfileDetails(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: AppSpacingStyle.defaultPagePadding,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Form(
+                  key: controller.changeProfileFormKey,
+                  child: Column(
+                      spacing: AppSizes.inputFieldSpace,
+                      children: [
+                        // Name
+                        TextFormField(
+                          controller: controller.name,
+                          validator: (value) => Validator.validateEmptyText(fieldName: 'Full Name',value: value),
+                          decoration: const InputDecoration(prefixIcon: Icon(Iconsax.user), labelText: 'Full Name*'),
+                        ),
+
+                        // email
+                        TextFormField(
+                            controller: controller.email,
+                            validator: (value) => Validator.validateEmail(value),
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Iconsax.direct_right),
+                              labelText: AppTexts.tEmail,
+                            )
+                        ),
+
+                        // phone
+                        TextFormField(
+                            controller: controller.phone,
+                            validator: (value) => Validator.validatePhoneNumber(value),
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Iconsax.call),
+                              labelText: AppTexts.tPhone,
+                            )
+                        ),
+
+                        // Company
+                        TextFormField(
+                          controller: controller.companyName,
+                          decoration: const InputDecoration(prefixIcon: Icon(Iconsax.shop), labelText: 'Company'),
+                        ),
+
+                        // Gst
+                        TextFormField(
+                          controller: controller.gstNumber,
+                          decoration: const InputDecoration(prefixIcon: Icon(Iconsax.direct_right), labelText: 'GST Number'),
+                        ),
+                      ]
+                  )
+              ),
+            ],
           ),
         ),
       ),

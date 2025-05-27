@@ -26,11 +26,10 @@ Widget build(BuildContext context) {
           padding: const EdgeInsets.all(AppSizes.defaultSpace),
           child: Column(
             children: [
-              const TSectionHeading(title: 'Billing Address'),
-              TSingleAddress(
+              const SectionHeading(title: 'Billing Address'),
+              SingleAddress(
                   address: userController.admin.value.billing ?? AddressModel.empty(),
                   onTap: () => Get.to(() => UpdateAddressScreen(
-                      title: 'Update Billing Address',
                       address: userController.admin.value.billing ?? AddressModel.empty()
                     )),
                 // onTap: () => controller.selectAddress(addresses[index])

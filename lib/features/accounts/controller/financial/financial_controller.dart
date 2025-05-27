@@ -230,8 +230,7 @@ class FinancialController extends GetxController {
   Future<void> calculateCogs() async {
     try {
       // Step 1: Collect product IDs from completed and in-transit sales
-      final List<int> productIds = sales
-          .where((sale) =>
+      final List<int> productIds = sales.where((sale) =>
       sale.status == completeStatus || sale.status == inTransitStatus)
           .expand((sale) => sale.lineItems ?? [])
           .map((item) => item.productId)
@@ -403,15 +402,15 @@ class FinancialController extends GetxController {
 //----------------------------------------------------------------------------------------------//
 
   // Unit Matrix
-  double get averageOrderValue => orderCompleted == 0 ? 0 : revenueCompleted / orderCompleted;
+  double get averageOrderValue => revenueTotal == 0 ? 0 : revenueTotal / orderTotal;
 
-  double get unitCogs => orderCompleted == 0 ? 0 : expensesCogs.value / orderCompleted;
+  double get unitCogs => orderTotal == 0 ? 0 : expensesCogs.value / orderTotal;
   int get unitCogsPercent => averageOrderValue == 0 ? 0 : ((unitCogs / averageOrderValue) * 100).round();
 
-  double get unitShipping => orderCompleted == 0 ? 0 : unitShippingExpenseTotal / orderCompleted;
+  double get unitShipping => orderTotal == 0 ? 0 : unitShippingExpenseTotal / orderTotal;
   int get unitShippingPercent => averageOrderValue == 0 ? 0 : ((unitShipping / averageOrderValue) * 100).round();
 
-  double get unitAds => orderCompleted == 0 ? 0 : totalAdsExpense / orderCompleted;
+  double get unitAds => orderTotal == 0 ? 0 : totalAdsExpense / orderTotal;
   int get unitAdsPercent => averageOrderValue == 0 ? 0 : ((unitAds / averageOrderValue) * 100).round();
 
   double get unitProfit => averageOrderValue - unitCogs - unitShipping - unitAds;

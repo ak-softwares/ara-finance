@@ -5,7 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../../common/navigation_bar/bottom_navigation_bar.dart';
 import '../../../data/database/mongodb/mongo_base.dart';
-import '../../../data/database/mongodb/mongodb.dart';
 import '../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../authentication/screens/phone_otp_login/mobile_login_screen.dart';
 import '../app_settings.dart';

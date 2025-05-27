@@ -112,7 +112,7 @@ class _SingleExpenseScreenState extends State<SingleExpenseScreen> {
             const SizedBox(height: AppSizes.spaceBtwSection),
 
             // Related Transactions Section
-            const TSectionHeading(title: 'Related Transactions'),
+            const SectionHeading(title: 'Related Transactions'),
             const SizedBox(height: AppSizes.spaceBtwItems),
             SizedBox(
               height: 350,

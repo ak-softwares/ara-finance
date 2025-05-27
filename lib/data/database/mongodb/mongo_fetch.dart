@@ -133,21 +133,18 @@ class MongoFetch extends MongoDatabase {
 
       final pipeline = [
         if (effectiveFilter.isNotEmpty)
-          {
-            "\$match": effectiveFilter,
-          },
-        {
-          "\$addFields": {
+          {"\$match": effectiveFilter,},
+        {"\$addFields": {
             "totalStock": "\$${ProductFieldName.stockQuantity}",
             "stockPriority": {
               "\$switch": {
                 "branches": [
                   {
-                    "case": {"\$gt": ["\$${ProductFieldName.stockQuantity}", 0]},
+                    "case": {"\$lt": ["\$${ProductFieldName.stockQuantity}", 0]},
                     "then": 2
                   },
                   {
-                    "case": {"\$lt": ["\$${ProductFieldName.stockQuantity}", 0]},
+                    "case": {"\$gt": ["\$${ProductFieldName.stockQuantity}", 0]},
                     "then": 1
                   },
                 ],
@@ -155,10 +152,8 @@ class MongoFetch extends MongoDatabase {
               }
             },
             "absStock": {"\$abs": "\$${ProductFieldName.stockQuantity}"}
-          }
-        },
-        {
-          "\$sort": {
+          }},
+        {"\$sort": {
             "stockPriority": -1,
             "absStock": -1,
             ProductFieldName.id: -1
@@ -507,21 +502,6 @@ class MongoFetch extends MongoDatabase {
       return await db!.collection(collectionName).count(effectiveFilter) ?? 0;
     } catch (e) {
       throw Exception('Failed to get collection count: $e');
-    }
-  }
-
-
-  Future<Map<String, dynamic>?> fetchMetaDocuments({
-    required String collectionName,
-    required String metaDataName,
-  }) async {
-    await _ensureConnected();
-    try {
-      return await db!
-          .collection(collectionName)
-          .findOne({MetaDataName.metaDocumentName: metaDataName});
-    } catch (e) {
-      throw Exception('Failed to fetch metadata: $e');
     }
   }
 

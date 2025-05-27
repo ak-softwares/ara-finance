@@ -7,6 +7,7 @@ import '../../../../common/widgets/network_manager/network_manager.dart';
 import '../../../../data/repositories/mongodb/products/product_repositories.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../personalization/models/user_model.dart';
 import '../../models/product_model.dart';
 import 'product_controller.dart';
 
@@ -19,12 +20,17 @@ class AddProductController extends GetxController {
   TextEditingController purchasePriceController = TextEditingController();
   TextEditingController stockController = TextEditingController();
 
+  Rx<UserModel> selectedVendor = UserModel().obs;
   final GlobalKey<FormState> productFormKey = GlobalKey<FormState>();
 
   final mongoProductRepo = Get.put(MongoProductRepo());
   final productController = Get.put(ProductController());
 
   String get userId => AuthenticationController.instance.admin.value.id ?? '';
+
+  void addSupplier(UserModel getSelectedSupplier) {
+    selectedVendor.value = getSelectedSupplier;
+  }
 
   // Save Product
   void saveProduct() {
@@ -33,7 +39,8 @@ class AddProductController extends GetxController {
       title: productTitleController.text,
       purchasePrice: double.tryParse(purchasePriceController.text) ?? 0.0,
       stockQuantity: int.tryParse(stockController.text) ?? 0,
-      dateCreated: DateTime.now().toIso8601String(),
+      dateCreated: DateTime.now(),
+      vendor: selectedVendor.value,
     );
 
     addProduct(product: product);
@@ -68,6 +75,7 @@ class AddProductController extends GetxController {
     productTitleController.text = '';
     purchasePriceController.text = '';
     stockController.text = '';
+    selectedVendor.value = UserModel();
   }
 
   // Reset Product Values
@@ -75,6 +83,7 @@ class AddProductController extends GetxController {
     productTitleController.text = product.title ?? '';
     purchasePriceController.text = product.purchasePrice.toString();
     stockController.text = product.stockQuantity.toString();
+    selectedVendor.value = product.vendor ?? UserModel();
   }
 
   // Save Updated Product
@@ -84,6 +93,7 @@ class AddProductController extends GetxController {
       title: productTitleController.text,
       purchasePrice: double.tryParse(purchasePriceController.text) ?? 0.0,
       stockQuantity: int.tryParse(stockController.text) ?? 0,
+      vendor: selectedVendor.value,
     );
 
     updateProduct(product: product);

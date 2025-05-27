@@ -86,7 +86,7 @@ class SearchScreen3 extends StatelessWidget {
           padding: AppSpacingStyle.defaultPagePadding,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            TSectionHeading(title: title),
+            SectionHeading(title: title),
             switch (searchType) {
               SearchType.products => Obx(() {
                     if (searchVoucherController.isLoading.value) {
@@ -320,7 +320,7 @@ class SearchScreen3 extends StatelessWidget {
                               SizedBox(
                                 width: double.infinity,
                                 child: AccountTile(
-                                  payment: selectedPayment,
+                                  account: selectedPayment,
                                   onTap: () => searchVoucherController.togglePaymentSelection(selectedPayment),
                                 ),
                               ),
@@ -352,7 +352,7 @@ class SearchScreen3 extends StatelessWidget {
                                   width: double.infinity,
                                   child: InkWell(
                                     onTap: () => searchVoucherController.togglePaymentSelection(payment),
-                                      child: AccountTile(payment: payment)
+                                      child: AccountTile(account: payment)
                                   ),
                                 ),
                                 if (isSelected)

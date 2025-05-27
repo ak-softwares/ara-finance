@@ -169,7 +169,7 @@ class AddExpenseScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        child: SizedBox(width: double.infinity, child: AccountTile(payment: controller.selectedAccountType.value))
+                        child: SizedBox(width: double.infinity, child: AccountTile(account: controller.selectedAccountType.value))
                     )
                         : SizedBox.shrink(),
                     ),

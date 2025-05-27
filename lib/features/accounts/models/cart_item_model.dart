@@ -8,6 +8,7 @@ class CartModel {
   int productId;
   int? variationId;
   int quantity;
+  int? stockQuantity;
   String? category;
   String? subtotal;
   String? subtotalTax;
@@ -30,6 +31,7 @@ class CartModel {
     required this.productId,
     this.variationId,
     required this.quantity,
+    this.stockQuantity,
     this.category,
     this.subtotal,
     this.subtotalTax,
@@ -57,6 +59,7 @@ class CartModel {
       CartFieldName.productId: productId,
       CartFieldName.variationId: variationId,
       CartFieldName.quantity: quantity,
+      CartFieldName.stockQuantity: stockQuantity,
       CartFieldName.category: category,
       CartFieldName.subtotal: subtotal,
       CartFieldName.subtotalTax: subtotalTax,
@@ -92,6 +95,7 @@ class CartModel {
       product_id: json[CartFieldName.product_id] ?? '',
       productId: int.tryParse(json[CartFieldName.productId]?.toString() ?? '') ?? 0,
       variationId: int.tryParse(json[CartFieldName.variationId]?.toString() ?? '') ?? 0,
+      stockQuantity: json[CartFieldName.stockQuantity] ?? 0,
       quantity: int.tryParse(json[CartFieldName.quantity]?.toString() ?? '') ?? 0,
       category: json[CartFieldName.category] ?? '',
       subtotal: json[CartFieldName.subtotal] ?? '',
@@ -118,6 +122,7 @@ class CartModel {
       product_id: json[CartFieldName.product_id] ?? '',
       productId: json[CartFieldName.productId] ?? 0, // Changed to product_id
       variationId: json[CartFieldName.variationId] ?? 0, // Changed to variation_id
+      stockQuantity: json[CartFieldName.stockQuantity] ?? 0,
       quantity: json[CartFieldName.quantity] ?? 0,
       category: json[CartFieldName.category] ?? '',
       subtotal: json[CartFieldName.subtotal] ?? '',
@@ -146,6 +151,7 @@ class CartModel {
       CartFieldName.productId: productId,
       CartFieldName.variationId: variationId,
       CartFieldName.quantity: quantity,
+      CartFieldName.stockQuantity: stockQuantity,
       CartFieldName.category: category,
       CartFieldName.subtotal: subtotal,
       CartFieldName.subtotalTax: subtotalTax,
@@ -168,6 +174,7 @@ class CartModel {
     int? productId,
     int? variationId,
     int? quantity,
+    int? stockQuantity,
     String? category,
     String? subtotal,
     String? subtotalTax,
@@ -189,6 +196,7 @@ class CartModel {
       productId: productId ?? this.productId,
       variationId: variationId ?? this.variationId,
       quantity: quantity ?? this.quantity,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
       category: category ?? this.category,
       subtotal: subtotal ?? this.subtotal,
       subtotalTax: subtotalTax ?? this.subtotalTax,

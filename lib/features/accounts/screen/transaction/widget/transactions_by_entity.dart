@@ -55,6 +55,7 @@ class TransactionsByEntity extends StatelessWidget {
           ? Colors.grey.shade900  // Dark mode color
           : Colors.grey.shade50,  // Light mode color
       child: ListView(
+        shrinkWrap: true,
         controller: scrollController,
         padding: AppSpacingStyle.defaultPagePadding,
         physics: const AlwaysScrollableScrollPhysics(),

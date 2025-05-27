@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:get/get.dart';
 
 import '../../../../features/accounts/models/order_model.dart';
 import '../../../../utils/constants/api_constants.dart';
 import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
-import '../../../database/mongodb/mongodb.dart';
 import '../../../database/mongodb/mongo_delete.dart';
 import '../../../database/mongodb/mongo_fetch.dart';
 import '../../../database/mongodb/mongo_insert.dart';
@@ -228,6 +226,20 @@ class MongoOrderRepo extends GetxController {
       return totalStockValue;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  // Fetch All Sales from MongoDB
+  Future<List<OrderModel>> fetchOrdersByProductId({required int productId, required String userId, int page = 1}) async {
+    try {
+      final List<Map<String, dynamic>> ordersData = await _mongoFetch.fetchDocuments(
+          collectionName: collectionName,
+          filter: {'${OrderFieldName.lineItems}.${CartFieldName.productId}': productId, OrderFieldName.userId: userId},
+          page: page);
+      final List<OrderModel> orders = ordersData.map((data) => OrderModel.fromJson(data)).toList();
+      return orders;
+    } catch (e) {
+      throw 'Failed to fetch orders: $e';
     }
   }
 

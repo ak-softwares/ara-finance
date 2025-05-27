@@ -77,37 +77,28 @@ class TransactionModel {
   }
 
   Map<String, dynamic> toJson() {
-    final json = {
-      TransactionFieldName.userId: userId,
-      TransactionFieldName.transactionId: transactionId,
-      TransactionFieldName.amount: amount,
-      TransactionFieldName.date: date,
-      TransactionFieldName.transactionType: transactionType?.name,
+    return {
+      if (userId != null) TransactionFieldName.userId: userId,
+      if (transactionId != null) TransactionFieldName.transactionId: transactionId,
+      if (amount != null) TransactionFieldName.amount: amount,
+      if (date != null) TransactionFieldName.date: date,
+      if (transactionType != null) TransactionFieldName.transactionType: transactionType!.name,
+      if (id != null) TransactionFieldName.id: id,
+      if (fromEntityType != null) ...{
+        TransactionFieldName.fromEntityId: fromEntityId,
+        TransactionFieldName.fromEntityName: fromEntityName,
+        TransactionFieldName.fromEntityType: fromEntityType!.name,
+      },
+      if (toEntityType != null) ...{
+        TransactionFieldName.toEntityId: toEntityId,
+        TransactionFieldName.toEntityName: toEntityName,
+        TransactionFieldName.toEntityType: toEntityType!.name,
+      },
+      if (transactionType == TransactionType.purchase && purchaseId != null)
+        TransactionFieldName.purchaseId: purchaseId,
     };
-
-    if(id != null) {
-      json[TransactionFieldName.id] =  id;
-    }
-
-    if(fromEntityType != null) {
-      json[TransactionFieldName.fromEntityId] =  fromEntityId;
-      json[TransactionFieldName.fromEntityName] = fromEntityName;
-      json[TransactionFieldName.fromEntityType] = fromEntityType?.name;
-    }
-
-    if(toEntityType != null) {
-      json[TransactionFieldName.toEntityId] =  toEntityId;
-      json[TransactionFieldName.toEntityName] = toEntityName;
-      json[TransactionFieldName.toEntityType] = toEntityType?.name;
-    }
-
-    // Include purchaseId only if it's a purchase transaction
-    if (transactionType == TransactionType.purchase) {
-      json[TransactionFieldName.purchaseId] = purchaseId;
-    }
-
-    return json;
   }
+
 
 
 

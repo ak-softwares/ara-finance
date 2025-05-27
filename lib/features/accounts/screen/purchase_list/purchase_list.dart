@@ -125,9 +125,9 @@ class PurchaseList extends StatelessWidget {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: controller.vendorKeywords.keys.length,
+                      itemCount: controller.vendorNames.length,
                       itemBuilder: (context, index) {
-                        final companyName = controller.vendorKeywords.keys.elementAt(index);
+                        final companyName = controller.vendorNames[index];
                         final allVendorProducts = controller.filterProductsByVendor(vendorName: companyName);
                         // Initialize expanded states if not already present
                         controller.initializeExpansionState(companyName); // Ensure companyName exists
@@ -347,60 +347,64 @@ class PurchaseList extends StatelessWidget {
             itemCount: filteredProducts.length,
             itemBuilder: (context, index) {
               final product = filteredProducts[index];
-              return Dismissible(
-                key: Key(product.id.toString()),
-                direction: purchaseListType == PurchaseListType.purchasable
-                  ? DismissDirection.horizontal
-                  : DismissDirection.endToStart,
-                onDismissed: (direction) {
-                  controller.handleProductListUpdate(
-                    productId: product.id,
-                    purchaseListType: purchaseListType,
-                    direction: direction,
-                  );
-                },
-                background: Padding(
-                  padding: const EdgeInsets.only(top: AppSizes.sm),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    alignment: Alignment.centerRight,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey.shade900  // Dark grey for night mode
-                            : Colors.grey.shade300, // Light grey for day mode
-                      borderRadius: BorderRadius.circular(purchaseItemTileRadius),
-                      border: Border.all(
-                        width: 1,
-                        color: Theme.of(context).colorScheme.outline, // Border color
-                      )
+              if (((product.stock ?? 0) - (product.totalQuantity ?? 0)) > 0) {
+                return SizedBox.shrink();
+              } else{
+                return Dismissible(
+                  key: Key(product.id.toString()),
+                  direction: purchaseListType == PurchaseListType.purchasable
+                      ? DismissDirection.horizontal
+                      : DismissDirection.endToStart,
+                  onDismissed: (direction) {
+                    controller.handleProductListUpdate(
+                      productId: product.id ?? 0,
+                      purchaseListType: purchaseListType,
+                      direction: direction,
+                    );
+                  },
+                  background: Padding(
+                    padding: const EdgeInsets.only(top: AppSizes.sm),
+                    child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        alignment: Alignment.centerRight,
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.grey.shade900  // Dark grey for night mode
+                                : Colors.grey.shade300, // Light grey for day mode
+                            borderRadius: BorderRadius.circular(purchaseItemTileRadius),
+                            border: Border.all(
+                              width: 1,
+                              color: Theme.of(context).colorScheme.outline, // Border color
+                            )
+                        ),
+                        child: purchaseListType == PurchaseListType.purchasable
+                            ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Not Available'),
+                            Text('Purchased'),
+                            // Icon(Icons.delete, color: Colors.white),
+                          ],
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // SizedBox.shrink(),
+                            Text('Restore'),
+                            Icon(Icons.restore, color: Theme.of(context).colorScheme.onSurface),
+                          ],
+                        )
                     ),
-                    child: purchaseListType == PurchaseListType.purchasable
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Not Available'),
-                              Text('Purchased'),
-                              // Icon(Icons.delete, color: Colors.white),
-                            ],
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // SizedBox.shrink(),
-                              Text('Restore'),
-                              Icon(Icons.restore, color: Theme.of(context).colorScheme.onSurface),
-                            ],
-                          )
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: AppSizes.sm),
-                  child: InkWell(
-                    onTap: () => _showRelatedOrders(context: context, productId: product.id),
-                    child: PurchaseListItem(product: product, isDeleted: purchaseListType != PurchaseListType.purchasable),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSizes.sm),
+                    child: InkWell(
+                      onTap: () => _showRelatedOrders(context: context, productId: product.id ?? 0),
+                      child: PurchaseListItem(product: product, isDeleted: purchaseListType != PurchaseListType.purchasable),
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             },
           ),
         ],

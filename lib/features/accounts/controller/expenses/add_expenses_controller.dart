@@ -172,7 +172,7 @@ class AddExpenseController extends GetxController {
         return;
       }
 
-      await addTransactionController.processUpdateTransaction(previousTransaction: expense.transaction ?? TransactionModel(), transaction: newTransaction);
+      await addTransactionController.processUpdateTransaction(oldTransaction: expense.transaction ?? TransactionModel(), newTransaction: newTransaction);
       await mongoExpenseRepo.updateExpense(id: expense.id ?? '', expense: expense);
 
       FullScreenLoader.stopLoading();

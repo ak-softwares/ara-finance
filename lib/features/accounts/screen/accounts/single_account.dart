@@ -24,7 +24,7 @@ class SingleAccount extends StatefulWidget {
 
 class _SingleAccountState extends State<SingleAccount> {
   late AccountModel payment;
-  final paymentController = Get.put(AccountController());
+  final controller = Get.put(AccountController());
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _SingleAccountState extends State<SingleAccount> {
   }
 
   Future<void> _refreshPayment() async {
-    final updatedPayment = await paymentController.getPaymentByID(id: payment.id ?? '');
+    final updatedPayment = await controller.getPaymentByID(id: payment.id ?? '');
     setState(() {
       payment = updatedPayment; // Update the purchase data
     });
@@ -114,7 +114,7 @@ class _SingleAccountState extends State<SingleAccount> {
 
             // Delete
             Center(child: TextButton(
-                onPressed: () => paymentController.deletePayment(context: context, id: payment.id ?? ''),
+                onPressed: () => controller.deleteAccount(context: context, id: payment.id ?? ''),
                 child: Text('Delete', style: TextStyle(color: Colors.red),))
             )
           ],
@@ -122,4 +122,5 @@ class _SingleAccountState extends State<SingleAccount> {
       ),
     );
   }
+
 }

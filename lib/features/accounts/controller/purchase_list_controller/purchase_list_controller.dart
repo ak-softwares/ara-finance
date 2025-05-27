@@ -4,12 +4,14 @@ import 'package:get_storage/get_storage.dart';
 
 import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../data/repositories/mongodb/products/product_repositories.dart';
 import '../../../../data/repositories/mongodb/purchase_list/purchase_list_repo.dart';
 import '../../../../data/repositories/woocommerce/orders/woo_orders_repository.dart';
 import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/order_model.dart';
 import '../../models/purchase_item_model.dart';
 
@@ -28,21 +30,25 @@ class PurchaseListController extends GetxController {
 
   final storage = GetStorage();
 
+  final mongoProductRepo = Get.put(MongoProductRepo());
   final wooOrdersRepository = Get.put(WooOrdersRepository());
   final mongoPurchaseListRepo = Get.put(MongoPurchaseListRepo());
 
   // Using a single map to track expansion states
   var expandedSections = <String, Map<PurchaseListType, bool>>{}.obs;
 
-  var vendorKeywords = <String, List<String>>{
-    'S3A': ['one-stop', 'tweezers', '9205', 'mechanic', 'handle', '4 wire', 'multitec 07', 'bit set', 'hot air gun', 'screen separator'],
-    'Krolbhag': ['850'],
-    'LalKila': ['hoki', 'cell', '18650'],
-    'Ac Products': ['bender'],
-    'Siron': ['siron'],
-    'Other': [],
-  }.obs;
+  RxList<String> vendorNames = <String>[].obs;
 
+  // var vendorKeywords = <String, List<String>>{
+  //   'S3A': ['one-stop', 'tweezers', '9205', 'mechanic', 'handle', '4 wire', 'multitec 07', 'bit set', 'hot air gun', 'screen separator'],
+  //   'Krolbhag': ['850'],
+  //   'LalKila': ['hoki', 'cell', '18650'],
+  //   'Ac Products': ['bender'],
+  //   'Siron': ['siron'],
+  //   'Other': [],
+  // }.obs;
+
+  String get userId => AuthenticationController.instance.admin.value.id!;
 
   @override
   void onInit() {
@@ -55,6 +61,172 @@ class PurchaseListController extends GetxController {
       );
     });
   }
+//----------------------------------------------------------------------------------------------//
+
+  // fetch orders
+  Future<void> showDialogForSelectOrderStatus() async {
+    Get.defaultDialog(
+      contentPadding: const EdgeInsets.only(bottom: AppSizes.xl),
+      titlePadding: const EdgeInsets.only(top: AppSizes.xl),
+      radius: 10,
+      title: "Choose Status",
+      content: Obx(
+            () => Column(
+          mainAxisSize: MainAxisSize.min, // Prevents excessive height
+          children: OrderStatus.values.where((status) => [OrderStatus.processing, OrderStatus.readyToShip, OrderStatus.pendingPickup,]
+              .contains(status))
+              .map((orderStatus) => CheckboxListTile(
+            title: Text(orderStatus.prettyName),
+            value: purchaseListMetaData.value.orderStatus?.contains(orderStatus) ?? false,
+            onChanged: (value) => toggleSelection(orderStatus),
+            controlAffinity: ListTileControlAffinity.leading, // Checkbox on left
+          ),
+          )
+              .toList(),
+        ),
+      ),
+      confirm: ElevatedButton(
+        onPressed: confirmSelection,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.md),
+          child: const Text("Fetch Orders"),
+        ),
+      ),
+      cancel: TextButton(
+        onPressed: () => Get.back(),
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.red, // Use TColors.buttonBackground if needed
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text("Cancel"),
+      ),
+    );
+  }
+
+  void confirmSelection() {
+    final selectedStatuses = purchaseListMetaData.value.orderStatus;
+
+    if (selectedStatuses?.isNotEmpty ?? false) {
+      Get.back(); // Close the popup
+      syncOrders(orderStatus: selectedStatuses!);
+    } else {
+      AppMassages.errorSnackBar(title: 'Select at least one status');
+    }
+  }
+
+  Future<void> syncOrders({required List<OrderStatus> orderStatus}) async {
+    try {
+      isFetching(true);
+      currentPage.value = 1; // Reset page number
+      orders.clear(); // Clear existing orders
+      products.clear(); // Clear existing orders
+      clearStoredProducts();
+      await getAllOrdersByStatus(orderStatus: orderStatus);
+      await mongoPurchaseListRepo.pushMetaData(
+        userId: userId,
+        value: {
+          UserFieldConstants.userId: userId,
+          PurchaseListFieldName.lastSyncDate: DateTime.timestamp(),
+          PurchaseListFieldName.orderStatus: purchaseListMetaData.value.orderStatus?.map((e) => e.name).toList()
+        },
+      );
+      purchaseListMetaData.value.lastSyncDate = DateTime.timestamp();
+    } catch (error) {
+      AppMassages.warningSnackBar(title: 'Errors', message: error.toString());
+    } finally {
+      isFetching(false);
+    }
+  }
+
+  Future<void> getAllOrdersByStatus({required List<OrderStatus> orderStatus}) async {
+    try {
+      //start loader
+      FullScreenLoader.openLoadingDialog('Processing your order', Images.docerAnimation);
+
+      int currentPage = 1;
+      List<OrderModel> newOrders = [];
+
+      while (true) {
+        // **Step 2: Fetch a batch of orders from API**
+        List<OrderModel> fetchedOrders = await wooOrdersRepository.fetchOrdersByStatus(
+          status: orderStatus.map((status) => status.name).toList(),
+          page: currentPage.toString(),
+        );
+        if (fetchedOrders.isEmpty) break; // Stop if no more orders are available
+
+        newOrders.addAll(fetchedOrders);
+        currentPage++; // Move to the next page
+      }
+      orders.addAll(newOrders); // Add only new orders
+      await getAggregatedProducts();
+      await pushAllOrders();
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error in Orders Fetching', message: e.toString());
+    } finally {
+      FullScreenLoader.stopLoading();
+    }
+  }
+
+  Future<void> deleteAllOrders() async {
+    try {
+      await mongoPurchaseListRepo.deleteAllOrders(userId: userId);
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error in Delete orders', message: e.toString());
+    }
+  }
+
+  Future<void> pushAllOrders() async {
+    try {
+      for (var order in orders) {
+        order.userId = userId;
+      }
+      await mongoPurchaseListRepo.pushOrders(orders: orders);
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error in Orders Pushing', message: e.toString());
+    }
+  }
+
+//------------------------------------------------------------------------------------------------//
+
+  // Initialize orders
+  // Get all orders (fetch all pages iteratively)
+  Future<void> getAllOrders() async {
+    try {
+      int page = 1; // Start with the first page
+      orders.clear();
+      // Fetch orders iteratively until no more orders are returned
+      while (true) {
+        final fetchedOrders = await mongoPurchaseListRepo.fetchOrders(userId: userId, page: page);
+        if (fetchedOrders.isEmpty) break; // Stop if no more orders are available
+
+        // Add fetched orders to the list
+        orders.addAll(fetchedOrders);
+        page++; // Move to the next page
+      }
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error in Orders Fetching', message: e.toString());
+    }
+  }
+
+  Future<void> refreshOrders() async {
+    try {
+      isLoading(true);
+      currentPage.value = 1; // Reset page number
+      orders.clear(); // Clear existing orders
+      products.clear(); // Clear existing orders
+      await getAllOrders();
+      getAggregatedProducts();
+    } catch (error) {
+      AppMassages.warningSnackBar(title: 'Errors', message: error.toString());
+    } finally {
+      isLoading(false);
+    }
+  }
+
+//------------------------------------------------------------------------------------------------//
+
 
   Future<void> handleProductListUpdate({
     required int productId,
@@ -86,11 +258,12 @@ class PurchaseListController extends GetxController {
         }
         break;
       case PurchaseListType.vendors:
-        // TODO: Handle this case.
+      // TODO: Handle this case.
         throw UnimplementedError();
     }
     purchaseListMetaData.refresh();
     await mongoPurchaseListRepo.pushMetaData(
+      userId: userId,
       value: {
         PurchaseListFieldName.purchasedProductIds: purchaseListMetaData.value.purchasedProductIds?.toList(),
         PurchaseListFieldName.notAvailableProductIds: purchaseListMetaData.value.notAvailableProductIds?.toList()
@@ -103,6 +276,7 @@ class PurchaseListController extends GetxController {
     try{
       isExtraTextUpdating(true);
       await mongoPurchaseListRepo.pushMetaData(
+        userId: userId,
         value: {
           PurchaseListFieldName.extraNote: extraNote,
         },
@@ -144,190 +318,108 @@ class PurchaseListController extends GetxController {
 
   Future<void> loadStoredProducts() async {
     await refreshOrders();
-    final fetchedPurchaseListMetaData = await mongoPurchaseListRepo.fetchMetaData();
-    purchaseListMetaData.value = fetchedPurchaseListMetaData;
+    purchaseListMetaData.value = await mongoPurchaseListRepo.fetchMetaData(userId: userId);
     extraNoteController.text = purchaseListMetaData.value.extraNote ?? '';
   }
 
   Future<void> clearStoredProducts() async {
     await deleteAllOrders();
-    await mongoPurchaseListRepo.deleteMetaData();
+    await mongoPurchaseListRepo.deleteMetaData(id: purchaseListMetaData.value.id!);
     // Also clear in-memory data
     orders.clear();
     products.clear();
     purchaseListMetaData.value = PurchaseListMetaModel(orderStatus: purchaseListMetaData.value.orderStatus);
   }
 
+  // Update this method to filter by vendor name directly
   List<PurchaseItemModel> filterProductsByVendor({required String vendorName}) {
     if (vendorName == 'Other') {
-      // Return products that do NOT match any defined vendor keywords
-      return products.where((product) {
-        return vendorKeywords.entries.every((entry) {
-          if (entry.key == 'Other') return true; // Skip "Other" in checking
-          return !entry.value.any((keyword) => product.name.toLowerCase().contains(keyword.toLowerCase()));
-        });
-      }).toList();
+      return products.where((product) => product.vendor == null || product.vendor!.isEmpty).toList();
     }
-
-    // For other vendors, filter products based on their keywords
-    List<String>? keywords = vendorKeywords[vendorName];
-    if (keywords == null || keywords.isEmpty) return [];
-
-    return products.where((product) {
-      return keywords.any((keyword) =>
-          product.name.toLowerCase().contains(keyword.toLowerCase()));
-    }).toList();
+    return products.where((product) => product.vendor == vendorName).toList();
   }
 
-  void getAggregatedProducts() {
-    Map<int, PurchaseItemModel> productMap = {}; // Store unique products
-    DateTime twoDaysAgo = DateTime.now().subtract(Duration(days: 2));
+  Future<void> getAggregatedProducts() async {
+    try {
+      Map<int, PurchaseItemModel> productMap = {}; // Store unique products
+      DateTime twoDaysAgo = DateTime.now().subtract(Duration(days: 2));
 
-    for (var order in orders) {
-      bool isPrepaidOrder = order.paymentMethod != PaymentMethods.cod.name; // Prepaid if NOT COD
-      bool isBulkOrder = (order.lineItems?.length ?? 0) > 1; // Bulk if more than one item
-      DateTime? orderDate = order.dateCreated;
-      bool isOlderThanTwoDays = orderDate != null && orderDate.isBefore(twoDaysAgo); // Check if older than 2 days
-
-      for (var lineItem in order.lineItems!) {
-        int productId = lineItem.productId;
-
-        if (productMap.containsKey(productId)) {
-          // If product already exists, update its quantities
-          productMap[productId]!.prepaidQuantity += isPrepaidOrder ? lineItem.quantity : 0;
-          productMap[productId]!.bulkQuantity += isBulkOrder ? lineItem.quantity : 0;
-          productMap[productId]!.totalQuantity += lineItem.quantity;
-        } else {
-          // Create a new product entry
-          productMap[productId] = PurchaseItemModel(
-            id: productId,
-            image: lineItem.image ?? '',
-            name: lineItem.name ?? '',
-            prepaidQuantity: isPrepaidOrder ? lineItem.quantity : 0,
-            bulkQuantity: isBulkOrder ? lineItem.quantity : 0,
-            totalQuantity: lineItem.quantity,
-            isOlderThanTwoDays: isOlderThanTwoDays,
-          );
+      // First collect all unique product IDs from all orders
+      Set<int> productIds = {};
+      for (var order in orders) {
+        for (var lineItem in order.lineItems!) {
+          productIds.add(lineItem.productId);
         }
       }
-    }
 
-    // Convert map values to list and sort
-    List<PurchaseItemModel> sortedProducts = productMap.values.toList()
-      ..sort((a, b) {
-        // Sort by prepaid quantity (Descending)
-        int cmp = b.prepaidQuantity.compareTo(a.prepaidQuantity);
-        if (cmp != 0) return cmp;
+      // Fetch fresh product details for all unique product IDs
+      final freshProducts = await mongoProductRepo.fetchProductsByIds(productIds.toList());
 
-        // Sort by bulk quantity (Descending)
-        cmp = b.bulkQuantity.compareTo(a.bulkQuantity);
-        if (cmp != 0) return cmp;
+      // Now process orders with fresh product data
+      for (var order in orders) {
+        bool isPrepaidOrder = order.paymentMethod != PaymentMethods.cod.name;
+        bool isBulkOrder = (order.lineItems?.length ?? 0) > 1;
+        DateTime? orderDate = order.dateCreated;
+        bool isOlderThanTwoDays = orderDate != null && orderDate.isBefore(twoDaysAgo);
 
-        // Sort older than 2 days first
-        if (b.isOlderThanTwoDays && !a.isOlderThanTwoDays) return 1;
-        if (a.isOlderThanTwoDays && !b.isOlderThanTwoDays) return -1;
+        for (var lineItem in order.lineItems!) {
+          int productId = lineItem.productId;
+          var freshProduct = freshProducts.firstWhere((p) => p.productId == productId);
 
-        // Sort by total quantity (Descending)
-        return b.totalQuantity.compareTo(a.totalQuantity);
-      });
+          if (productMap.containsKey(productId)) {
+            // Update existing product quantities
+            productMap[productId]!.prepaidQuantity = (productMap[productId]!.prepaidQuantity ?? 0) + (isPrepaidOrder ? lineItem.quantity : 0);
+            productMap[productId]!.bulkQuantity = (productMap[productId]!.bulkQuantity ?? 0) + (isBulkOrder ? lineItem.quantity : 0);
+            productMap[productId]!.totalQuantity = (productMap[productId]!.totalQuantity ?? 0) + lineItem.quantity;
 
-    // Convert map values to list and sort by totalQuantity in descending order
-    // List<PurchaseItemModel> sortedProducts = productMap.values.toL ;
-
-    products.assignAll(sortedProducts); // Update reactive list
-    // products.assignAll(productMap.values.toList()); // Update reactive list
-  }
-
-  Future<void> getAllOrdersByStatus({required List<OrderStatus> orderStatus}) async {
-    try {
-      //start loader
-      FullScreenLoader.openLoadingDialog('Processing your order', Images.docerAnimation);
-
-      int currentPage = 1;
-      List<OrderModel> newOrders = [];
-
-      while (true) {
-        // **Step 2: Fetch a batch of orders from API**
-        List<OrderModel> fetchedOrders = await wooOrdersRepository.fetchOrdersByStatus(
-          status: orderStatus.map((status) => status.name).toList(),
-          page: currentPage.toString(),
-        );
-        if (fetchedOrders.isEmpty) break; // Stop if no more orders are available
-
-        newOrders.addAll(fetchedOrders);
-        currentPage++; // Move to the next page
+          } else {
+            // Create new product entry with fresh data
+            productMap[productId] = PurchaseItemModel(
+              id: productId,
+              image: freshProduct.mainImage ?? '',
+              name: freshProduct.title ?? '',
+              prepaidQuantity: isPrepaidOrder ? lineItem.quantity : 0,
+              bulkQuantity: isBulkOrder ? lineItem.quantity : 0,
+              totalQuantity: lineItem.quantity,
+              isOlderThanTwoDays: isOlderThanTwoDays,
+              stock: freshProduct.stockQuantity,
+              vendor: freshProduct.vendor?.companyName,
+            );
+          }
+        }
       }
-      orders.addAll(newOrders); // Add only new orders
-      getAggregatedProducts();
-      await pushAllOrders();
+
+      // Sort products (same as before)
+      List<PurchaseItemModel> sortedProducts = productMap.values.toList()
+        ..sort((a, b) {
+          int cmp = (b.prepaidQuantity ?? 0).compareTo(a.prepaidQuantity ?? 0);
+          if (cmp != 0) return cmp;
+
+          cmp = (b.bulkQuantity ?? 0).compareTo(a.bulkQuantity ?? 0);
+          if (cmp != 0) return cmp;
+
+          bool aOld = a.isOlderThanTwoDays ?? false;
+          bool bOld = b.isOlderThanTwoDays ?? false;
+
+          if (bOld && !aOld) return 1;
+          if (aOld && !bOld) return -1;
+
+          return (b.totalQuantity ?? 0).compareTo(a.totalQuantity ?? 0);
+        });
+
+      // Extract unique vendor names from products
+      final uniqueVendors = productMap.values
+          .map((product) => product.vendor ?? '')
+          .where((vendor) => vendor.isNotEmpty)
+          .toSet()
+          .toList();
+
+      vendorNames.assignAll(uniqueVendors);
+      vendorNames.add('Other'); // Add "Other" category for products without vendor
+      products.assignAll(sortedProducts);
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Orders Fetching', message: e.toString());
-    } finally {
-      FullScreenLoader.stopLoading();
+      AppMassages.errorSnackBar(title: 'Error fetching products', message: e.toString());
     }
-  }
-
-  Future<void> syncOrders({required List<OrderStatus> orderStatus}) async {
-    try {
-      isFetching(true);
-      currentPage.value = 1; // Reset page number
-      orders.clear(); // Clear existing orders
-      products.clear(); // Clear existing orders
-      clearStoredProducts();
-      await getAllOrdersByStatus(orderStatus: orderStatus);
-      await mongoPurchaseListRepo.pushMetaData(
-        value: {
-          PurchaseListFieldName.lastSyncDate: DateTime.timestamp(),
-          PurchaseListFieldName.orderStatus: purchaseListMetaData.value.orderStatus?.map((e) => e.name).toList()
-        },
-      );
-      purchaseListMetaData.value.lastSyncDate = DateTime.timestamp();
-    } catch (error) {
-      AppMassages.warningSnackBar(title: 'Errors', message: error.toString());
-    } finally {
-      isFetching(false);
-    }
-  }
-
-  Future<void> showDialogForSelectOrderStatus() async {
-    Get.defaultDialog(
-      contentPadding: const EdgeInsets.only(bottom: AppSizes.xl),
-      titlePadding: const EdgeInsets.only(top: AppSizes.xl),
-      radius: 10,
-      title: "Choose Status",
-      content: Obx(
-            () => Column(
-          mainAxisSize: MainAxisSize.min, // Prevents excessive height
-          children: OrderStatus.values.where((status) => [OrderStatus.processing, OrderStatus.readyToShip, OrderStatus.pendingPickup,]
-              .contains(status))
-              .map((orderStatus) => CheckboxListTile(
-              title: Text(orderStatus.prettyName),
-              value: purchaseListMetaData.value.orderStatus?.contains(orderStatus) ?? false,
-              onChanged: (value) => toggleSelection(orderStatus),
-              controlAffinity: ListTileControlAffinity.leading, // Checkbox on left
-            ),
-          )
-              .toList(),
-        ),
-      ),
-      confirm: ElevatedButton(
-        onPressed: confirmSelection,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.md),
-          child: const Text("Fetch Orders"),
-        ),
-      ),
-      cancel: TextButton(
-        onPressed: () => Get.back(),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.red, // Use TColors.buttonBackground if needed
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: const Text("Cancel"),
-      ),
-    );
   }
 
   void toggleSelection(OrderStatus orderStatus) {
@@ -340,67 +432,6 @@ class PurchaseListController extends GetxController {
     }
 
     purchaseListMetaData.value = purchaseListMetaData.value.copyWith(orderStatus: updatedOrderStatus);
-  }
-
-  void confirmSelection() {
-    final selectedStatuses = purchaseListMetaData.value.orderStatus;
-
-    if (selectedStatuses?.isNotEmpty ?? false) {
-      Get.back(); // Close the popup
-      syncOrders(orderStatus: selectedStatuses!);
-    } else {
-      AppMassages.errorSnackBar(title: 'Select at least one status');
-    }
-  }
-
-  // Get all orders (fetch all pages iteratively)
-  Future<void> getAllOrders() async {
-    try {
-      int page = 1; // Start with the first page
-      orders.clear();
-      // Fetch orders iteratively until no more orders are returned
-      while (true) {
-        final fetchedOrders = await mongoPurchaseListRepo.fetchOrders(page: page);
-        if (fetchedOrders.isEmpty) break; // Stop if no more orders are available
-
-        // Add fetched orders to the list
-        orders.addAll(fetchedOrders);
-        page++; // Move to the next page
-      }
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Orders Fetching', message: e.toString());
-    }
-  }
-
-  Future<void> pushAllOrders() async {
-    try {
-      await mongoPurchaseListRepo.pushOrders(orders: orders);
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Orders Pushing', message: e.toString());
-    }
-  }
-
-  Future<void> deleteAllOrders() async {
-    try {
-      await mongoPurchaseListRepo.deleteAllOrders();
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Delete orders', message: e.toString());
-    }
-  }
-
-  Future<void> refreshOrders() async {
-    try {
-      isLoading(true);
-      currentPage.value = 1; // Reset page number
-      orders.clear(); // Clear existing orders
-      products.clear(); // Clear existing orders
-      await getAllOrders();
-      getAggregatedProducts();
-    } catch (error) {
-      AppMassages.warningSnackBar(title: 'Errors', message: error.toString());
-    } finally {
-      isLoading(false);
-    }
   }
 
 

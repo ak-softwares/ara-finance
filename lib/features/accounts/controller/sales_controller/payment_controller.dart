@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ara_finance/features/accounts/models/transaction_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -8,10 +9,14 @@ import 'package:csv/csv.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../utils/constants/enums.dart';
+import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../personalization/models/user_model.dart';
 import '../../models/order_model.dart';
+import '../transaction/add_transaction_controller.dart';
 import 'sales_controller.dart';
 
 class UpdatePaymentController extends GetxController {
+  static UpdatePaymentController get instance => Get.find();
 
   RxBool isLoading = false.obs;
   RxBool isAdding = false.obs;
@@ -22,7 +27,9 @@ class UpdatePaymentController extends GetxController {
 
   final mongoOrderRepo = Get.put(MongoOrderRepo());
   final saleController = Get.put(SaleController());
+  final addTransactionController = Get.put(AddTransactionController());
 
+  UserModel get admin => AuthenticationController.instance.admin.value;
 
   Future<void> parseCsvFromString(String csvString) async {
     try {
@@ -75,23 +82,6 @@ class UpdatePaymentController extends GetxController {
     }
   }
 
-  Future<void> updatePaymentStatus() async {
-    try {
-      isLoading(true);
-      // Extract order numbers from the orders list
-      final orderNumbers = orders.map((order) => order['orderNumber'] as int).toList();
-
-      // Filter existingOrders that match the orderNumbers
-      final filteredOrders = existingOrders.where((order) => orderNumbers.contains(order.orderId)).toList();
-
-      await mongoOrderRepo.updateOrdersStatus(orders: filteredOrders, newStatus: OrderStatus.completed,);
-    }catch(e){
-      AppMassages.errorSnackBar(title: 'Error', message: 'Update failed: ${e.toString()}');
-    } finally{
-      isLoading(false);
-    }
-  }
-
   Future<void> addManualOrder() async {
     try {
       isAdding(true);
@@ -117,6 +107,44 @@ class UpdatePaymentController extends GetxController {
       AppMassages.errorSnackBar(title: 'Error', message: 'Add manual order failed: ${e.toString()}');
     } finally{
       isAdding(false);
+    }
+  }
+
+
+  Future<void> updatePaymentStatus() async {
+    try {
+      isLoading(true);
+      // Extract order numbers from the orders list
+      final orderNumbers = orders.map((order) => order['orderNumber'] as int).toList();
+
+      // Filter existingOrders that match the orderNumbers
+      final filteredOrders = existingOrders.where((order) => orderNumbers.contains(order.orderId)).toList();
+      await processPaymentStatus(sales: filteredOrders);
+      await mongoOrderRepo.updateOrdersStatus(orders: filteredOrders, newStatus: OrderStatus.completed,);
+    }catch(e){
+      AppMassages.errorSnackBar(title: 'Error', message: 'Update failed: ${e.toString()}');
+    } finally{
+      isLoading(false);
+    }
+  }
+
+  Future<void> processPaymentStatus({required List<OrderModel> sales}) async {
+    try {
+      // Filter existingOrders that match the orderNumbers
+      final totalAmount = sales.fold(0.0, (sum, sale) => sum + (sale.total ?? 0.0));
+      final transaction = TransactionModel(
+          amount: totalAmount,
+          date: DateTime.now(),
+          userId: admin.id,
+          toEntityId: admin.selectedAccount?.id,
+          toEntityName: admin.selectedAccount?.accountName,
+          toEntityType: EntityType.customer,
+          transactionType: TransactionType.sale
+      );
+      final transactionId = await addTransactionController.processTransaction(transaction: transaction);
+      await mongoOrderRepo.updateOrdersStatus(orders: sales, newStatus: OrderStatus.completed);
+    }catch(e){
+      rethrow;
     }
   }
 }

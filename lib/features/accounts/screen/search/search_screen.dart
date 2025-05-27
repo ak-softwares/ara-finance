@@ -68,7 +68,7 @@ class SearchScreen extends StatelessWidget {
           padding: AppSpacingStyle.defaultPagePadding,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            TSectionHeading(title: title),
+            SectionHeading(title: title),
             switch (searchType) {
               SearchType.products => ProductGridLayout(
                 controller: searchVoucherController,

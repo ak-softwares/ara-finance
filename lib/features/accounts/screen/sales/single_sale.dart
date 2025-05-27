@@ -163,7 +163,7 @@ class _SingleSaleScreenState extends State<SingleSaleScreen> {
                           SizedBox(
                             height: AppSizes.sm,
                           ),
-                          TSingleAddress(
+                          SingleAddress(
                             address: currentOrder.billing ?? AddressModel.empty(),
                             onTap: () {},
                             hideEdit: true,

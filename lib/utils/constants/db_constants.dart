@@ -15,10 +15,6 @@ class DbCollections{
   static const String expenses = 'expenses';
 }
 
-class MetaDataName {
-  static const String metaDocumentName = 'meta_document_name';
-  static const String purchaseList = 'purchase_list';
-}
 
 class PurchaseListFieldName {
   static const String id = '_id';
@@ -51,6 +47,9 @@ class ProductFieldName {
   static const String permalink = 'permalink';
   static const String slug = 'slug';
   static const String dateCreated = 'date_created';
+  static const String dateModified = 'date_modified';
+  static const String dateOnSaleFrom = 'date_on_sale_from';
+  static const String dateOnSaleTo = 'date_on_sale_to';
   static const String type = 'type';
   static const String typeVariable = 'variable';
   static const String status = 'status';
@@ -65,8 +64,6 @@ class ProductFieldName {
   static const String purchasePrice = 'purchase_price';
   static const String cogs = '_cogs';
   static const String brands = 'brands';
-  static const String dateOnSaleFrom = 'date_on_sale_from';
-  static const String dateOnSaleTo = 'date_on_sale_to';
   static const String onSale = 'on_sale';
   static const String purchasable = 'purchasable';
   static const String totalSales = 'total_sales';
@@ -101,6 +98,7 @@ class ProductFieldName {
   static const String menuOrder = 'menu_order';
   static const String relatedIds = 'related_ids';
   static const String stockStatus = 'stock_status';
+  static const String vendor = 'vendor';
   static const String metaData = 'meta_data';
   static const String isCODBlocked = 'easyapp_cod_blocked';
 }
@@ -274,6 +272,7 @@ class CartFieldName {
   static const String productId = 'product_id';
   static const String variationId = 'variation_id';
   static const String quantity = 'quantity';
+  static const String stockQuantity = 'stock_quantity';
   static const String category = 'category';
   static const String subtotal = 'subtotal';
   static const String subtotalTax = 'subtotal_tax';
@@ -355,6 +354,7 @@ class AccountFieldName {
   static const String balance = 'balance';
   static const String accountName = 'account_name'; // corrected
   static const String dateCreated = 'date_created'; // corrected
+  static const String defaultAccount = 'default_account'; // corrected
 }
 
 class ExpenseFieldName {
@@ -439,6 +439,7 @@ class UserFieldConstants {
   static const String wooCommerceCredentials = 'woo_commerce_credentials';
   static const String shopifyCredentials = 'shopify_credentials';
   static const String amazonCredentials = 'amazon_credentials';
+  static const String selectedAccount = 'selected_account';
 
   // User Roles
   static const String roleCustomer = 'customer';

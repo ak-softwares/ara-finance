@@ -2,17 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/dialog_box_massages/dialog_massage.dart';
-import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../common/widgets/network_manager/network_manager.dart';
 import '../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
-import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/image_strings.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../../personalization/models/user_model.dart';
-import '../../models/account_model.dart';
 import '../../models/transaction_model.dart';
+import 'add_transaction_controller.dart';
 
 class TransactionController extends GetxController {
   // Variables
@@ -60,7 +55,7 @@ class TransactionController extends GetxController {
       );
       transactionsByEntity.addAll(fetchedTransactions);
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in vendors transactions', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
 
@@ -102,24 +97,25 @@ class TransactionController extends GetxController {
     try {
       transaction.transactionType == TransactionType.purchase
       ? DialogHelper.showDialog(
-        context: context,
-        title: 'Error in Delete Transaction',
-        message: 'You can not delete purchase transactions instead you can delete that purchase '
-            'this transaction will delete automatically',
-        onSubmit: () async { },
-        actionButtonText: 'Done',
-      )
+          context: context,
+          title: 'Error in Delete Transaction',
+          message: 'You can not delete purchase transactions instead you can delete that purchase '
+              'this transaction will delete automatically',
+          onSubmit: () async { },
+          actionButtonText: 'Done',
+        )
       : DialogHelper.showDialog(
-        context: context,
-        title: 'Delete Transaction',
-        message: 'Are you sure you want to delete this transaction?',
-        onSubmit: () async {
-          // Reverse balance updates
-          // await processTransaction(transaction: transaction, isDelete: true);
-          Navigator.pop(context);
-        },
-        toastMessage: 'Deleted successfully!',
-      );
+          context: context,
+          title: 'Delete Transaction',
+          message: 'Are you sure you want to delete this transaction?',
+          onSubmit: () async {
+            // Reverse balance updates
+            await AddTransactionController.instance.processTransaction(transaction: transaction, isDelete: true);
+            refreshTransactions();
+            Navigator.pop(context);
+          },
+          toastMessage: 'Deleted successfully!',
+        );
     } catch (e) {
       debugPrint('Error deleting transaction: $e');
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());

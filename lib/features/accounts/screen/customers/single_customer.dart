@@ -94,7 +94,7 @@ class _SingleCustomerState extends State<SingleCustomer> {
             ),
             Text('Address'),
             SizedBox(height: AppSizes.xs),
-            TSingleAddress(
+            SingleAddress(
               address: user.billing ?? AddressModel.empty(),
               onTap: () {},
               hideEdit: true,

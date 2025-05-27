@@ -2,14 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/dialog_box_massages/dialog_massage.dart';
-import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../common/widgets/network_manager/network_manager.dart';
 import '../../../../data/repositories/mongodb/products/product_repositories.dart';
-import '../../../../data/repositories/woocommerce/orders/woo_orders_repository.dart';
-import '../../../../data/repositories/woocommerce/products/woo_product_repositories.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/cart_item_model.dart';
+import '../../models/order_model.dart';
 import '../../models/product_model.dart';
 
 class ProductController extends GetxController{
@@ -21,6 +18,7 @@ class ProductController extends GetxController{
   RxBool isLoadingMore = false.obs;
 
   RxInt totalProducts = 0.obs;
+  RxInt totalActiveProducts = 0.obs;
   RxInt totalStockValue = 0.obs;
 
   RxList<ProductModel> products = <ProductModel>[].obs;
@@ -59,6 +57,7 @@ class ProductController extends GetxController{
     try {
       final String uid = await auth.getUserId();
       totalProducts.value = await mongoProductRepo.fetchProductsCount(userId: uid);
+      totalActiveProducts.value = await mongoProductRepo.fetchProductsActiveCount(userId: uid);
       totalStockValue.value = (await mongoProductRepo.fetchTotalStockValue(userId: uid)).toInt();
       update(); // Notify listeners that counts changed
     } catch (e) {
@@ -128,6 +127,17 @@ class ProductController extends GetxController{
         // Convert CartModel list to PurchaseHistory list
         await mongoProductRepo.updateQuantities(cartItems: cartItems, isAddition: isAddition, isPurchase: isPurchase);
       }
+    } catch (e) {
+      rethrow; // Preserve original exception
+    }
+  }
+
+  Future<void> updateProductQuantityById({required List<CartModel> cartItems, bool isAddition = false, bool isPurchase = false}) async {
+    try {
+        if (cartItems.isEmpty) {
+          throw Exception("Product list is empty. Cannot update quantity.");
+        }
+        await mongoProductRepo.updateQuantitiesById(cartItems: cartItems, isAddition: isAddition, isPurchase: isPurchase);
     } catch (e) {
       rethrow; // Preserve original exception
     }

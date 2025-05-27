@@ -35,7 +35,7 @@ class AddTransaction extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.md, vertical: AppSizes.sm),
         child: ElevatedButton(
           onPressed: () => transaction != null
-              ? controller.saveUpdatedTransaction(previousTransaction: transaction!) // Updated method
+              ? controller.saveUpdatedTransaction(oldTransaction: transaction!) // Updated method
               : controller.saveTransaction(), // Updated method
           child: Text(
             transaction != null ? 'Update Transaction' : 'Add Transaction',
@@ -190,7 +190,7 @@ class AddTransaction extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        child: SizedBox(width: double.infinity, child: AccountTile(payment: controller.selectedPaymentMethod.value))
+                        child: SizedBox(width: double.infinity, child: AccountTile(account: controller.selectedPaymentMethod.value))
                     )
                         : SizedBox.shrink(),
                     ),

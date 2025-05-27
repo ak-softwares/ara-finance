@@ -55,9 +55,9 @@ class AddAccount extends StatelessWidget {
                   ),
                 ),
                 TextFormField(
-                  controller: controller.openingBalance,
+                  controller: controller.balance,
                   decoration: InputDecoration(
-                    labelText: 'Opening Balance',
+                    labelText: 'Balance',
                     border: OutlineInputBorder(),
                   ),
                 ),

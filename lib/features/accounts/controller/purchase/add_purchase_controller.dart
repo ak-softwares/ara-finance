@@ -169,6 +169,7 @@ class AddPurchaseController extends GetxController {
       productId: product.productId ?? 0,
       variationId: variationId,
       quantity: quantity,
+      stockQuantity: product.stockQuantity,
       category: product.categories?[0].name,
       subtotal: (quantity * (product.purchasePrice ?? 0)).toStringAsFixed(0),
       total: (quantity * (product.purchasePrice ?? 0)).toStringAsFixed(0),
@@ -279,7 +280,7 @@ class AddPurchaseController extends GetxController {
 
   Future<void> performPushPurchase({required OrderModel purchase}) async {
 
-    await productsVoucherController.updateProductQuantity(cartItems: purchase.lineItems ?? [], isAddition: true, isPurchase: true,);
+    await productsVoucherController.updateProductQuantityById(cartItems: purchase.lineItems ?? [], isAddition: true, isPurchase: true);
 
     final String? transactionId = await addTransactionController.processTransaction(transaction: purchase.transaction!);
 

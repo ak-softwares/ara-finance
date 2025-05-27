@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../../common/navigation_bar/appbar.dart';
@@ -13,28 +12,18 @@ import '../../models/address_model.dart';
 import '../change_profile/change_user_profile.dart';
 
 class UpdateAddressScreen extends StatelessWidget {
-  const UpdateAddressScreen({super.key, this.title = "Update Address", required this.address, this.isShippingAddress = false});
+  const UpdateAddressScreen({super.key,required this.address,});
 
-  final String title;
   final AddressModel address;
-  final bool isShippingAddress;
 
   @override
   Widget build(BuildContext context) {
 
     final addressController = Get.put(AddressController());
-
-    addressController.firstName.text = address.firstName!;
-    addressController.lastName.text = address.lastName!;
-    addressController.address1.text = address.address1!;
-    addressController.address2.text = address.address2!;
-    addressController.city.text = address.city!;
-    addressController.pincode.text = address.pincode!;
-    addressController.state.text = address.state!;
-    addressController.country.text = address.country!;
+    addressController.initializedInPutField(address: address);
 
     return Scaffold(
-      appBar: AppAppBar(title: title, showBackArrow: true),
+      appBar: AppAppBar(title: 'Update Address'),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(AppSizes.defaultSpace),
@@ -126,19 +115,6 @@ class UpdateAddressScreen extends StatelessWidget {
                     controller: addressController.country,
                     decoration: const InputDecoration(prefixIcon: Icon(Iconsax.buildings), labelText: 'Country*')
                 ),
-                // DropdownButtonFormField<String>(
-                //   isExpanded: true,
-                //   items: CountryData.countries.map((country) {
-                //     return DropdownMenuItem<String>(
-                //       value: country,
-                //       child: Text(country),
-                //     );
-                //   }).toList(),
-                //   value: controller.country.text,
-                //   onChanged: (value) {controller.country.text = value!;},
-                //   validator: (value) => TValidator.validateEmptyText('Country', value),
-                //   decoration: const InputDecoration(prefixIcon: Icon(Iconsax.global), labelText: 'Country*'),
-                // ),
 
                 const SizedBox(height: AppSizes.spaceBtwItems),
                 Row(
@@ -154,7 +130,7 @@ class UpdateAddressScreen extends StatelessWidget {
                 SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                        onPressed: () => addressController.wooUpdateAddress(isShippingAddress),
+                        onPressed: () => addressController.updateAddress(),
                         child: const Text('Update Address')
                     )
                 )

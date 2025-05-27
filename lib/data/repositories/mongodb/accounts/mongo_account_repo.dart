@@ -83,10 +83,10 @@ class MongoAccountsRepo extends GetxController {
   }
 
   // Update a payment
-  Future<void> updateAccount({required String id, required AccountModel payment}) async {
+  Future<void> updateAccount({required String id, required AccountModel account}) async {
     try {
-      Map<String, dynamic> paymentMap = payment.toMap();
-                await _mongoUpdate.updateDocumentById(id: id, collectionName: collectionName, updatedData: paymentMap);
+      Map<String, dynamic> accountMap = account.toMap();
+      await _mongoUpdate.updateDocumentById(id: id, collectionName: collectionName, updatedData: accountMap);
     } catch (e) {
       throw 'Failed to upload payment: $e';
     }

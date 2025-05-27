@@ -11,8 +11,10 @@ import '../../../authentication/controllers/authentication_controller/authentica
 import '../../../personalization/models/user_model.dart';
 import '../../models/account_model.dart';
 import '../../models/transaction_model.dart';
+import 'transaction_controller.dart';
 
 class AddTransactionController extends GetxController {
+  static AddTransactionController get instance => Get.find();
 
   RxInt transactionId = 0.obs;
 
@@ -25,6 +27,7 @@ class AddTransactionController extends GetxController {
   GlobalKey<FormState> transactionFormKey = GlobalKey<FormState>();
 
   final mongoTransactionRepo = Get.put(MongoTransactionRepo());
+  final transactionController = Get.put(TransactionController());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
@@ -35,6 +38,11 @@ class AddTransactionController extends GetxController {
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
   }
 
+  @override
+  void onClose() {
+    clearTransaction();
+    super.onClose();
+  }
 
   void addVendor(UserModel getSelectedVendor) {
     selectedVendor.value = getSelectedVendor;
@@ -93,9 +101,10 @@ class AddTransactionController extends GetxController {
 
       await processTransaction(transaction: transaction);
 
-      clearTransaction();
+      await clearTransaction();
 
       FullScreenLoader.stopLoading();
+      transactionController.refreshTransactions();
       AppMassages.showToastMessage(message: 'Transaction uploaded successfully!');
       Navigator.of(Get.context!).pop();
     } catch (e) {
@@ -157,6 +166,8 @@ class AddTransactionController extends GetxController {
   Future<void> clearTransaction() async {
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
     amount.text = '';
+    selectedPaymentMethod.value = AccountModel();
+    selectedVendor.value = UserModel();
     date.text = DateTime.now().toIso8601String();
   }
 
@@ -165,28 +176,36 @@ class AddTransactionController extends GetxController {
     transactionId.value = transaction.transactionId ?? 0;
     amount.text = transaction.amount.toString();
     date.text = transaction.date?.toIso8601String() ?? '';
+    selectedVendor.value = UserModel(
+      id: transaction.toEntityId,
+      companyName: transaction.toEntityName,
+    );
+    selectedPaymentMethod.value = AccountModel(
+      id: transaction.fromEntityId,
+      accountName: transaction.fromEntityName,
+    );
   }
 
-  void saveUpdatedTransaction({required TransactionModel previousTransaction}) {
+  void saveUpdatedTransaction({required TransactionModel oldTransaction}) {
 
-    TransactionModel transaction = TransactionModel(
-      id: previousTransaction.id,
-      transactionId: previousTransaction.transactionId,
-      amount: double.tryParse(amount.text) ?? previousTransaction.amount,
-      date: DateTime.tryParse(date.text) ?? previousTransaction.date,
-      fromEntityId: selectedPaymentMethod.value.id ?? previousTransaction.fromEntityId,
-      fromEntityName: selectedPaymentMethod.value.accountName ?? previousTransaction.fromEntityName,
-      fromEntityType: previousTransaction.fromEntityType,
-      toEntityId: selectedVendor.value.id ?? previousTransaction.toEntityId,
-      toEntityName: selectedVendor.value.companyName ?? previousTransaction.toEntityName,
-      toEntityType: previousTransaction.toEntityType,
-      transactionType: previousTransaction.transactionType,
+    TransactionModel newTransaction = TransactionModel(
+      id: oldTransaction.id,
+      transactionId: oldTransaction.transactionId,
+      amount: double.tryParse(amount.text) ?? oldTransaction.amount,
+      date: DateTime.tryParse(date.text) ?? oldTransaction.date,
+      fromEntityId: selectedPaymentMethod.value.id ?? oldTransaction.fromEntityId,
+      fromEntityName: selectedPaymentMethod.value.accountName ?? oldTransaction.fromEntityName,
+      fromEntityType: oldTransaction.fromEntityType,
+      toEntityId: selectedVendor.value.id ?? oldTransaction.toEntityId,
+      toEntityName: selectedVendor.value.companyName ?? oldTransaction.toEntityName,
+      toEntityType: oldTransaction.toEntityType,
+      transactionType: oldTransaction.transactionType,
     );
 
-    updateTransaction(transaction: transaction, previousTransaction: previousTransaction);
+    updateTransaction(newTransaction: newTransaction, oldTransaction: oldTransaction);
   }
 
-  Future<void> updateTransaction({required TransactionModel transaction, required TransactionModel previousTransaction}) async {
+  Future<void> updateTransaction({required TransactionModel newTransaction, required TransactionModel oldTransaction}) async {
     try {
       FullScreenLoader.openLoadingDialog('Updating transaction...', Images.docerAnimation);
 
@@ -203,11 +222,12 @@ class AddTransactionController extends GetxController {
         throw 'Form is not valid';
       }
 
-      processUpdateTransaction(transaction: transaction, previousTransaction: previousTransaction);
+      await processUpdateTransaction(newTransaction: newTransaction, oldTransaction: oldTransaction);
 
       FullScreenLoader.stopLoading();
+      transactionController.refreshTransactions();
       AppMassages.showToastMessage(message: 'Transaction updated successfully!');
-      Navigator.of(Get.context!).pop();
+      Get.close(2);
     } catch (e) {
       FullScreenLoader.stopLoading();
       debugPrint('Error updating transaction: $e');
@@ -215,12 +235,12 @@ class AddTransactionController extends GetxController {
     }
   }
 
-  Future<void> processUpdateTransaction({required TransactionModel transaction, required TransactionModel previousTransaction}) async {
+  Future<void> processUpdateTransaction({required TransactionModel newTransaction, required TransactionModel oldTransaction}) async {
     try{
       List<Future<void>> futures = [];
 
-      futures.add(processTransaction(transaction: previousTransaction, isDelete: true));
-      futures.add(processTransaction(transaction: transaction, isUpdated: true));
+      futures.add(processTransaction(transaction: oldTransaction, isDelete: true));
+      futures.add(processTransaction(transaction: newTransaction, isUpdated: true));
 
       await Future.wait(futures);
 
@@ -229,13 +249,4 @@ class AddTransactionController extends GetxController {
     }
   }
 
-  Future<void> updateTransactionByPurchaseId({required int purchaseId, required TransactionModel transaction}) async {
-    try {
-      final previousTransactions = await mongoTransactionRepo.findTransactionByPurchaseId(purchaseId: purchaseId);
-      transaction.transactionId = previousTransactions.transactionId;
-      await processUpdateTransaction(transaction: transaction, previousTransaction: previousTransactions);
-    } catch (e) {
-      rethrow;
-    }
-  }
 }

@@ -28,8 +28,8 @@ class AccountModel {
           : json[AccountFieldName.id]?.toString(), // Fallback to string if not ObjectId
       userId: json[AccountFieldName.userId],
       accountId: json[AccountFieldName.accountId],
-      openingBalance: (json[AccountFieldName.openingBalance] as num?)?.toDouble(),
-      balance: (json[AccountFieldName.balance] as num?)?.toDouble(),
+      openingBalance: json[AccountFieldName.openingBalance] ?? 0,
+      balance: json[AccountFieldName.balance] ?? 0,
       dateCreated: json[AccountFieldName.dateCreated] != null
           ? DateTime.parse(json[AccountFieldName.dateCreated])
           : null,
@@ -39,13 +39,15 @@ class AccountModel {
 
   Map<String, dynamic> toMap() {
     return {
-      AccountFieldName.userId: userId,
-      AccountFieldName.accountId: accountId,
-      AccountFieldName.openingBalance: openingBalance ?? 0,
-      AccountFieldName.balance: balance ?? 0,
-      AccountFieldName.dateCreated: dateCreated?.toIso8601String(),
-      AccountFieldName.accountName: accountName,
+      if (id != null) AccountFieldName.id: id,
+      if (userId != null) AccountFieldName.userId: userId,
+      if (accountId != null) AccountFieldName.accountId: accountId,
+      if (openingBalance != null) AccountFieldName.openingBalance: openingBalance,
+      if (balance != null) AccountFieldName.balance: balance,
+      if (dateCreated != null) AccountFieldName.dateCreated: dateCreated!.toIso8601String(),
+      if (accountName != null) AccountFieldName.accountName: accountName,
     };
   }
+
 }
 

@@ -4,21 +4,25 @@ import '../../../utils/constants/db_constants.dart';
 import '../../../utils/constants/enums.dart';
 
 class PurchaseItemModel {
-  int id;
-  final String image;
-  String name;
-  int prepaidQuantity;
-  int bulkQuantity;
-  int totalQuantity;
-  bool isOlderThanTwoDays;
+  int? id;
+  String? image;
+  String? name;
+  int? prepaidQuantity;
+  int? bulkQuantity;
+  int? totalQuantity;
+  bool? isOlderThanTwoDays;
+  int? stock;
+  String? vendor;
 
   PurchaseItemModel({
-    required this.id,
-    required this.image,
+    this.id,
+    this.image,
     this.name = '',
     this.prepaidQuantity = 0,
     this.bulkQuantity = 0,
     this.totalQuantity = 0,
+    this.stock,
+    this.vendor,
     this.isOlderThanTwoDays = false,
   });
 
@@ -31,6 +35,8 @@ class PurchaseItemModel {
       bulkQuantity: json['bulkQuantity'],
       totalQuantity: json['totalQuantity'],
       isOlderThanTwoDays: json['isOlderThanTwoDays'],
+      stock: json['stock'],
+      vendor: json['vendor'],
     );
   }
 
@@ -43,6 +49,8 @@ class PurchaseItemModel {
       'bulkQuantity': bulkQuantity,
       'totalQuantity': totalQuantity,
       'isOlderThanTwoDays': isOlderThanTwoDays,
+      'stock': stock,
+      'vendor': vendor,
     };
   }
 
@@ -72,7 +80,6 @@ class PurchaseListMetaModel {
       id: json[PurchaseListFieldName.id] is ObjectId
           ? (json[PurchaseListFieldName.id] as ObjectId).toHexString() // Convert ObjectId to string
           : json[PurchaseListFieldName.id]?.toString(), // Fallback to string if not ObjectId
-      metaName: json[MetaDataName.metaDocumentName]?.toString() ?? '',
       extraNote: json[PurchaseListFieldName.extraNote]?.toString() ?? '',
       lastSyncDate: json[PurchaseListFieldName.lastSyncDate],
       purchasedProductIds: (json[PurchaseListFieldName.purchasedProductIds] as List<dynamic>?)
@@ -91,16 +98,21 @@ class PurchaseListMetaModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      PurchaseListFieldName.id: id,
-      MetaDataName.metaDocumentName: metaName,
-      PurchaseListFieldName.extraNote: extraNote,
-      PurchaseListFieldName.lastSyncDate: lastSyncDate,
-      PurchaseListFieldName.purchasedProductIds: purchasedProductIds,
-      PurchaseListFieldName.notAvailableProductIds: notAvailableProductIds,
-      PurchaseListFieldName.orderStatus: orderStatus?.map((e) => e.name).toList(),
-    };
+    final data = <String, dynamic>{};
+
+    if (id != null) data[PurchaseListFieldName.id] = id;
+    if (extraNote != null) data[PurchaseListFieldName.extraNote] = extraNote;
+    if (lastSyncDate != null) data[PurchaseListFieldName.lastSyncDate] = lastSyncDate;
+    if (purchasedProductIds != null) data[PurchaseListFieldName.purchasedProductIds] = purchasedProductIds;
+    if (notAvailableProductIds != null) data[PurchaseListFieldName.notAvailableProductIds] = notAvailableProductIds;
+    if (orderStatus != null) {
+      data[PurchaseListFieldName.orderStatus] = orderStatus!.map((e) => e.name).toList();
+    }
+
+    return data;
   }
+
+
   PurchaseListMetaModel copyWith({
     String? id,
     String? metaName,

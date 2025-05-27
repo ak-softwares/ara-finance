@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
+import '../../personalization/models/user_model.dart';
 import 'brand_model.dart';
 import 'category_model.dart';
 import 'product_attribute_model.dart';
@@ -16,7 +17,10 @@ class ProductModel {
   String? mainImage;
   String? permalink;
   String? slug;
-  String? dateCreated;
+  DateTime? dateCreated;
+  DateTime? dateModified;
+  DateTime? dateOnSaleFrom;
+  DateTime? dateOnSaleTo;
   String? type;
   String? status;
   bool? featured;
@@ -28,8 +32,6 @@ class ProductModel {
   double? regularPrice;
   double? salePrice;
   double? purchasePrice;
-  String? dateOnSaleFrom;
-  String? dateOnSaleTo;
   bool? onSale;
   bool? purchasable;
   int? totalSales;
@@ -64,6 +66,7 @@ class ProductModel {
   int? menuOrder;
   List<int>? relatedIds;
   String? stockStatus;
+  UserModel? vendor;
   bool? isCODBlocked;
 
   ProductModel({
@@ -75,6 +78,9 @@ class ProductModel {
     this.permalink,
     this.slug,
     this.dateCreated,
+    this.dateModified,
+    this.dateOnSaleFrom,
+    this.dateOnSaleTo,
     this.type,
     this.status,
     this.featured,
@@ -86,8 +92,6 @@ class ProductModel {
     this.regularPrice,
     this.salePrice,
     this.purchasePrice,
-    this.dateOnSaleFrom,
-    this.dateOnSaleTo,
     this.onSale,
     this.purchasable,
     this.totalSales,
@@ -122,6 +126,7 @@ class ProductModel {
     this.menuOrder,
     this.relatedIds,
     this.stockStatus,
+    this.vendor,
     this.isCODBlocked,
   });
 
@@ -210,7 +215,10 @@ class ProductModel {
           ? json[ProductFieldName.images][0]['src'] : '',
       permalink: json[ProductFieldName.permalink] ?? '',
       slug: json[ProductFieldName.slug] ?? '',
-      dateCreated: json[ProductFieldName.dateCreated] ?? '',
+      dateCreated: json[ProductFieldName.dateCreated],
+      dateModified: json[ProductFieldName.dateModified],
+      dateOnSaleFrom: json[ProductFieldName.dateOnSaleFrom],
+      dateOnSaleTo: json[ProductFieldName.dateOnSaleTo],
       type: type,
       status: json[ProductFieldName.status] ?? '',
       featured: json[ProductFieldName.featured] ?? false,
@@ -222,8 +230,6 @@ class ProductModel {
       salePrice: double.tryParse(json[ProductFieldName.salePrice] ?? '0.0'),
       regularPrice: double.tryParse(json[ProductFieldName.regularPrice] ?? '0.0'),
       purchasePrice: json[ProductFieldName.purchasePrice] ?? 0,
-      dateOnSaleFrom: json[ProductFieldName.dateOnSaleFrom] ?? '',
-      dateOnSaleTo: json[ProductFieldName.dateOnSaleTo] ?? '',
       onSale: json[ProductFieldName.onSale] ?? false,
       purchasable: json[ProductFieldName.purchasable] ?? false,
       totalSales: int.tryParse(json[ProductFieldName.totalSales]?.toString() ?? '0') ?? 0,
@@ -264,6 +270,9 @@ class ProductModel {
       relatedIds: List<int>.from(json[ProductFieldName.relatedIds] ?? []),
       stockStatus: json[ProductFieldName.stockStatus] ?? '',
       isCODBlocked: (json[ProductFieldName.metaData] as List?)?.any((meta) => meta['key'] == ProductFieldName.isCODBlocked && meta['value'] == "1") ?? false,
+      vendor: json[ProductFieldName.vendor] != null
+          ? UserModel.fromJson(json[ProductFieldName.vendor])
+          : UserModel(),
     );
   }
 
@@ -305,7 +314,15 @@ class ProductModel {
           ? json[ProductFieldName.images][0]['src'] : '',
       permalink: json[ProductFieldName.permalink] ?? '',
       slug: json[ProductFieldName.slug] ?? '',
-      dateCreated: json[ProductFieldName.dateCreated] ?? '',
+      dateCreated: json[ProductFieldName.dateCreated] != null && json[ProductFieldName.dateCreated] != ''
+          ? DateTime.parse(json[ProductFieldName.dateCreated])
+          : null,
+      dateOnSaleFrom: json[ProductFieldName.dateOnSaleFrom] != null && json[ProductFieldName.dateOnSaleFrom] != ''
+          ? DateTime.parse(json[ProductFieldName.dateOnSaleFrom])
+          : null,
+      dateOnSaleTo: json[ProductFieldName.dateOnSaleTo] != null && json[ProductFieldName.dateOnSaleTo] != ''
+          ? DateTime.parse(json[ProductFieldName.dateOnSaleTo])
+          : null,
       type: type,
       status: json[ProductFieldName.status] ?? '',
       featured: json[ProductFieldName.featured] ?? false,
@@ -316,8 +333,6 @@ class ProductModel {
       price: double.tryParse(json[ProductFieldName.price] ?? '0.0'),
       salePrice: double.tryParse(json[ProductFieldName.salePrice] ?? '0.0'),
       regularPrice: double.tryParse(json[ProductFieldName.regularPrice] ?? '0.0'),
-      dateOnSaleFrom: json[ProductFieldName.dateOnSaleFrom] ?? '',
-      dateOnSaleTo: json[ProductFieldName.dateOnSaleTo] ?? '',
       onSale: json[ProductFieldName.onSale] ?? false,
       purchasable: json[ProductFieldName.purchasable] ?? false,
       totalSales: int.tryParse(json[ProductFieldName.totalSales]?.toString() ?? '0') ?? 0,
@@ -386,6 +401,9 @@ class ProductModel {
     add(ProductFieldName.permalink, permalink);
     add(ProductFieldName.slug, slug);
     add(ProductFieldName.dateCreated, dateCreated);
+    add(ProductFieldName.dateModified, dateModified);
+    add(ProductFieldName.dateOnSaleFrom, dateOnSaleFrom);
+    add(ProductFieldName.dateOnSaleTo, dateOnSaleTo);
     add(ProductFieldName.type, type);
     add(ProductFieldName.status, status);
     add(ProductFieldName.featured, featured);
@@ -396,8 +414,6 @@ class ProductModel {
     add(ProductFieldName.price, price?.toString());
     add(ProductFieldName.regularPrice, regularPrice?.toString());
     add(ProductFieldName.salePrice, salePrice?.toString());
-    add(ProductFieldName.dateOnSaleFrom, dateOnSaleFrom);
-    add(ProductFieldName.dateOnSaleTo, dateOnSaleTo);
     add(ProductFieldName.onSale, onSale);
     add(ProductFieldName.purchasable, purchasable);
     add(ProductFieldName.totalSales, totalSales);
@@ -434,6 +450,7 @@ class ProductModel {
     add(ProductFieldName.relatedIds, relatedIds);
     add(ProductFieldName.stockStatus, stockStatus);
     add(ProductFieldName.isCODBlocked, isCODBlocked);
+    add(ProductFieldName.vendor, vendor?.toMap());
 
     if (!isUpdate) {
       add(ProductFieldName.purchasePrice, purchasePrice);
@@ -457,6 +474,7 @@ class ProductModel {
     String? type,
     List<int>? variations,
     String? stockStatus,
+    UserModel? vendor,
   }) {
     return ProductModel(
       productId: id ?? this.productId,
@@ -470,6 +488,7 @@ class ProductModel {
       type: type ?? this.type,
       variations: variations ?? this.variations,
       stockStatus: stockStatus ?? this.stockStatus,
+      vendor: vendor ?? this.vendor,
     );
   }
 
@@ -488,46 +507,3 @@ int parseDoubleToInt(dynamic value) {
   }
 }
 
-class ProductPurchaseHistory {
-  double? price;
-  int? quantity;
-  String? productId;
-  int? purchaseId;
-  String? purchaseDate;
-
-  ProductPurchaseHistory({
-    this.price,
-    this.quantity,
-    this.productId,
-    this.purchaseId,
-    this.purchaseDate,
-  });
-
-  /// Convert PurchaseHistory object to a Map
-  Map<String, dynamic> toMap() {
-    return {
-      PurchaseHistoryFieldName.price: price,
-      PurchaseHistoryFieldName.quantity: quantity,
-      PurchaseHistoryFieldName.productId: productId,
-      PurchaseHistoryFieldName.purchaseId: purchaseId,
-      PurchaseHistoryFieldName.purchaseDate: purchaseDate, // Convert DateTime to string
-    };
-  }
-
-  /// Convert Map to PurchaseHistory object
-  factory ProductPurchaseHistory.fromMap(Map<String, dynamic> map) {
-    return ProductPurchaseHistory(
-      price: map[PurchaseHistoryFieldName.price]?.toDouble(),
-      quantity: map[PurchaseHistoryFieldName.quantity]?.toInt(),
-      // productId: map[PurchaseHistoryFieldName.productId],
-      purchaseId: map[PurchaseHistoryFieldName.purchaseId]?.toInt(),
-      purchaseDate: map[PurchaseHistoryFieldName.purchaseDate],
-    );
-  }
-
-  /// Convert PurchaseHistory object to JSON string
-  String toJson() => json.encode(toMap());
-
-  /// Convert JSON string to PurchaseHistory object
-  factory ProductPurchaseHistory.fromJson(Map<String, dynamic> json) => ProductPurchaseHistory.fromMap(json);
-}

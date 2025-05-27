@@ -1,14 +1,22 @@
+import 'package:ara_finance/common/layout_models/product_list_layout.dart';
+import 'package:ara_finance/features/accounts/screen/purchase/purchase.dart';
+import 'package:ara_finance/features/accounts/screen/purchase/widget/purchase_tile.dart';
+import 'package:ara_finance/utils/constants/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
-import '../../../../common/text/section_heading.dart';
 import '../../../../common/widgets/custom_shape/image/circular_image.dart';
+import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../settings/app_settings.dart';
 import '../../controller/product/product_controller.dart';
+import '../../models/order_model.dart';
 import '../../models/product_model.dart';
+import '../sales/widget/sale_tile.dart';
 import 'add_product.dart';
 
 class SingleProduct extends StatefulWidget {
@@ -22,16 +30,24 @@ class SingleProduct extends StatefulWidget {
 
 class _SingleProductState extends State<SingleProduct> {
   late ProductModel product;
-  final productController = Get.put(ProductController());
-
+  final controller = Get.put(ProductController());
+  final mongoOrderRepo = Get.put(MongoOrderRepo());
+  String get userId => AuthenticationController.instance.admin.value.id!;
+  RxList<OrderModel> orders = <OrderModel>[].obs;
   @override
   void initState() {
     super.initState();
     product = widget.product;
+    _getRelatedSaleAndPurchase();
+  }
+
+  Future<void> _getRelatedSaleAndPurchase() async {
+    final getOrders = await mongoOrderRepo.fetchOrdersByProductId(productId: product.productId ?? 0, userId: userId);
+    orders.addAll(getOrders);
   }
 
   Future<void> _refreshProduct() async {
-    final updatedProduct = await productController.getProductByID(id: product.id ?? '');
+    final updatedProduct = await controller.getProductByID(id: product.id ?? '');
     setState(() {
       product = updatedProduct;
     });
@@ -39,6 +55,7 @@ class _SingleProductState extends State<SingleProduct> {
 
   @override
   Widget build(BuildContext context) {
+    print('===========${product.vendor?.id}');
     return Scaffold(
       appBar: AppAppBar(
         title: 'Product',
@@ -84,6 +101,13 @@ class _SingleProductState extends State<SingleProduct> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text('Supplier: '),
+                      Text(product.vendor?.companyName ?? ''),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       Text('Purchase Price'),
                       Text(AppSettings.currencySymbol + (product.purchasePrice ?? 0).toStringAsFixed(2), style: TextStyle(fontSize: 14))
                     ],
@@ -102,8 +126,23 @@ class _SingleProductState extends State<SingleProduct> {
             SizedBox(height: AppSizes.spaceBtwSection),
             Center(
               child: TextButton(
-                onPressed: () => productController.deleteProduct(context: context, id: product.id ?? ''),
+                onPressed: () => controller.deleteProduct(context: context, id: product.id ?? ''),
                 child: Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ),
+            SizedBox(height: AppSizes.spaceBtwSection),
+            Text('Sale & Purchase', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: AppSizes.spaceBtwSection),
+            Obx(() => GridLayout(
+                  itemCount: orders.length,
+                  mainAxisExtent: AppSizes.saleTileHeight,
+                  itemBuilder: (context, index) {
+                    if(orders[index].orderType == OrderType.sale){
+                      return SaleTile(sale: orders[index]);
+                    }else {
+                      return PurchaseTile(purchase: orders[index]);
+                    }
+                  }
               ),
             ),
           ],

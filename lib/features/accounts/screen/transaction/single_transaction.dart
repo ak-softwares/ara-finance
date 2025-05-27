@@ -9,8 +9,9 @@ import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/formatters/formatters.dart';
 import '../../controller/transaction/transaction_controller.dart';
-import '../../models/transaction_model.dart'; // Updated import
-import 'add_transaction.dart'; // Updated import
+import '../../models/transaction_model.dart';
+import 'add_transaction.dart';
+import 'widget/transaction_tile.dart';
 
 class SingleTransaction extends StatefulWidget {
   const SingleTransaction({super.key, required this.transaction});
@@ -72,57 +73,7 @@ class _SingleTransactionState extends State<SingleTransaction> {
           padding: AppSpacingStyle.defaultPagePadding,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            Container(
-              width: transactionTileWidth,
-              padding: const EdgeInsets.all(AppSizes.defaultSpace),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(transactionTileRadius),
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              child: Column(
-                children: [
-                  // Transaction ID
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Transaction ID', style: TextStyle(fontSize: 14)),
-                      Text('#${transaction.transactionId.toString()}', style: const TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSizes.spaceBtwItems),
-
-                  // Amount
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Amount', style: TextStyle(fontSize: 14)),
-                      Text(transaction.amount?.toStringAsFixed(2) ?? 'N/A', style: const TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSizes.spaceBtwItems),
-
-                  // Date
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Date', style: TextStyle(fontSize: 14)),
-                      Text(AppFormatter.formatStringDate(transaction.date.toString()), style: const TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSizes.spaceBtwItems),
-
-                  // Payment Method
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Payment Method', style: TextStyle(fontSize: 14)),
-                      Text('N/A', style: const TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: AppSizes.spaceBtwSection),
+            TransactionTile(transaction: transaction),
 
             // Delete Button
             Center(

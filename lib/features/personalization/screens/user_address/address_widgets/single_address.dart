@@ -5,9 +5,9 @@ import '../../../../../utils/constants/colors.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../models/address_model.dart';
 
-class TSingleAddress extends StatelessWidget {
+class SingleAddress extends StatelessWidget {
 
-  const TSingleAddress({
+  const SingleAddress({
     super.key,
     required this.address,
     required this.onTap,
@@ -37,8 +37,8 @@ class TSingleAddress extends StatelessWidget {
                       child: Row(
                         spacing: AppSizes.sm,
                         children: [
+                          Text('Edit', style: TextStyle(color: AppColors.linkColor),),
                           Icon(Icons.edit, size: 20, color: AppColors.linkColor),
-                          Text('Edit', style: TextStyle(color: AppColors.linkColor),)
                         ],
                       )
                   )

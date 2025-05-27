@@ -87,7 +87,7 @@ class PurchaseController extends GetxController {
     try {
       await Future.wait([
         deleteImages(purchase.purchaseInvoiceImages ?? []),
-        productController.updateProductQuantity(cartItems: purchase.lineItems ?? []),
+        productController.updateProductQuantityById(cartItems: purchase.lineItems ?? []),
         addTransactionController.processTransaction(transaction: purchase.transaction!, isDelete: true),
         mongoOrderRepo.deleteOrderById(id: purchase.id ?? ''),
         refreshPurchases(),

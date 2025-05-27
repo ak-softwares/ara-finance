@@ -144,9 +144,33 @@ class MongoProductRepo extends GetxController {
     }
   }
 
+  // Get the total count of products in the collection
+  Future<int> fetchProductsActiveCount({required String userId}) async {
+    try {
+      int count = await _mongoFetch.fetchCollectionCount(
+        collectionName: collectionName,
+        filter: {
+          ProductFieldName.userId: userId,
+          ProductFieldName.stockQuantity: {'\$gt': 0}
+        },
+      );
+      return count;
+    } catch (e) {
+      throw 'Failed to fetch products count: $e';
+    }
+  }
+
   Future<void> updateQuantities({required List<CartModel> cartItems, bool isAddition = false, bool isPurchase = false}) async {
     try {
       await _mongoUpdate.updateQuantities(collectionName: collectionName, cartItems: cartItems, isAddition: isAddition, isPurchase: isPurchase);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateQuantitiesById({required List<CartModel> cartItems, bool isAddition = false, bool isPurchase = false}) async {
+    try {
+      await _mongoUpdate.updateQuantitiesById(collectionName: collectionName, cartItems: cartItems, isAddition: isAddition, isPurchase: isPurchase);
     } catch (e) {
       rethrow;
     }

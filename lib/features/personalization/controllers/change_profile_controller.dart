@@ -13,6 +13,7 @@ import '../../../utils/constants/enums.dart';
 import '../../../utils/constants/image_strings.dart';
 import '../../../utils/constants/local_storage_constants.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/validators/validation.dart';
 import '../models/user_model.dart';
 import '../screens/user_profile/user_profile.dart';
 import '../../authentication/controllers/authentication_controller/authentication_controller.dart';
@@ -21,21 +22,32 @@ class ChangeProfileController extends GetxController {
   static ChangeProfileController get instance => Get.find();
 
   // variables
-  final fullName = TextEditingController();
+  final name = TextEditingController();
   final email = TextEditingController();
   final phone = TextEditingController();
-
-  final updatePhone = TextEditingController();
-  RxBool isPhoneUpdating = false.obs;
-  RxBool isPhoneVerified = true.obs;
+  final companyName = TextEditingController();
+  final gstNumber = TextEditingController();
 
   GlobalKey<FormState> changeProfileFormKey = GlobalKey<FormState>();
-  GlobalKey<FormState> updatePhoneFormKey = GlobalKey<FormState>();
 
   final localStorage = GetStorage();
   final auth = Get.put(AuthenticationController());
   final wooCustomersRepository = Get.put(WooCustomersRepository());
   final mongoAuthenticationRepository = Get.put(MongoAuthenticationRepository());
+
+  @override
+  onInit() {
+    super.onInit();
+    _initialized();
+  }
+
+  void _initialized() {
+    name.text = auth.admin.value.name ?? '';
+    email.text = auth.admin.value.email ?? '';
+    phone.text = Validator.getFormattedTenDigitNumber(auth.admin.value.phone ?? '') ?? '';
+    companyName.text = auth.admin.value.companyName ?? '';
+    gstNumber.text = auth.admin.value.gstNumber ?? '';
+  }
 
   // Mongo update profile details
   Future<void> mongoChangeProfileDetails() async {
@@ -56,14 +68,16 @@ class ChangeProfileController extends GetxController {
 
       //update single field user
       final updatedUser = UserModel(
-          userType: UserType.admin,
-          name: fullName.text.trim(),
+          name: name.text.trim(),
           email: email.text.trim(),
           phone: phone.text.trim(),
+          companyName: companyName.text.trim(),
+          gstNumber: gstNumber.text.trim(),
+          userType: UserType.admin,
       );
       await mongoAuthenticationRepository.updateUserById(id: auth.userId, user: updatedUser);
 
-      //update the Rx user value
+      // update the Rx user value
       auth.admin(updatedUser);
 
       // update email to local storage too

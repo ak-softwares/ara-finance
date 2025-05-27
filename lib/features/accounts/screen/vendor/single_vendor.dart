@@ -95,7 +95,7 @@ class _SingleVendorState extends State<SingleVendor> {
             ),
             Text('Address'),
             SizedBox(height: AppSizes.xs),
-            TSingleAddress(
+            SingleAddress(
               address: vendor.billing ?? AddressModel.empty(),
               onTap: () {},
               hideEdit: true,
@@ -108,14 +108,11 @@ class _SingleVendorState extends State<SingleVendor> {
             ),
 
             // Related Transactions Section
-            const TSectionHeading(title: 'Related Transactions'),
+            const SectionHeading(title: 'Related Transactions'),
             const SizedBox(height: AppSizes.spaceBtwItems),
-            SizedBox(
-              height: 350,
-              child: TransactionsByEntity(
-                entityType: EntityType.vendor,
-                entityId: vendor.id ?? '0',
-              ),
+            TransactionsByEntity(
+              entityType: EntityType.vendor,
+              entityId: vendor.id ?? '0',
             ),
             const SizedBox(height: AppSizes.spaceBtwSection),
           ],

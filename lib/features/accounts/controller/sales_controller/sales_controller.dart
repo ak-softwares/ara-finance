@@ -8,6 +8,7 @@ import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/order_model.dart';
 import '../product/product_controller.dart';
+import 'payment_controller.dart';
 
 class SaleController extends GetxController {
   static SaleController get instance => Get.find();
@@ -18,6 +19,8 @@ class SaleController extends GetxController {
   RxBool isLoading = false.obs;
   RxBool isLoadingMore = false.obs;
   RxList<OrderModel> sales = <OrderModel>[].obs;
+
+
   final mongoOrderRepo = Get.put(MongoOrderRepo());
   final productController = Get.put(ProductController());
   final auth = Get.put(AuthenticationController());
@@ -117,20 +120,8 @@ class SaleController extends GetxController {
 
   Future<void> updatePaymentStatus({required OrderModel sale}) async {
     try{
-      final OrderModel newSale = OrderModel(
-        id: sale.id,
-        setPaid: true,
-        status: OrderStatus.completed,
-        datePaid: DateTime.now(),
-      );
-      await mongoOrderRepo.updateOrder(order: newSale);
-      // Update in RxList
-      final index = sales.indexWhere((c) => c.id == newSale.id);
-      if (index != -1) {
-        sales[index].status = OrderStatus.completed;
-      }
+      await UpdatePaymentController.instance.processPaymentStatus(sales: [sale]);
       await refreshSales();
-
     }catch(e){
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
@@ -146,11 +137,6 @@ class SaleController extends GetxController {
 
       await mongoOrderRepo.updateOrder(order: revertedSale);
 
-      // Update in RxList
-      final index = sales.indexWhere((c) => c.id == sale.id);
-      if (index != -1) {
-        sales[index].status = OrderStatus.inTransit;
-      }
       await refreshSales();
       AppMassages.showSnackBar(massage: 'Undo successful');
     } catch (e) {

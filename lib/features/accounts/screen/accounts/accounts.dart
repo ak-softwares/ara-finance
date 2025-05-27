@@ -25,7 +25,7 @@ class Accounts extends StatelessWidget {
     final ScrollController scrollController = ScrollController();
     final paymentController = Get.put(AccountController());
 
-    paymentController.refreshPaymentMethods();
+    paymentController.refreshAccounts();
 
     scrollController.addListener(() async {
       if (scrollController.position.extentAfter < 0.2 * scrollController.position.maxScrollExtent) {
@@ -38,7 +38,7 @@ class Accounts extends StatelessWidget {
           }
           paymentController.isLoadingMore(true);
           paymentController.currentPage++; // Increment current page
-          await paymentController.getAllPaymentMethods();
+          await paymentController.getAccounts();
           paymentController.isLoadingMore(false);
         }
       }
@@ -60,7 +60,7 @@ class Accounts extends StatelessWidget {
         ),
         body: RefreshIndicator(
           color: AppColors.refreshIndicator,
-          onRefresh: () async => paymentController.refreshPaymentMethods(),
+          onRefresh: () async => paymentController.refreshAccounts(),
           child: ListView(
             controller: scrollController,
             padding: AppSpacingStyle.defaultPagePadding,
@@ -82,8 +82,8 @@ class Accounts extends StatelessWidget {
                           itemBuilder: (context, index) {
                             if (index < paymentMethods.length) {
                               return AccountTile(
-                                payment: paymentMethods[index],
                                 onTap: () => Get.to(() => SingleAccount(account: paymentMethods[index])),
+                                account: paymentMethods[index],
                               );
                             } else {
                               return AccountTileSimmer();

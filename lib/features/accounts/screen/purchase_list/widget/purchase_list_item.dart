@@ -19,6 +19,10 @@ class PurchaseListItem extends StatelessWidget {
     final double purchaseItemImageHeight = AppSizes.purchaseItemImageHeight;
     final double purchaseItemImageWidth = AppSizes.purchaseItemImageWidth;
 
+    final bool isPrepaid = (product.prepaidQuantity ?? 0) > 0;
+    final bool isBulk = (product.bulkQuantity ?? 0) > 0;
+    final bool isDelay = product.isOlderThanTwoDays ?? false;
+
     return Stack(
       children: [
         Container(
@@ -40,7 +44,7 @@ class PurchaseListItem extends StatelessWidget {
                     padding: 0,
                     isNetworkImage: true,
                     borderRadius: purchaseItemTileRadius,
-                    image: product.image,
+                    image: product.image ?? '',
                     isTapToEnlarge: true,
                 ),
               ),
@@ -51,7 +55,7 @@ class PurchaseListItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product.name,
+                      Text(product.name ?? '',
                           maxLines: 1,
                           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                               fontSize: 13,
@@ -64,26 +68,42 @@ class PurchaseListItem extends StatelessWidget {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Prepaid',
-                                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)
-                              ),
-                              Text(product.prepaidQuantity.toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Bulk', style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)),
-                              Text(product.bulkQuantity.toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w500,)),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Total', style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)),
+                              Text('Orders', style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)),
                               Text(product.totalQuantity.toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w600)),
                             ],
                           ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Stock',
+                                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)
+                              ),
+                              Text(product.stock.toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Total',
+                                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)
+                              ),
+                              Text(((product.totalQuantity ?? 0) - (product.stock ?? 0)).toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                          // Column(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: [
+                          //     Text('Bulk', style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)),
+                          //     Text(product.bulkQuantity.toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w500,)),
+                          //   ],
+                          // ),
+                          // Column(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: [
+                          //     Text('Total', style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12)),
+                          //     Text(product.totalQuantity.toString(), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 13, fontWeight: FontWeight.w600)),
+                          //   ],
+                          // ),
                         ],
                       ),
                     ],
@@ -93,28 +113,70 @@ class PurchaseListItem extends StatelessWidget {
             ],
           ),
         ),
-        product.isOlderThanTwoDays
-            ? Positioned(
+        if(isPrepaid)
+          Positioned(
+              top: 1,
+              right: 40,
+              child: Container(
+                  height: 20,
+                  width: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(0),
+                      topRight: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                      bottomLeft: Radius.circular(0)
+                    ),
+                  ),
+                  child: Center(
+                      child: Text('P', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500, fontSize: 12),)
+                  )
+              )
+          ),
+        if(isBulk)
+          Positioned(
+              top: 1,
+              right: 20,
+              child: Container(
+                  height: 20,
+                  width: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(0),
+                      topRight: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                      bottomLeft: Radius.circular(0)
+                    ),
+                  ),
+                  child: Center(
+                      child: Text('B', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500, fontSize: 12),)
+                  )
+              )
+          ),
+        if(isDelay)
+          Positioned(
                 top: 1,
                 right: 1,
                 child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSizes.sm, vertical: AppSizes.xs),
+                    height: 20,
+                    width: 20,
                     decoration: BoxDecoration(
                       color: Colors.red.shade50,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(0),
                         topRight: Radius.circular(purchaseItemTileRadius),
                         bottomRight: Radius.circular(0),
-                        bottomLeft: Radius.circular(purchaseItemTileRadius * 3), // Making bottom-left bigger
+                        bottomLeft: Radius.circular(0)
                       ),              ),
                     child: Center(
                         child: Text('D', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500, fontSize: 12),)
                     )
                 )
-              )
-            : SizedBox.shrink(),
-        isDeleted
-            ? Positioned(
+              ),
+        if(isDeleted)
+          Positioned(
                 top: 0,
                 bottom: 0,
                 left: 0,
@@ -130,7 +192,6 @@ class PurchaseListItem extends StatelessWidget {
                     )
                 )
               )
-            : SizedBox.shrink()
       ],
     );
   }

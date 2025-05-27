@@ -60,7 +60,13 @@ class ProductTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ProductTitle(title: product.title ?? '', size: 13, maxLines: 2,),
+                      // Title
+                      ProductTitle(title: product.title ?? '', size: 13, maxLines: 1),
+
+                      // Supplier
+                      if(product.vendor != null)
+                        Text('Supplier: ${product.vendor?.companyName ?? ''}'),
+
                       // Price and Stock
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

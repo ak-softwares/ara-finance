@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:mongo_dart/mongo_dart.dart';
 import 'mongo_base.dart';
 import '../../../features/accounts/models/cart_item_model.dart';
@@ -12,6 +14,17 @@ class MongoUpdate extends MongoDatabase {
 
   Future<void> _ensureConnected() async {
     await MongoDatabase.ensureConnected();
+  }
+
+  ObjectId? safeObjectIdFromHex(String? id) {
+    if (id == null || id.length != 24) return null;
+
+    try {
+      return ObjectId.fromHexString(id);
+    } catch (e) {
+      print('Invalid ObjectId: $id - Error: $e');
+      return null;
+    }
   }
 
   Future<void> updateDocumentById({
@@ -94,14 +107,13 @@ class MongoUpdate extends MongoDatabase {
     required String collectionName,
     required Map<String, dynamic> filter,
     required Map<String, dynamic> updatedData,
-    bool upsert = false,
   }) async {
     await _ensureConnected();
     try {
       await db!.collection(collectionName).update(
         filter,
         {'\$set': updatedData},
-        upsert: upsert,
+        upsert: true,
       );
     } catch (e) {
       throw Exception('Failed to update document: $e');
@@ -143,6 +155,49 @@ class MongoUpdate extends MongoDatabase {
       throw Exception('Database operation failed: ${e.message}');
     } catch (e) {
       throw Exception('Failed to update documents: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateQuantitiesById({
+    required String collectionName,
+    required List<CartModel> cartItems,
+    bool isAddition = false,
+    bool isPurchase = false,
+  }) async {
+    await _ensureConnected();
+    try {
+      final collection = db!.collection(collectionName);
+      final bulkOps = cartItems.map((cartItem) {
+        // 1. Create the filter with properly formatted ID
+        final filter = {
+          '_id': ObjectId.fromHexString(cartItem.product_id ?? '')
+        };
+
+        // 2. Build the update operations in a SINGLE map
+        final update = {
+          r'$inc': {
+            ProductFieldName.stockQuantity: isAddition ? cartItem.quantity : -cartItem.quantity,
+          },
+          r'$set': {
+            ProductFieldName.dateModified: DateTime.now(),
+            if (isPurchase && cartItem.purchasePrice != null)
+              ProductFieldName.purchasePrice: cartItem.purchasePrice!,
+          },
+        };
+
+
+        // 3. Return the properly formatted operation
+        return {
+          'updateOne': {
+            'filter': filter,
+            'update': update,
+            'upsert': true,
+          }
+        };
+      }).toList();
+      await collection.bulkWrite(bulkOps);
+    } catch (e) {
+      throw Exception(e);
     }
   }
 
@@ -227,21 +282,5 @@ class MongoUpdate extends MongoDatabase {
     }
   }
 
-  Future<void> pushMetaDataValue({
-    required String collectionName,
-    required String metaDataName,
-    required String metaFieldName,
-    required dynamic value,
-  }) async {
-    await _ensureConnected();
-    try {
-      await db!.collection(collectionName).updateOne(
-        {MetaDataName.metaDocumentName: metaDataName},
-        {'\$set': {metaFieldName: value}},
-        upsert: true,
-      );
-    } catch (e) {
-      throw Exception('Failed to update metadata: $e');
-    }
-  }
+
 }

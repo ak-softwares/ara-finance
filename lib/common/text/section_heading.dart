@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/constants/sizes.dart';
-class TSectionHeading extends StatelessWidget {
-  const TSectionHeading({
+class SectionHeading extends StatelessWidget {
+  const SectionHeading({
     super.key,
     this.seeActionButton = false,
     required this.title,

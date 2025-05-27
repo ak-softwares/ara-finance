@@ -1,3 +1,4 @@
+import 'package:ara_finance/features/accounts/models/account_model.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
@@ -37,6 +38,7 @@ class UserModel {
   List<dynamic>? recentItems;
   List<dynamic>? customerOrders;
   EcommercePlatform? ecommercePlatform;
+  AccountModel? selectedAccount;
   WooCommerceCredentials? wooCommerceCredentials;
   ShopifyCredentials? shopifyCredentials;
   AmazonCredentials? amazonCredentials;
@@ -72,6 +74,7 @@ class UserModel {
     this.wishlistItems,
     this.recentItems,
     this.customerOrders,
+    this.selectedAccount,
     this.ecommercePlatform,
     this.wooCommerceCredentials,
     this.shopifyCredentials,
@@ -99,7 +102,6 @@ class UserModel {
           (e) => e.name == json[UserFieldConstants.ecommercePlatform],
       orElse: () => EcommercePlatform.none,
     );
-
     return UserModel(
       id: json[UserFieldConstants.id] is ObjectId
           ? (json[UserFieldConstants.id] as ObjectId).toHexString() // Convert ObjectId to string
@@ -114,8 +116,8 @@ class UserModel {
       role: json[UserFieldConstants.role] ?? '',
       username: json[UserFieldConstants.username] ?? '',
       phone: json[UserFieldConstants.phone] ?? (json[UserFieldConstants.billing]?[UserFieldConstants.phone] ?? ''),
-      companyName: json[UserFieldConstants.company] ?? '',
-      gstNumber: json[UserFieldConstants.gstNumber] ?? '',
+      companyName: json[UserFieldConstants.company],
+      gstNumber: json[UserFieldConstants.gstNumber],
       billing: AddressModel.fromJson(json[UserFieldConstants.billing] ?? {}),
       shipping: AddressModel.fromJson(json[UserFieldConstants.shipping] ?? {}),
       isPayingCustomer: json[UserFieldConstants.isPayingCustomer] ?? false,
@@ -149,6 +151,9 @@ class UserModel {
       amazonCredentials: json[UserFieldConstants.amazonCredentials] != null
           ? AmazonCredentials.fromJson(json[UserFieldConstants.amazonCredentials])
           : null,
+      selectedAccount: json[UserFieldConstants.selectedAccount] != null
+          ? AccountModel.fromJson(json[UserFieldConstants.selectedAccount])
+          : null,
     );
   }
 
@@ -158,6 +163,7 @@ class UserModel {
     void addIfNotNull(String key, dynamic value) {
       if (value != null) map[key] = value;
     }
+    addIfNotNull(UserFieldConstants.id, id);
     addIfNotNull(UserFieldConstants.documentId, documentId);
     addIfNotNull(UserFieldConstants.userId, userId);
     addIfNotNull(UserFieldConstants.email, email);
@@ -186,29 +192,9 @@ class UserModel {
     addIfNotNull(UserFieldConstants.wooCommerceCredentials, wooCommerceCredentials?.toJson());
     addIfNotNull(UserFieldConstants.shopifyCredentials, shopifyCredentials?.toJson());
     addIfNotNull(UserFieldConstants.amazonCredentials, amazonCredentials?.toJson());
+    addIfNotNull(UserFieldConstants.selectedAccount, selectedAccount?.toMap());
 
     final metaDataList = <Map<String, dynamic>>[];
-
-    if (isPhoneVerified != null) {
-      metaDataList.add({
-        'key': UserFieldConstants.verifyPhone,
-        'value': isPhoneVerified,
-      });
-    }
-
-    if (fCMToken != null) {
-      metaDataList.add({
-        'key': UserFieldConstants.fCMToken,
-        'value': fCMToken,
-      });
-    }
-
-    if (isCODBlocked != null) {
-      metaDataList.add({
-        'key': UserFieldConstants.isCODBlocked,
-        'value': isCODBlocked! ? "1" : "0",
-      });
-    }
 
     if (metaDataList.isNotEmpty) {
       map[UserFieldConstants.metaData] = metaDataList;
