@@ -39,15 +39,6 @@ class PurchaseListController extends GetxController {
 
   RxList<String> vendorNames = <String>[].obs;
 
-  // var vendorKeywords = <String, List<String>>{
-  //   'S3A': ['one-stop', 'tweezers', '9205', 'mechanic', 'handle', '4 wire', 'multitec 07', 'bit set', 'hot air gun', 'screen separator'],
-  //   'Krolbhag': ['850'],
-  //   'LalKila': ['hoki', 'cell', '18650'],
-  //   'Ac Products': ['bender'],
-  //   'Siron': ['siron'],
-  //   'Other': [],
-  // }.obs;
-
   String get userId => AuthenticationController.instance.admin.value.id!;
 
   @override
@@ -61,6 +52,7 @@ class PurchaseListController extends GetxController {
       );
     });
   }
+
 //----------------------------------------------------------------------------------------------//
 
   // fetch orders
@@ -371,7 +363,6 @@ class PurchaseListController extends GetxController {
             productMap[productId]!.prepaidQuantity = (productMap[productId]!.prepaidQuantity ?? 0) + (isPrepaidOrder ? lineItem.quantity : 0);
             productMap[productId]!.bulkQuantity = (productMap[productId]!.bulkQuantity ?? 0) + (isBulkOrder ? lineItem.quantity : 0);
             productMap[productId]!.totalQuantity = (productMap[productId]!.totalQuantity ?? 0) + lineItem.quantity;
-
           } else {
             // Create new product entry with fresh data
             productMap[productId] = PurchaseItemModel(
@@ -388,6 +379,13 @@ class PurchaseListController extends GetxController {
           }
         }
       }
+
+      // Remove products where total ordered quantity is less than or equal to available stock
+      productMap.removeWhere((key, product) {
+        final stock = product.stock ?? 0;
+        final totalQty = product.totalQuantity ?? 0;
+        return totalQty <= stock;
+      });
 
       // Sort products (same as before)
       List<PurchaseItemModel> sortedProducts = productMap.values.toList()

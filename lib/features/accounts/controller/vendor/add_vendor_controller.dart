@@ -88,7 +88,7 @@ class AddVendorController extends GetxController {
       balance: double.tryParse(balanceController.text) ?? 0.0,
       billing: address,
       userType: userType,
-      dateCreated: DateTime.now().toString(),
+      dateCreated: DateTime.now(),
     );
 
     addVendor(vendor: vendor);
@@ -176,7 +176,7 @@ class AddVendorController extends GetxController {
         FullScreenLoader.stopLoading();
         return;
       }
-      await mongoUserRepository.updateUser(user: vendor);
+      await mongoUserRepository.updateUserById(userId: vendor.id ?? '', user: vendor);
 
       // Update in RxList
       final index = vendorController.vendors.indexWhere((v) => v.id == vendor.id);

@@ -20,7 +20,7 @@ class Accounts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double paymentTileHeight = AppSizes.paymentTileHeight;
+    const double paymentTileHeight = AppSizes.accountTileHeight;
 
     final ScrollController scrollController = ScrollController();
     final paymentController = Get.put(AccountController());

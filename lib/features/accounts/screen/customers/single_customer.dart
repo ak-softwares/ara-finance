@@ -1,3 +1,4 @@
+import 'package:ara_finance/common/widgets/common/colored_amount.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -10,6 +11,7 @@ import '../../../../utils/constants/sizes.dart';
 import '../../../personalization/models/address_model.dart';
 import '../../../personalization/models/user_model.dart';
 import '../../../personalization/screens/user_address/address_widgets/single_address.dart';
+import '../../../personalization/screens/user_address/update_user_address.dart';
 import '../../controller/customer/customer_controller.dart';
 import '../transaction/widget/transactions_by_entity.dart';
 import 'add_customer.dart';
@@ -88,16 +90,42 @@ class _SingleCustomerState extends State<SingleCustomer> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Text('Opening Balance'),
+                Text(user.openingBalance.toString(), style: TextStyle(fontSize: 14))
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Text('Balance'),
-                AmountText(amount: user.balance ?? 0.0)
+                Text(user.balance.toString(), style: TextStyle(fontSize: 14))
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Closing Balance'),
+                ColoredAmount(amount: user.closingBalance)
               ],
             ),
             Text('Address'),
             SizedBox(height: AppSizes.xs),
             SingleAddress(
               address: user.billing ?? AddressModel.empty(),
-              onTap: () {},
-              hideEdit: true,
+              onTap: () => Get.to(() => UpdateAddressScreen(
+                  userId: user.id ?? '',
+                  userType: UserType.customer,
+                  address: user.billing ?? AddressModel.empty()
+              )),
+            ),
+
+            // Transaction
+            SizedBox(height: AppSizes.spaceBtwItems),
+            Heading(title: 'Transaction'),
+            SizedBox(height: AppSizes.spaceBtwItems),
+            SizedBox(
+                height: 350,
+                child: TransactionsByEntity(entityType: EntityType.customer, entityId: user.id ?? '')
             ),
 
             // Delete
@@ -112,18 +140,3 @@ class _SingleCustomerState extends State<SingleCustomer> {
   }
 }
 
-class AmountText extends StatelessWidget {
-  const AmountText({super.key, required this.amount});
-
-  final double amount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(amount.toString(),
-        style: TextStyle(
-            fontSize: 14,
-            color: amount < 0 ? Colors.red : Colors.green
-        )
-    );
-  }
-}

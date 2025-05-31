@@ -2,11 +2,9 @@ import 'package:get/get.dart';
 
 import '../../../../data/repositories/mongodb/products/product_repositories.dart';
 import '../../../../data/repositories/woocommerce/products/woo_product_repositories.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/product_model.dart';
-
-enum SyncType { add, update }
-enum SyncStatus { idle, fetching, checking, pushing, completed, failed }
 
 class SyncProductController extends GetxController {
 

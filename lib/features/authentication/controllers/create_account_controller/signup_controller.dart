@@ -7,6 +7,7 @@ import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../common/widgets/network_manager/network_manager.dart';
 import '../../../../data/repositories/mongodb/authentication/authentication_repositories.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/local_storage_constants.dart';
 import '../../../../utils/helpers/encryption_hepler.dart';
@@ -55,6 +56,8 @@ class SignupController extends GetxController{
         email: email.text.trim(),
         password: EncryptionHelper.hashPassword(password: password.text.trim()),
         phone: phone.text.trim(),
+        dateCreated: DateTime.now(),
+        userType: UserType.admin,
       );
 
       await mongoAuthenticationRepository.singUpWithEmailAndPass(user: user);

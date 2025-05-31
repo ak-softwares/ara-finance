@@ -22,7 +22,10 @@ class UserMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final userController = Get.put(AuthenticationController());
-    userController.refreshAdmin();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      userController.refreshAdmin();
+    });
 
     return  Obx(() => Scaffold(
         appBar: const AppAppBar(title: 'Profile Setting', seeLogoutButton: true, seeSettingButton: true,),

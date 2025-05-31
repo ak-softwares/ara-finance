@@ -12,8 +12,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/navigation_bar/appbar.dart';
+import '../products/sync_product.dart';
 import 'add_customer.dart';
 import 'single_customer.dart';
+import 'sync_customer.dart';
 import 'widget/customer_tile.dart';
 import 'widget/customer_tile_simmer.dart';
 
@@ -51,24 +53,12 @@ class CustomersVoucher extends StatelessWidget {
 
     return Scaffold(
         appBar: AppAppBar(
-          title: 'Customers Voucher',
-          searchType: SearchType.customers,
-            widgetInActions: Obx(() => controller.isSyncing.value
-                ? TextButton(
-              onPressed: () => controller.stopSyncing(),
-              child: Row(
-                spacing: AppSizes.sm,
-                children: [
-                  SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.linkColor,strokeWidth: 2,)),
-                  Text('Stop', style: TextStyle(color: AppColors.linkColor),),
-                ],
-              ),
-            )
-                : TextButton(
-              onPressed: () => controller.syncCustomers(),
-              child: Text('Sync', style: TextStyle(color: AppColors.linkColor),),
-            ))
-
+          title: 'Customers',
+          searchType: SearchType.customer,
+          widgetInActions: IconButton(
+              onPressed: () => Get.to(() => SyncCustomerScreen()),
+              icon: Text('Sync Customers', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.linkColor),)
+          )
         ),
         floatingActionButton: FloatingActionButton(
           shape: CircleBorder(),

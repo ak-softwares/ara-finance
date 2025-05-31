@@ -15,7 +15,7 @@ class AddAccountController extends GetxController {
   RxInt accountId = 0.obs;
 
   final accountsName = TextEditingController();
-  final balance = TextEditingController();
+  final openingBalance = TextEditingController();
 
   GlobalKey<FormState> accountsFormKey = GlobalKey<FormState>();
 
@@ -35,7 +35,7 @@ class AddAccountController extends GetxController {
     AccountModel paymentMethod = AccountModel(
       accountId: accountId.value,
       userId: userId,
-      balance: double.tryParse(balance.text) ?? 0.0, // Convert string to double safely
+      openingBalance: double.tryParse(openingBalance.text) ?? 0.0, // Convert string to double safely
       accountName: accountsName.text,
       dateCreated: DateTime.now(), // Keep it as DateTime
     );
@@ -79,21 +79,21 @@ class AddAccountController extends GetxController {
   Future<void> clearPayment() async {
     accountId.value = await mongoAccountsRepo.fetchAccountGetNextId(userId: userId);
     accountsName.text = '';
-    balance.text = '';
+    openingBalance.text = '';
   }
 
   // Update vendor
   void resetValue(AccountModel payment) {
     accountId.value = payment.accountId ?? 0;
     accountsName.text = payment.accountName ?? '';
-    balance.text = payment.balance.toString();
+    openingBalance.text = payment.openingBalance.toString();
   }
 
   void saveUpdatedPayment({required AccountModel previousPayment}) {
     AccountModel payment = AccountModel(
       id: previousPayment.id,
       accountId: previousPayment.accountId,
-      balance: double.tryParse(balance.text) ?? 0.0, // Convert string to double safely
+      openingBalance: double.tryParse(openingBalance.text) ?? 0.0, // Convert string to double safely
       accountName: accountsName.text,
     );
 

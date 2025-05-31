@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 class AppFormatter {
 
   static String formatDate(DateTime? date) {
-    date ??= DateTime.now();
+    if(date == null){
+      return '';
+    }
     return DateFormat('dd, MMM yyyy').format(date);
   }
 

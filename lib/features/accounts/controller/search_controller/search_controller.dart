@@ -30,19 +30,38 @@ class SearchVoucherController extends GetxController {
   RxList<UserModel> customers = <UserModel>[].obs;
   Rx<UserModel> selectedCustomer = UserModel().obs;
 
-  RxList<AccountModel> payments = <AccountModel>[].obs;
-  Rx<AccountModel> selectedPayment = AccountModel().obs;
+  RxList<AccountModel> accounts = <AccountModel>[].obs;
+  Rx<AccountModel> selectedAccounts = AccountModel().obs;
 
-  RxList<OrderModel> orders = <OrderModel>[].obs;
+  RxList<OrderModel> sales = <OrderModel>[].obs;
+  RxList<OrderModel> purchases = <OrderModel>[].obs;
 
   final mongoProductRepo = Get.put(MongoProductRepo());
   final mongoUserRepository = Get.put(MongoUserRepository());
-  final mongoOrdersRepo = Get.put(MongoOrderRepo());
+  final mongoOrderRepo = Get.put(MongoOrderRepo());
   final vendorController = Get.put(VendorController());
   final mongoPaymentMethodsRepo = Get.put(MongoAccountsRepo());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
+  @override
+  void onClose() {
+    super.onClose();
+    _clearItems();
+  }
+
+  void _clearItems() {
+    products.clear();
+    vendors.clear();
+    customers.clear();
+    accounts.clear();
+    sales.clear();
+    purchases.clear();
+    selectedProducts.clear();
+    selectedVendor.value = UserModel();
+    selectedCustomer.value = UserModel();
+    selectedAccounts.value = AccountModel();
+  }
 
   // Get all products with optional search query
   void confirmSelection({required BuildContext context, required SearchType searchType}) {
@@ -51,33 +70,35 @@ class SearchVoucherController extends GetxController {
         Navigator.of(context).pop(selectedProducts.toList());
         selectedProducts.clear();
         break;
-      case SearchType.customers:
+      case SearchType.customer:
         Navigator.of(context).pop(selectedCustomer.value);
         selectedCustomer.value = UserModel();
         break;
-      case SearchType.orders:
+      case SearchType.sale:
         break;
       case SearchType.vendor:
         Navigator.of(context).pop(selectedVendor.value);
         selectedVendor.value = UserModel();
         break;
-      case SearchType.paymentMethod:
-        Navigator.of(context).pop(selectedPayment.value);
-        selectedPayment.value = AccountModel();
+      case SearchType.account:
+        Navigator.of(context).pop(selectedAccounts.value);
+        selectedAccounts.value = AccountModel();
+        break;
+      case SearchType.purchase:
         break;
     }
   }
 
-  void togglePaymentSelection(AccountModel paymentMethod) {
-    if (paymentMethod.accountName == selectedPayment.value.accountName) {
-      selectedPayment.value = AccountModel();
+  void toggleAccountSelection(AccountModel account) {
+    if (account.id == selectedAccounts.value.id) { // if already selected than deselect
+      selectedAccounts.value = AccountModel();
     } else {
-      selectedPayment.value = paymentMethod; // Select
+      selectedAccounts.value = account; // Select
     }
   }
 
   void toggleVendorSelection(UserModel vendor) {
-    if (vendor.companyName == selectedVendor.value.companyName) {
+    if (vendor.id == selectedVendor.value.id) {
       selectedVendor.value = UserModel();
     } else {
       selectedVendor.value = vendor; // Select
@@ -85,7 +106,7 @@ class SearchVoucherController extends GetxController {
   }
 
   void toggleCustomerSelection(UserModel customer) {
-    if (customer.documentId == selectedCustomer.value.documentId) {
+    if (customer.id == selectedCustomer.value.id) {
       selectedCustomer.value = UserModel();
     } else {
       selectedCustomer.value = customer; // Select
@@ -106,14 +127,18 @@ class SearchVoucherController extends GetxController {
       switch (searchType) {
         case SearchType.products:
           return selectedProducts.length;
-        case SearchType.customers:
-          return selectedCustomer.value.companyName != null ? 1 : 0;
-        case SearchType.orders:
-          return selectedProducts.length;
+        case SearchType.customer:
+          return selectedCustomer.value.id != null ? 1 : 0;
+        case SearchType.sale:
+          // TODO: Handle this case.
+          throw UnimplementedError();
         case SearchType.vendor:
-          return selectedVendor.value.companyName != null ? 1 : 0;
-        case SearchType.paymentMethod:
-          return selectedPayment.value.accountName != null ? 1 : 0;
+          return selectedVendor.value.id != null ? 1 : 0;
+        case SearchType.account:
+          return selectedAccounts.value.id != null ? 1 : 0;
+        case SearchType.purchase:
+          // TODO: Handle this case.
+          throw UnimplementedError();
       }
   }
 
@@ -125,17 +150,20 @@ class SearchVoucherController extends GetxController {
           case SearchType.products:
             await getProductsBySearchQuery(query: query, page: page);
             break;
-          case SearchType.customers:
+          case SearchType.customer:
             await getCustomersBySearchQuery(query: query, page: page);
             break;
-          case SearchType.orders:
-            await getOrdersBySearchQuery(query: query, page: page);
+          case SearchType.sale:
+            await getSalesBySearchQuery(query: query, page: page);
             break;
           case SearchType.vendor:
             await getVendorsBySearchQuery(query: query, page: page);
             break;
-          case SearchType.paymentMethod:
-            await getPaymentsBySearchQuery(query: query, page: page);
+          case SearchType.account:
+            await getAccountBySearchQuery(query: query, page: page);
+            break;
+          case SearchType.purchase:
+            await getPurchaseBySearchQuery(query: query, page: page);
             break;
         }
       }
@@ -144,36 +172,33 @@ class SearchVoucherController extends GetxController {
     }
   }
 
-  // Get all products with optional search query
   Future<void> getProductsBySearchQuery({required String query, required int page}) async {
     try {
-      if(query.isNotEmpty) {
+      if (query.isNotEmpty) {
         final fetchedProducts = await mongoProductRepo.fetchProductsBySearchQuery(query: query, page: page);
-        products.addAll(fetchedProducts);
+        for (var product in fetchedProducts) {
+          if (!products.any((p) => p.productId == product.productId)) {
+            products.add(product);
+          }
+        }
       }
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
+
 
   // Get all products with optional search query
   Future<void> getCustomersBySearchQuery({required String query, required int page}) async {
     try {
-      if(query.isNotEmpty){
-        final List<UserModel> fetchedCustomers = await mongoUserRepository.fetchUsersBySearchQuery(query: query, userType: UserType.customer, page: page, userId: userId);
-        customers.addAll(fetchedCustomers);
-      }
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-    }
-  }
-
-  // Get all products with optional search query
-  Future<void> getOrdersBySearchQuery({required String query, required int page}) async {
-    try {
-      if(query.isNotEmpty){
-        final List<OrderModel> fetchedOrders = await mongoOrdersRepo.fetchOrdersBySearchQuery(query: query, page: page);
-        orders.addAll(fetchedOrders);
+      if (query.isNotEmpty) {
+        final fetchedCustomers = await mongoUserRepository.fetchUsersBySearchQuery(
+            query: query, userType: UserType.customer, page: page, userId: userId);
+        for (var customer in fetchedCustomers) {
+          if (!customers.any((c) => c.id == customer.id)) {
+            customers.add(customer);
+          }
+        }
       }
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
@@ -183,9 +208,13 @@ class SearchVoucherController extends GetxController {
   // Get all products with optional search query
   Future<void> getVendorsBySearchQuery({required String query, required int page}) async {
     try {
-      if(query.isNotEmpty){
-        final List<UserModel> fetchedVendors = await vendorController.getVendorsSearchQuery(query: query, page: page);
-        vendors.addAll(fetchedVendors);
+      if (query.isNotEmpty) {
+        final fetchedVendors = await vendorController.getVendorsSearchQuery(query: query, page: page);
+        for (var vendor in fetchedVendors) {
+          if (!vendors.any((v) => v.id == vendor.id)) {
+            vendors.add(vendor);
+          }
+        }
       }
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
@@ -193,11 +222,47 @@ class SearchVoucherController extends GetxController {
   }
 
   // Get all products with optional search query
-  Future<void> getPaymentsBySearchQuery({required String query, required int page}) async {
+  Future<void> getAccountBySearchQuery({required String query, required int page}) async {
     try {
-      if(query.isNotEmpty){
-        final List<AccountModel> fetchedPayments = await mongoPaymentMethodsRepo.fetchAccountsBySearchQuery(query: query, page: page);
-        payments.addAll(fetchedPayments);
+      if (query.isNotEmpty) {
+        final fetchedPayments = await mongoPaymentMethodsRepo.fetchAccountsBySearchQuery(query: query, page: page);
+        for (var account in fetchedPayments) {
+          if (!accounts.any((a) => a.id == account.id)) {
+            accounts.add(account);
+          }
+        }
+      }
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+    }
+  }
+
+  // Get all products with optional search query
+  Future<void> getSalesBySearchQuery({required String query, required int page}) async {
+    try {
+      if (query.isNotEmpty) {
+        final List<OrderModel> fetchedSales = await mongoOrderRepo.fetchOrdersByManualSearch(orderType: OrderType.sale, userId: userId, query: query, page: page);
+        for (var sale in fetchedSales) {
+          if (!sales.any((a) => a.id == sale.id)) {
+            sales.add(sale);
+          }
+        }
+      }
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+    }
+  }
+
+  // Get all products with optional search query
+  Future<void> getPurchaseBySearchQuery({required String query, required int page}) async {
+    try {
+      if (query.isNotEmpty) {
+        final List<OrderModel> fetchedPurchase = await mongoOrderRepo.fetchOrdersByManualSearch(orderType: OrderType.purchase, userId: userId, query: query, page: page);
+        for (var purchase in fetchedPurchase) {
+          if (!purchases.any((a) => a.id == purchase.id)) {
+            purchases.add(purchase);
+          }
+        }
       }
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
@@ -210,7 +275,7 @@ class SearchVoucherController extends GetxController {
       currentPage.value = 1;
       products.clear();
       customers.clear();
-      orders.clear();
+      sales.clear();
       vendors.clear();
       await getItemsBySearchQuery(query: query, searchType: searchType, page: 1);
     } catch (error) {

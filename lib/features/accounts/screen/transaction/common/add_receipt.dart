@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/navigation_bar/appbar.dart';
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/formatters/formatters.dart';
-import '../../../personalization/models/user_model.dart';
-import '../../controller/transaction/add_transaction_controller.dart';
-import '../../controller/transaction/transaction_controller.dart';
-import '../../models/account_model.dart';
-import '../../models/transaction_model.dart';
-import '../accounts/widget/account_tile.dart';
-import '../purchase/purchase_entry/widget/search_products.dart';
-import '../vendor/widget/vendor_tile.dart'; // Updated import
+import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../../common/navigation_bar/appbar.dart';
+import '../../../../../utils/constants/colors.dart';
+import '../../../../../utils/constants/enums.dart';
+import '../../../../../utils/constants/sizes.dart';
+import '../../../../../utils/formatters/formatters.dart';
+import '../../../../personalization/models/user_model.dart';
+import '../../../controller/transaction/add_payment_controller.dart';
+import '../../../controller/transaction/add_receipt_controller.dart';
+import '../../../controller/transaction/transaction_controller.dart';
+import '../../../models/account_model.dart';
+import '../../../models/transaction_model.dart';
+import '../../accounts/widget/account_tile.dart';
+import '../../customers/widget/customer_tile.dart';
+import '../../purchase/purchase_entry/widget/search_products.dart';
+import '../../vendor/widget/vendor_tile.dart'; // Updated import
 
-class AddTransaction extends StatelessWidget {
-  const AddTransaction({super.key, this.transaction});
+class AddReceipt extends StatelessWidget {
+  const AddReceipt({super.key, this.transaction});
 
   final TransactionModel? transaction; // Updated model
 
   @override
   Widget build(BuildContext context) {
-    final AddTransactionController controller = Get.put(AddTransactionController()); // Updated controller
+    final AddReceiptController controller = Get.put(AddReceiptController()); // Updated controller
 
     // If editing an existing transaction, reset the form values
     if (transaction != null) {
@@ -30,15 +33,15 @@ class AddTransaction extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppAppBar(title: transaction != null ? 'Update Transaction' : 'Add Transaction'), // Updated title
+      appBar: AppAppBar(title: transaction != null ? 'Update Receipt' : 'Add Receipt'), // Updated title
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.md, vertical: AppSizes.sm),
         child: ElevatedButton(
           onPressed: () => transaction != null
-              ? controller.saveUpdatedTransaction(oldTransaction: transaction!) // Updated method
-              : controller.saveTransaction(), // Updated method
+              ? controller.saveUpdatedReceiptTransaction(oldReceiptTransaction: transaction!) // Updated method
+              : controller.saveReceiptTransaction(), // Updated method
           child: Text(
-            transaction != null ? 'Update Transaction' : 'Add Transaction',
+            transaction != null ? 'Update Receipt' : 'Add Receipt',
             style: const TextStyle(fontSize: 16),
           ),
         ),
@@ -48,7 +51,7 @@ class AddTransaction extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: controller.transactionFormKey, // Updated form key
+            key: controller.receiptFormKey, // Updated form key
             child: Column(
               spacing: AppSizes.spaceBtwSection,
               children: [
@@ -84,26 +87,26 @@ class AddTransaction extends StatelessWidget {
                   ],
                 ),
 
-                // Vendor
+                // Customer
                 Column(
                   spacing: AppSizes.spaceBtwItems,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Vendor'),
+                        Text('Customer'),
                         InkWell(
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
-                            final UserModel getSelectedVendor = await showSearch(context: context,
+                            final UserModel getSelectedCustomer = await showSearch(context: context,
                               delegate: SearchVoucher1(
-                                  searchType: SearchType.vendor,
-                                  selectedItems: controller.selectedVendor.value
+                                  searchType: SearchType.customer,
+                                  selectedItems: controller.selectedCustomer.value
                               ),
                             );
                             // If products are selected, update the state
-                            if (getSelectedVendor.companyName != null) {
-                              controller.addVendor(getSelectedVendor);
+                            if (getSelectedCustomer.id != null) {
+                              controller.addCustomer(getSelectedCustomer);
                             }
                           },
                           child: Row(
@@ -115,14 +118,13 @@ class AddTransaction extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Obx(() => controller.selectedVendor.value.companyName != '' && controller.selectedVendor.value.companyName != null
+                    Obx(() => controller.selectedCustomer.value.id != '' && controller.selectedCustomer.value.id != null
                         ? Dismissible(
-                        key: Key(controller.selectedVendor.value.companyName ?? ''), // Unique key for each item
+                        key: Key(controller.selectedCustomer.value.id ?? ''), // Unique key for each item
                         direction: DismissDirection.endToStart, // Swipe left to remove
                         onDismissed: (direction) {
-                          controller.selectedVendor.value = UserModel();
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
+                          controller.selectedCustomer.value = UserModel();
+                          AppMassages.showSnackBar(massage: 'Customer removed');
                         },
                         background: Container(
                           color: Colors.red,
@@ -130,7 +132,7 @@ class AddTransaction extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        child: SizedBox(width: double.infinity, child: VendorTile(vendor: controller.selectedVendor.value))
+                        child: SizedBox(width: double.infinity, child: CustomerTile(customer: controller.selectedCustomer.value))
                     )
                         : SizedBox.shrink(),
                     ),
@@ -147,23 +149,23 @@ class AddTransaction extends StatelessWidget {
                   keyboardType: TextInputType.number,
                 ),
 
-                // Payment
+                // Account
                 Column(
                   spacing: AppSizes.spaceBtwItems,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Payment Method'),
+                        Text('Select Account'),
                         InkWell(
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final AccountModel getSelectedPayment = await showSearch(context: context,
-                              delegate: SearchVoucher1(searchType: SearchType.paymentMethod),
+                              delegate: SearchVoucher1(searchType: SearchType.account),
                             );
                             // If products are selected, update the state
                             if (getSelectedPayment.accountName != null) {
-                              controller.selectedPaymentMethod(getSelectedPayment);
+                              controller.selectedAccount(getSelectedPayment);
                             }
                           },
                           child: Row(
@@ -175,14 +177,13 @@ class AddTransaction extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Obx(() => controller.selectedPaymentMethod.value.accountName != '' && controller.selectedPaymentMethod.value.accountName != null
+                    Obx(() => controller.selectedAccount.value.accountName != '' && controller.selectedAccount.value.accountName != null
                         ? Dismissible(
-                        key: Key(controller.selectedPaymentMethod.value.accountName ?? ''), // Unique key for each item
+                        key: Key(controller.selectedAccount.value.accountName ?? ''), // Unique key for each item
                         direction: DismissDirection.endToStart, // Swipe left to remove
                         onDismissed: (direction) {
-                          controller.selectedPaymentMethod.value = AccountModel();
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment Method removed")),);
+                          controller.selectedAccount.value = AccountModel();
+                          AppMassages.showSnackBar(massage: 'Account removed');
                         },
                         background: Container(
                           color: Colors.red,
@@ -190,7 +191,7 @@ class AddTransaction extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        child: SizedBox(width: double.infinity, child: AccountTile(account: controller.selectedPaymentMethod.value))
+                        child: SizedBox(width: double.infinity, child: AccountTile(account: controller.selectedAccount.value))
                     )
                         : SizedBox.shrink(),
                     ),

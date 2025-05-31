@@ -13,13 +13,11 @@ class CustomersGridLayout extends StatelessWidget {
   const CustomersGridLayout({
     super.key,
     required this.controller,
-    required this.sourcePage,
     this.orientation = OrientationType.horizontal,
     this.emptyWidget = const AnimationLoaderWidgets(text: 'Whoops! No products found...', animation: Images.pencilAnimation),
   });
 
   final dynamic controller;
-  final String sourcePage;
   final OrientationType orientation;
   final Widget emptyWidget;
 

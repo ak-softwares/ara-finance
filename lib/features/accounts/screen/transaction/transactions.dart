@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 
@@ -10,7 +11,8 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/transaction/transaction_controller.dart';
-import 'add_transaction.dart'; // Updated import
+import 'common/add_payment.dart'; // Updated import
+import 'common/add_receipt.dart';
 import 'widget/transaction_simmer.dart';
 import 'widget/transaction_tile.dart'; // Updated import
 
@@ -50,13 +52,33 @@ class Transactions extends StatelessWidget {
 
     return Scaffold(
       appBar: const AppAppBar(title: 'Transactions'), // Updated title
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
+      floatingActionButton: SpeedDial(
+        heroTag: 'transactions_fab',
         backgroundColor: Colors.blue,
-        onPressed: () => Get.to(() => const AddTransaction()), // Updated navigation
-        tooltip: 'Add Transaction', // Updated tooltip
-        child: const Icon(LineIcons.plus, size: 30, color: Colors.white),
+        icon: LineIcons.plus,
+        activeIcon: Icons.close,
+        foregroundColor: Colors.white,
+        spacing: 10,
+        spaceBetweenChildren: 8,
+        shape: const CircleBorder(),
+        tooltip: 'Actions',
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            backgroundColor: Colors.green,
+            label: 'Add Receipt',
+            onTap: () => Get.to(() => AddReceipt()),
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            backgroundColor: Colors.red,
+            label: 'Add Payment',
+            onTap: () => Get.to(() => AddPayment()),
+          ),
+          // Add more submenu buttons as needed
+        ],
       ),
+
       body: RefreshIndicator(
         color: AppColors.refreshIndicator,
         onRefresh: () async => transactionController.refreshTransactions(), // Updated method

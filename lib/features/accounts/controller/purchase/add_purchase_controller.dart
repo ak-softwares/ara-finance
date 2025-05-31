@@ -23,7 +23,7 @@ import '../../models/order_model.dart';
 import '../../models/product_model.dart';
 import '../../models/transaction_model.dart';
 import '../product/product_controller.dart';
-import '../transaction/add_transaction_controller.dart';
+import '../transaction/add_payment_controller.dart';
 import '../transaction/transaction_controller.dart';
 import 'purchase_controller.dart';
 
@@ -51,10 +51,10 @@ class AddPurchaseController extends GetxController {
   final mongoOrderRepo = Get.put(MongoOrderRepo());
   final productsVoucherController = Get.put(ProductController());
   final userController = Get.put(UserController());
-  final addTransactionController = Get.put(AddTransactionController());
+  final transactionController = Get.put(TransactionController());
 
   RxList<CartModel> selectedProducts = <CartModel>[].obs;
-  Rx<UserModel> selectedSupplier = UserModel().obs;
+  Rx<UserModel> selectedVendor = UserModel().obs;
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
@@ -143,7 +143,7 @@ class AddPurchaseController extends GetxController {
   }
 
   void addSupplier(UserModel getSelectedSupplier) {
-    selectedSupplier.value = getSelectedSupplier;
+    selectedVendor.value = getSelectedSupplier;
   }
 
   void selectDate(BuildContext context) async {
@@ -181,13 +181,14 @@ class AddPurchaseController extends GetxController {
       image: product.mainImage,
       parentName: '0',
       isCODBlocked: product.isCODBlocked,
+      vendor: product.vendor?.id == null ? selectedVendor.value : null,
     );
   }
 
   Future<void> clearPurchase() async {
     invoiceId.value = await mongoOrderRepo.fetchOrderGetNextId(orderType: orderType, userId: userId);
     dateController.text = DateTime.now().toString();
-    selectedSupplier.value = UserModel();
+    selectedVendor.value = UserModel();
     selectedProducts.value = [];
     updatePurchaseTotal();
   }
@@ -200,7 +201,7 @@ class AddPurchaseController extends GetxController {
       if (selectedProducts.isEmpty) {
         throw Exception('Please select at least one product.');
       }
-      if (selectedSupplier.value.id == null) {
+      if (selectedVendor.value.id == null) {
         throw Exception('Please select a supplier.');
       }
       if (dateController.text.isEmpty) {
@@ -227,8 +228,8 @@ class AddPurchaseController extends GetxController {
       amount: purchaseTotal.value,
       date: DateTime.tryParse(dateController.text),
       fromEntityType: EntityType.vendor,
-      fromEntityId: selectedSupplier.value.id,
-      fromEntityName: selectedSupplier.value.companyName,
+      fromEntityId: selectedVendor.value.id,
+      fromEntityName: selectedVendor.value.companyName,
       purchaseId: invoiceId.value,
       transactionType: TransactionType.purchase,
     );
@@ -237,7 +238,7 @@ class AddPurchaseController extends GetxController {
         invoiceNumber: invoiceId.value,
         dateCreated: DateTime.tryParse(dateController.text),
         userId: userId,
-        user: selectedSupplier.value,
+        user: selectedVendor.value,
         lineItems: selectedProducts,
         total: purchaseTotal.value,
         purchaseInvoiceImages: purchaseInvoiceImages,
@@ -282,41 +283,12 @@ class AddPurchaseController extends GetxController {
 
     await productsVoucherController.updateProductQuantityById(cartItems: purchase.lineItems ?? [], isAddition: true, isPurchase: true);
 
-    final String? transactionId = await addTransactionController.processTransaction(transaction: purchase.transaction!);
+    final String? transactionId = await transactionController.processTransaction(transaction: purchase.transaction!);
 
     purchase.transaction?.id = transactionId;
 
     await mongoOrderRepo.pushOrders(orders: [purchase]);
   }
-
-  // Future<void> pushPurchase({required OrderModel purchase}) async {
-  //   try {
-  //     FullScreenLoader.openLoadingDialog('We are adding purchase...', Images.docerAnimation);
-  //     final isConnected = await NetworkManager.instance.isConnected();
-  //     if (!isConnected) {
-  //       FullScreenLoader.stopLoading();
-  //       throw 'Internet Not connected';
-  //     }
-  //
-  //     final fetchedInvoiceId = await mongoOrderRepo.fetchOrderGetNextId(orderType: orderType, userId: userId);
-  //     if (fetchedInvoiceId != invoiceId.value) {
-  //       purchase.invoiceNumber = fetchedInvoiceId;
-  //     }
-  //     await productsVoucherController.updateProductQuantity(cartItems: purchase.lineItems ?? [], isAddition: true, isPurchase: true);
-  //     final String? transactionId =  await addTransactionController.processTransaction(transaction: purchase.transaction!);
-  //     purchase.transaction?.id = transactionId;
-  //     await mongoOrderRepo.pushOrders(orders: [purchase]);
-  //
-  //     await clearPurchase();
-  //     await purchaseController.refreshPurchases();
-  //     FullScreenLoader.stopLoading();
-  //     AppMassages.showToastMessage(message: 'Purchase uploaded successfully!');
-  //     Navigator.of(Get.context!).pop();
-  //   } catch (e) {
-  //     FullScreenLoader.stopLoading();
-  //     AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-  //   }
-  // }
 
   void updateQuantity({required CartModel item, required int quantity}) {
     int index = selectedProducts.indexWhere((cartItem) => cartItem.productId == item.productId);
@@ -357,7 +329,7 @@ class AddPurchaseController extends GetxController {
       ),
     );
     invoiceId.value = purchase.orderId ?? 0;
-    selectedSupplier.value = purchase.user ?? UserModel();
+    selectedVendor.value = purchase.user ?? UserModel();
     selectedProducts.value = purchase.lineItems ?? [];
     purchaseInvoiceImages.value = purchase.purchaseInvoiceImages ?? [];
     updatePurchaseTotal();
@@ -372,8 +344,8 @@ class AddPurchaseController extends GetxController {
       amount: purchaseTotal.value,
       date: DateTime.tryParse(dateController.text),
       fromEntityType: EntityType.vendor,
-      fromEntityId: selectedSupplier.value.id,
-      fromEntityName: selectedSupplier.value.companyName,
+      fromEntityId: selectedVendor.value.id,
+      fromEntityName: selectedVendor.value.companyName,
       purchaseId: oldPurchase.invoiceNumber,
       transactionType: TransactionType.purchase,
     );
@@ -382,7 +354,7 @@ class AddPurchaseController extends GetxController {
         userId: userId,
         invoiceNumber: oldPurchase.invoiceNumber,
         dateCreated: DateTime.tryParse(dateController.text),
-        user: selectedSupplier.value,
+        user: selectedVendor.value,
         lineItems: selectedProducts,
         total: purchaseTotal.value,
         orderType: orderType,
@@ -415,51 +387,4 @@ class AddPurchaseController extends GetxController {
     }
   }
 
-  // Future<void> updatePurchase({required OrderModel newPurchase, required OrderModel previousPurchase}) async {
-  //   try {
-  //     FullScreenLoader.openLoadingDialog('We are updating purchase...', Images.docerAnimation);
-  //     final isConnected = await NetworkManager.instance.isConnected();
-  //     if (!isConnected) {
-  //       FullScreenLoader.stopLoading();
-  //       throw 'Internet Not connected';
-  //     }
-  //
-  //     // Calculate balance difference
-  //     double currentTotal = newPurchase.total ?? 0;
-  //     double previousTotal = previousPurchase.total ?? 0;
-  //
-  //     final updateProductQuantities = productsVoucherController.updateProductQuantity(
-  //       cartItems: newPurchase.lineItems ?? [],
-  //       previousCartItems: previousPurchase.lineItems ?? [],
-  //       isUpdate: true,
-  //       isPurchase: true,
-  //       isAddition: true,
-  //     );
-  //
-  //     Future<void> updateVendorBalance = userController.updateUserBalance(
-  //         userID: selectedSupplier.value.documentId ?? 0,
-  //         balance: currentTotal,
-  //         previousBalance: previousTotal,
-  //         isUpdate: true,
-  //         isAddition: false
-  //     );
-  //     final updatePurchase = mongoOrderRepo.updateOrder(order: newPurchase);
-  //
-  //     await Future.wait([updateProductQuantities, updateVendorBalance, updatePurchase]);
-  //
-  //     final index = purchaseController.purchases.indexWhere((c) => c.id == newPurchase.id);
-  //     if (index != -1) {
-  //       purchaseController.purchases[index] = newPurchase;
-  //       purchaseController.purchases.refresh();
-  //     }
-  //     await purchaseController.refreshPurchases();
-  //
-  //     FullScreenLoader.stopLoading();
-  //     AppMassages.showToastMessage(message: 'Purchase updated successfully!');
-  //     Navigator.of(Get.context!).pop();
-  //   } catch (e) {
-  //     FullScreenLoader.stopLoading();
-  //     AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-  //   }
-  // }
 }

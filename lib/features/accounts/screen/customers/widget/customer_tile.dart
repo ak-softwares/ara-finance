@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../common/styles/spacing_style.dart';
+import '../../../../../common/widgets/common/colored_amount.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../personalization/models/user_model.dart';
+import '../single_customer.dart';
 
 
 class CustomerTile extends StatelessWidget {
@@ -45,7 +47,7 @@ class CustomerTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Balance'),
-                    // Text(customer.balance.toString()),
+                    ColoredAmount(amount: customer.balance ?? 0.0)
                   ],
                 ),
               ],

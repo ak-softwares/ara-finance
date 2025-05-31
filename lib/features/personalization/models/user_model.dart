@@ -26,13 +26,13 @@ class UserModel {
   double? openingBalance;
   bool? isPayingCustomer;
   String? avatarUrl;
-  String? dateCreated;
-  String? dateModified;
+  DateTime? dateCreated;
+  DateTime? dateModified;
+  DateTime? activeTime;
   bool? isPhoneVerified;
   String? fCMToken;
   bool? isCODBlocked;
   UserType userType;
-  DateTime? activeTime;
   List<dynamic>? cartItems;
   List<dynamic>? wishlistItems;
   List<dynamic>? recentItems;
@@ -83,6 +83,8 @@ class UserModel {
 
   static UserModel empty() => UserModel();
 
+  double get closingBalance => (openingBalance ?? 0) + (balance ?? 0);
+
   String get fullName {
     if (name != null && name!.isNotEmpty) return name!;
     return '${firstName ?? ''} ${lastName ?? ''}'.trim();
@@ -122,8 +124,9 @@ class UserModel {
       shipping: AddressModel.fromJson(json[UserFieldConstants.shipping] ?? {}),
       isPayingCustomer: json[UserFieldConstants.isPayingCustomer] ?? false,
       avatarUrl: json[UserFieldConstants.avatarUrl] ?? '',
-      dateCreated: json[UserFieldConstants.dateCreated] ?? '',
-      dateModified: json[UserFieldConstants.dateModified] ?? '',
+      dateCreated: parseDate(json[UserFieldConstants.dateCreated]),
+      dateModified: parseDate(json[UserFieldConstants.dateModified]),
+      activeTime: parseDate(json[UserFieldConstants.activeTime]),
       isPhoneVerified: (json[UserFieldConstants.metaData] as List?)?.any((meta) =>
       meta['key'] == UserFieldConstants.verifyPhone && meta['value'] == true) ?? false,
       fCMToken: (json[UserFieldConstants.metaData] as List?)?.firstWhere(
@@ -132,11 +135,8 @@ class UserModel {
       isCODBlocked: (json[UserFieldConstants.metaData] as List?)?.any((meta) =>
       meta['key'] == UserFieldConstants.isCODBlocked && meta['value'] == "1") ?? false,
       balance: json[UserFieldConstants.balance]?.toDouble() ?? 0.0,
-      openingBalance: json[UserFieldConstants.openingBalance]?.toDouble(),
+      openingBalance: json[UserFieldConstants.openingBalance]?.toDouble() ?? 0.0,
       userType: userType,
-      activeTime: json[UserFieldConstants.activeTime] != null
-          ? DateTime.parse(json[UserFieldConstants.activeTime])
-          : null,
       cartItems: json[UserFieldConstants.cartItems] as List<dynamic>?,
       wishlistItems: json[UserFieldConstants.wishlistItems] as List<dynamic>?,
       recentItems: json[UserFieldConstants.recentItems] as List<dynamic>?,
@@ -180,10 +180,10 @@ class UserModel {
     addIfNotNull(UserFieldConstants.avatarUrl, avatarUrl);
     addIfNotNull(UserFieldConstants.dateCreated, dateCreated);
     addIfNotNull(UserFieldConstants.dateModified, dateModified);
+    addIfNotNull(UserFieldConstants.activeTime, activeTime);
     addIfNotNull(UserFieldConstants.balance, balance);
     addIfNotNull(UserFieldConstants.openingBalance, openingBalance);
     addIfNotNull(UserFieldConstants.userType, userType.name);
-    addIfNotNull(UserFieldConstants.activeTime, activeTime?.toIso8601String());
     addIfNotNull(UserFieldConstants.cartItems, cartItems);
     addIfNotNull(UserFieldConstants.wishlistItems, wishlistItems);
     addIfNotNull(UserFieldConstants.recentItems, recentItems);
@@ -201,18 +201,6 @@ class UserModel {
     }
 
     return map;
-  }
-
-  Map<String, dynamic> toJsonForSignUp() {
-    return {
-      UserFieldConstants.firstName: firstName,
-      UserFieldConstants.username: username,
-      UserFieldConstants.email: email,
-      UserFieldConstants.password: password,
-      UserFieldConstants.billing: billing?.toJsonForWoo(),
-      UserFieldConstants.shipping: shipping?.toJsonForWoo(),
-      UserFieldConstants.userType: userType.toString().split('.').last,
-    };
   }
 }
 
@@ -233,4 +221,19 @@ class UserMetaDataModel {
       'value': value ?? '',
     };
   }
+}
+
+DateTime? parseDate(dynamic value) {
+  if (value == null) return null;
+
+  if (value is DateTime) {
+    return value;
+  } else if (value is String) {
+    try {
+      return DateTime.tryParse(value);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
 }

@@ -10,13 +10,18 @@ enum OrientationType {horizontal, vertical}
 enum EcommercePlatform { none, woocommerce, shopify, amazon}
 
 // Enum to specify search type
-enum SearchType { products, customers, orders, vendor, paymentMethod}
+enum SearchType { products, customer, sale, purchase, vendor, account}
 
-enum TransactionType { payment, refund, transfer, purchase, delete, expense, sale}
+enum TransactionType { payment, refund, transfer, purchase, delete, expense, sale, receipt, creditNote}
 
 enum PurchaseListType { purchasable, purchased, notAvailable, vendors }
 
+enum SyncType { add, update, check }
+
+enum SyncStatus { idle, fetching, checking, pushing, completed, failed }
+
 enum EntityType { vendor, account, customer, expense }
+
 extension EntityTypeExtension on EntityType {
 
   String get name {

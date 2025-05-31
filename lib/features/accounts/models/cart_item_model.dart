@@ -1,4 +1,5 @@
 import '../../../utils/constants/db_constants.dart';
+import '../../personalization/models/user_model.dart';
 
 class CartModel {
   int? id;
@@ -21,6 +22,7 @@ class CartModel {
   String? parentName;
   bool? isCODBlocked;
   String? pageSource;
+  UserModel? vendor;
 
   //constructor
   CartModel({
@@ -43,7 +45,8 @@ class CartModel {
     this.image,
     this.parentName,
     this.isCODBlocked,
-    this.pageSource
+    this.pageSource,
+    this.vendor,
   });
 
   // Empty cart
@@ -73,7 +76,7 @@ class CartModel {
           : null, // Keep the structure same as the input JSON
       CartFieldName.parentName: parentName,
       CartFieldName.isCODBlocked: isCODBlocked,
-      CartFieldName.pageSource: pageSource,
+      CartFieldName.vendor: vendor?.toMap(),
     };
   }
 
@@ -110,6 +113,9 @@ class CartModel {
           : '',
       parentName: json[CartFieldName.parentName] ?? '',
       isCODBlocked: json[CartFieldName.isCODBlocked] ?? false,
+      vendor: json[CartFieldName.vendor] != null
+          ? UserModel.fromJson(json[CartFieldName.vendor])
+          : UserModel(),
     );
   }
 
@@ -139,6 +145,9 @@ class CartModel {
       parentName: json[CartFieldName.parentName] ?? '',
       isCODBlocked: json[CartFieldName.isCODBlocked] ?? false,
       pageSource: json[CartFieldName.pageSource] ?? '',
+      vendor: json[CartFieldName.vendor] != null
+          ? UserModel.fromJson(json[CartFieldName.vendor])
+          : UserModel(),
     );
   }
 
@@ -163,6 +172,7 @@ class CartModel {
       CartFieldName.image: image != null && image!.isNotEmpty ? {CartFieldName.src: image} : '',
       CartFieldName.parentName: parentName,
       CartFieldName.isCODBlocked: isCODBlocked,
+      CartFieldName.vendor: vendor?.toMap(),
     };
   }
 
@@ -187,6 +197,7 @@ class CartModel {
     String? parentName,
     bool? isCODBlocked,
     String? pageSource,
+    UserModel? vendor,
   }) {
     return CartModel(
       id: id ?? this.id,
@@ -209,6 +220,7 @@ class CartModel {
       parentName: parentName ?? this.parentName,
       isCODBlocked: isCODBlocked ?? this.isCODBlocked,
       pageSource: pageSource ?? this.pageSource,
+      vendor: vendor ?? this.vendor,
     );
   }
 

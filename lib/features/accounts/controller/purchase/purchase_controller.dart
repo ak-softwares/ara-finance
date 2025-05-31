@@ -13,7 +13,8 @@ import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../data/repositories/woocommerce/orders/woo_orders_repository.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../models/order_model.dart';
-import '../transaction/add_transaction_controller.dart';
+import '../transaction/add_payment_controller.dart';
+import '../transaction/transaction_controller.dart';
 
 class PurchaseController extends GetxController {
   static PurchaseController get instance => Get.find();
@@ -32,7 +33,7 @@ class PurchaseController extends GetxController {
   final wooOrdersRepository = Get.put(WooOrdersRepository());
   final productController = Get.put(ProductController());
   final userController = Get.put(UserController());
-  final addTransactionController = Get.put(AddTransactionController());
+  final transactionController = Get.put(TransactionController());
 
   Future<void> getPurchases() async {
     try {
@@ -88,7 +89,7 @@ class PurchaseController extends GetxController {
       await Future.wait([
         deleteImages(purchase.purchaseInvoiceImages ?? []),
         productController.updateProductQuantityById(cartItems: purchase.lineItems ?? []),
-        addTransactionController.processTransaction(transaction: purchase.transaction!, isDelete: true),
+        transactionController.processTransaction(transaction: purchase.transaction!, isDelete: true),
         mongoOrderRepo.deleteOrderById(id: purchase.id ?? ''),
         refreshPurchases(),
       ]);

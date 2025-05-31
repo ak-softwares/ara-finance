@@ -31,8 +31,6 @@ class AddressController extends GetxController{
 
 
   final addCustomerController = Get.put(AddCustomerController());
-  final auth = Get.put(AuthenticationController());
-  String get userId => auth.admin.value.id!;
 
 
   void initializedInPutField({required AddressModel address}) {
@@ -46,7 +44,7 @@ class AddressController extends GetxController{
     country.text = address.country!;
   }
 
-  Future<void> updateAddress() async {
+  Future<void> updateAddress({required String userId, required UserType userType}) async {
     try {
       //Start Loading
       FullScreenLoader.openLoadingDialog('We are updating your Address..', Images.docerAnimation);
@@ -75,9 +73,8 @@ class AddressController extends GetxController{
         country: CountryData.getISOFromCountry(country.text.trim()),
       );
 
-      await addCustomerController.updateCustomerAddressById(id: userId, userType: UserType.admin, address: address);
+      await addCustomerController.updateCustomerAddressById(id: userId, userType: userType, address: address);
 
-      auth.refreshAdmin();
       // remove Loader
       FullScreenLoader.stopLoading();
       AppMassages.showToastMessage(message: 'Address updated successfully!');

@@ -19,7 +19,7 @@ class OrderModel {
   bool? pricesIncludeTax;
   DateTime? dateCreated;
   DateTime? dateModified;
-  DateTime? dateCompleted;
+  DateTime? dateShipped;
   DateTime? datePaid;
   DateTime? dateReturned;
   String? discountTotal;
@@ -60,7 +60,7 @@ class OrderModel {
     this.pricesIncludeTax,
     this.dateCreated,
     this.dateModified,
-    this.dateCompleted,
+    this.dateShipped,
     this.datePaid,
     this.dateReturned,
     this.discountTotal,
@@ -126,7 +126,7 @@ class OrderModel {
       pricesIncludeTax: json[OrderFieldName.pricesIncludeTax] ?? false,
       dateCreated: json[OrderFieldName.dateCreated],
       dateModified: json[OrderFieldName.dateModified],
-      dateCompleted: json[OrderFieldName.dateCompleted],
+      dateShipped: json[OrderFieldName.dateCompleted],
       datePaid: json[OrderFieldName.datePaid],
       dateReturned: json[OrderFieldName.dateReturned],
       discountTotal: json[OrderFieldName.discountTotal] ?? '',
@@ -189,7 +189,7 @@ class OrderModel {
           ? DateTime.parse(json[OrderFieldName.dateModified])
           : null,
 
-      dateCompleted: json[OrderFieldName.dateCompleted] != null && json[OrderFieldName.dateCompleted] != ''
+      dateShipped: json[OrderFieldName.dateCompleted] != null && json[OrderFieldName.dateCompleted] != ''
           ? DateTime.parse(json[OrderFieldName.dateCompleted])
           : null,
 
@@ -244,7 +244,7 @@ class OrderModel {
       if (pricesIncludeTax != null) OrderFieldName.pricesIncludeTax: pricesIncludeTax,
       if (dateCreated != null) OrderFieldName.dateCreated: dateCreated,
       if (dateModified != null) OrderFieldName.dateModified: dateModified,
-      if (dateCompleted != null) OrderFieldName.dateCompleted: dateCompleted,
+      if (dateShipped != null) OrderFieldName.dateCompleted: dateShipped,
       if (datePaid != null) OrderFieldName.datePaid: datePaid,
       if (dateReturned != null) OrderFieldName.dateReturned: dateReturned,
       if (discountTotal != null) OrderFieldName.discountTotal: discountTotal,
@@ -265,7 +265,7 @@ class OrderModel {
       if (customerIpAddress != null) OrderFieldName.customerIpAddress: customerIpAddress,
       if (customerUserAgent != null) OrderFieldName.customerUserAgent: customerUserAgent,
       if (customerNote != null) OrderFieldName.customerNote: customerNote,
-      if (dateCompleted != null) OrderFieldName.dateCompleted: dateCompleted,
+      if (dateShipped != null) OrderFieldName.dateCompleted: dateShipped,
       if (datePaid != null) OrderFieldName.datePaid: datePaid,
       if (setPaid != null) OrderFieldName.setPaid: setPaid,
       if (lineItems != null) OrderFieldName.lineItems: lineItems?.map((item) => item.toMap()).toList(),
@@ -359,7 +359,7 @@ class OrderModel {
       pricesIncludeTax: pricesIncludeTax ?? this.pricesIncludeTax,
       dateCreated: dateCreated ?? this.dateCreated,
       dateModified: dateModified ?? this.dateModified,
-      dateCompleted: dateCompleted ?? this.dateCompleted,
+      dateShipped: dateCompleted ?? this.dateShipped,
       datePaid: datePaid ?? this.datePaid,
       dateReturned: dateReturned ?? this.dateReturned,
       discountTotal: discountTotal ?? this.discountTotal,

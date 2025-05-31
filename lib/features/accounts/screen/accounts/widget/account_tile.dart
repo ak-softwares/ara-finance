@@ -16,16 +16,16 @@ class AccountTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double paymentTileHeight = AppSizes.paymentTileHeight;
-    const double paymentTileWidth = AppSizes.paymentTileWidth;
-    const double paymentTileRadius = AppSizes.paymentTileRadius;
-    const double paymentImageHeight = AppSizes.paymentImageHeight;
-    const double paymentImageWidth = AppSizes.paymentImageWidth;
+    const double paymentTileHeight = AppSizes.accountTileHeight;
+    const double paymentTileWidth = AppSizes.accountTileWidth;
+    const double paymentTileRadius = AppSizes.accountTileRadius;
+    const double paymentImageHeight = AppSizes.accountImageHeight;
+    const double paymentImageWidth = AppSizes.accountImageWidth;
 
     final controller = Get.put(AccountController());
 
     return InkWell(
-      onTap: onTap,
+    onTap: onTap,
      onLongPress: () => showMenuBottomSheet(context: context),
       child: Container(
         width: paymentTileWidth,
@@ -64,8 +64,15 @@ class AccountTile extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Balance'),
-                    ColoredAmount(amount: account.balance ?? 0.0),
+                    const Text('Current Balance'),
+                    Text(account.balance.toString(), style: const TextStyle(fontSize: 14)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Closing Balance'),
+                    ColoredAmount(amount: account.closingBalance ?? 0.0),
                   ],
                 ),
               ],

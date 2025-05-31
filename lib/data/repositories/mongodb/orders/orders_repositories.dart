@@ -8,6 +8,7 @@ import '../../../../utils/constants/enums.dart';
 import '../../../database/mongodb/mongo_delete.dart';
 import '../../../database/mongodb/mongo_fetch.dart';
 import '../../../database/mongodb/mongo_insert.dart';
+import '../../../database/mongodb/mongo_search.dart';
 import '../../../database/mongodb/mongo_update.dart';
 
 class MongoOrderRepo extends GetxController {
@@ -16,16 +17,18 @@ class MongoOrderRepo extends GetxController {
   final MongoInsert _mongoInsert = MongoInsert();
   final MongoUpdate _mongoUpdate = MongoUpdate();
   final MongoDelete _mongoDelete = MongoDelete();
+  final MongoSearch _mongoSearch = MongoSearch();
   final String collectionName = DbCollections.orders;
   final int itemsPerPage = int.tryParse(APIConstant.itemsPerPage) ?? 10;
 
   // Fetch orders by search query & pagination
-  Future<List<OrderModel>> fetchOrdersBySearchQuery({required String query, int page = 1}) async {
+  Future<List<OrderModel>> fetchOrdersBySearchQuery({required OrderType orderType, required String userId, required String query, int page = 1}) async {
     try {
       // Fetch orders from MongoDB with search and pagination
       final List<Map<String, dynamic>> ordersData =
           await _mongoFetch.fetchDocumentsBySearchQuery(
               collectionName: collectionName,
+              filter: {OrderFieldName.orderType: orderType.name, OrderFieldName.userId: userId},
               query: query,
               itemsPerPage: itemsPerPage,
               page: page
@@ -34,7 +37,29 @@ class MongoOrderRepo extends GetxController {
       final List<OrderModel> orders = ordersData.map((data) => OrderModel.fromJson(data)).toList();
       return orders;
     } catch (e) {
-      throw 'Failed to fetch orders: $e';
+      rethrow;
+    }
+  }
+
+  // Fetch orders by search query & pagination
+  Future<List<OrderModel>> fetchOrdersByManualSearch({required OrderType orderType, required String userId, required String query, int page = 1}) async {
+    try {
+      // Fetch orders from MongoDB with search and pagination
+      final List<Map<String, dynamic>> ordersData =
+      await _mongoSearch.searchDocumentsByFields1(
+          collectionName: collectionName,
+          searchTerm: query,
+          // searchFields: [OrderFieldName.orderId, OrderFieldName.invoiceNumber, OrderFieldName.status],
+          searchFields: [OrderFieldName.orderId],
+          filter: {OrderFieldName.orderType: orderType.name, OrderFieldName.userId: userId},
+          itemsPerPage: itemsPerPage,
+          page: page
+      );
+      // Convert data to a list of OrdersModel
+      final List<OrderModel> orders = ordersData.map((data) => OrderModel.fromJson(data)).toList();
+      return orders;
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -115,6 +140,30 @@ class MongoOrderRepo extends GetxController {
         );
     } catch (e) {
       throw 'Failed to update order: $e';
+    }
+  }
+
+  Future<void> updateOrders({required List<OrderModel> orders, required Map<String, dynamic> updatedData}) async {
+    try {
+      if (orders.isEmpty) {
+        throw Exception('❌ No orders provided');
+      }
+
+      final orderIds = orders.map((order) => order.id).where((id) => id != null && id.isNotEmpty).toList();
+
+      if (orderIds.length != orders.length) {
+        throw Exception('🚫 Some orders have missing or invalid IDs');
+      }
+
+      await _mongoUpdate.updateManyDocumentsById(
+        collectionName: collectionName,
+        ids: orderIds.cast<String>(),
+        updatedData: updatedData,
+      );
+    } on FormatException catch (e) {
+      throw Exception('🆔 ID Error in order list: ${e.message}');
+    } catch (e) {
+      throw Exception('❌ Failed to update orders: ${e.toString()}');
     }
   }
 

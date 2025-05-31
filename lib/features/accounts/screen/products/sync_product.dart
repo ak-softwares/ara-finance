@@ -5,6 +5,7 @@ import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/widgets/custom_shape/containers/rounded_container.dart';
 import '../../../../common/widgets/shimmers/shimmer_effect.dart';
 import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/product/sync_product_controller.dart';
 

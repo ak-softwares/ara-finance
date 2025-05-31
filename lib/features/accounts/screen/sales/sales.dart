@@ -20,6 +20,7 @@ import 'common/add_barcode_sale.dart';
 import 'common/add_return_barcode.dart';
 import 'add_sale.dart';
 import 'common/update_payment.dart';
+import 'widget/sale_shimmer.dart';
 import 'widget/sale_tile.dart';
 
 class Sales extends StatelessWidget {
@@ -59,7 +60,7 @@ class Sales extends StatelessWidget {
     return Scaffold(
         appBar: AppAppBar(
           title: 'Sales',
-          searchType: SearchType.orders,
+          searchType: SearchType.sale,
           widgetInActions: Row(
             children: [
               IconButton(
@@ -123,7 +124,7 @@ class Sales extends StatelessWidget {
             children: [
               Obx(() {
                 if (controller.isLoading.value) {
-                  return OrderShimmer(itemCount: 2,);
+                  return SaleShimmer(itemCount: 2,);
                 } else if(controller.sales.isEmpty) {
                   return emptyWidget;
                 } else {
@@ -134,30 +135,9 @@ class Sales extends StatelessWidget {
                       mainAxisExtent: AppSizes.saleTileHeight,
                       itemBuilder: (context, index) {
                         if (index < sales.length) {
-                          return Slidable(
-                            key: Key(sales[index].id.toString()),
-                            endActionPane: ActionPane(
-                              motion: const DrawerMotion(),
-                              children: [
-                                SlidableAction(
-                                  onPressed: (_) async {
-                                    await controller.updatePaymentStatus(sale: sales[index]);
-                                    AppMassages.showSnackBar(
-                                      massage: "Payment Updated",
-                                      onUndo: () => controller.revertPaymentStatus(sale: sales[index])
-                                    );
-                                  },
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.paid,
-                                  label: 'Set Paid',
-                                ),
-                              ],
-                            ),
-                            child: SaleTile(sale: sales[index]),
-                          );
+                          return SaleTile(sale: sales[index]);
                         } else {
-                          return OrderShimmer();
+                          return SaleShimmer();
                         }
                       }
                   );

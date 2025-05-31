@@ -17,7 +17,10 @@ import '../../../personalization/screens/user_address/address_widgets/single_add
 import '../../../settings/app_settings.dart';
 import '../../controller/sales_controller/sales_controller.dart';
 import '../../models/order_model.dart';
+import '../../models/transaction_model.dart';
 import '../products/widget/product_cart_tile.dart';
+import '../transaction/widget/transaction_tile.dart';
+import '../transaction/widget/transactions_by_entity.dart';
 import 'add_sale.dart';
 
 class SingleSaleScreen extends StatefulWidget {
@@ -127,12 +130,12 @@ class _SingleSaleScreenState extends State<SingleSaleScreen> {
                                 Text(AppFormatter.formatDate(currentOrder.dateCreated)),
                               ],
                             ),
-                            if(currentOrder.dateCompleted != null)
+                            if(currentOrder.dateShipped != null)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Ship Date'),
-                                  Text(AppFormatter.formatDate(currentOrder.dateCompleted)),
+                                  Text(AppFormatter.formatDate(currentOrder.dateShipped)),
                                 ],
                               ),
                             if(currentOrder.datePaid != null)
@@ -263,6 +266,21 @@ class _SingleSaleScreenState extends State<SingleSaleScreen> {
                             title: Text('Track Package'),
                             trailing: Icon(Icons.open_in_new,
                                 size: 20, color: Colors.blue),
+                          ),
+
+                          // Transaction
+                          if(currentOrder.transaction?.id != null)
+                            Column(
+                            children: [
+                              SizedBox(height: AppSizes.spaceBtwItems),
+                              Heading(title: 'Transaction'),
+                              SizedBox(height: AppSizes.spaceBtwItems),
+                              // TextButton(
+                              //     onPressed: () => saleController.reversePaymentStatus(sale: sale),
+                              //     child: Text('Reverse Transactions', style: TextStyle(color: AppColors.linkColor),)
+                              // ),
+                              TransactionTile(transaction: currentOrder.transaction ?? TransactionModel()),
+                            ],
                           ),
 
                           Center(child: TextButton(

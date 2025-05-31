@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../data/repositories/mongodb/user/user_repositories.dart';
 import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
+import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/coupon_model.dart';
 import '../../models/expense_model.dart';
 import '../../models/order_model.dart';
@@ -27,10 +29,12 @@ class FinancialController extends GetxController {
     'Last Year',
     'Custom',
   ];
+
   RxBool isLoading = false.obs;
   RxString selectedOption = 'This Month'.obs;
   Rx<DateTime> startDate = Rx<DateTime>(DateTime.now());
   Rx<DateTime> endDate = Rx<DateTime>(DateTime.now());
+  RxInt userCount = 0.obs;
 
   RxList<OrderModel> sales = <OrderModel>[].obs;
   RxList<OrderModel> purchases = <OrderModel>[].obs;
@@ -66,6 +70,9 @@ class FinancialController extends GetxController {
   final accountsController = Get.put(AccountController());
   final expenseController = Get.put(ExpenseController());
   final vendorController = Get.put(VendorController());
+  final mongoUserRepository = Get.put(MongoUserRepository());
+
+  String get userEmail => AuthenticationController.instance.admin.value.email ?? '';
 
   @override
   void onInit() {
@@ -73,12 +80,17 @@ class FinancialController extends GetxController {
     initFunctions();
   }
 
+  Future<void> totalUserCount() async {
+    final getUserCount = await mongoUserRepository.fetchAppUserCount(userType: UserType.admin);
+    userCount.value = getUserCount;
+  }
 
   Future<void> initFunctions({bool isRefresh = false}) async {
     await selectDate(isRefresh: isRefresh);
     await calculateStock();
     await calculateCash();
     await calculateAccountsPayable();
+    await totalUserCount();
   }
 
   Future<void> refreshFinancials() async {

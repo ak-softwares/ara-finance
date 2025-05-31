@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/layout_models/customers_grid_layout.dart';
-import '../../../../common/layout_models/orders_grid_layout.dart';
+import '../../../../common/layout_models/purchase_grid_layout.dart';
+import '../../../../common/layout_models/sales_grid_layout.dart';
 import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../common/text/section_heading.dart';
@@ -10,6 +11,7 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../controller/search_controller/search_controller.dart';
 import '../../models/product_model.dart';
+import '../products/single_product.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({
@@ -72,21 +74,21 @@ class SearchScreen extends StatelessWidget {
             switch (searchType) {
               SearchType.products => ProductGridLayout(
                 controller: searchVoucherController,
-                orientation: orientation,
-                sourcePage: 'Search',
+                onTap: (product) => Get.to(() => SingleProduct(product: product)),
               ),
-              SearchType.customers => CustomersGridLayout(
+              SearchType.customer => CustomersGridLayout(
                 controller: searchVoucherController,
-                sourcePage: 'Search',
               ),
-              SearchType.orders => OrdersGridLayout(
+              SearchType.sale => SalesGridLayout(
                 controller: searchVoucherController,
-                sourcePage: 'Search',
+              ),
+              SearchType.purchase => PurchaseGridLayout(
+                controller: searchVoucherController,
               ),
               // TODO: Handle this case.
               SearchType.vendor => throw UnimplementedError(),
               // TODO: Handle this case.
-              SearchType.paymentMethod => throw UnimplementedError(),
+              SearchType.account => throw UnimplementedError(),
             }
           ],
         ),

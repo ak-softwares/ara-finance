@@ -70,27 +70,27 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget{
         if(seeLogoutButton) ...[
           Obx(() => AuthenticationController.instance.isAdminLogin.value
               ? InkWell(
-              onTap: () => AuthenticationController.instance.logout(),
-              child: Row(
-                children: [
-                  Text('Logout'),
-                  const SizedBox(width: AppSizes.sm),
-                  Icon(AppIcons.logout, size: 20,),
-                  const SizedBox(width: AppSizes.sm),
-                ],
-              )
-          )
+                    onTap: () => AuthenticationController.instance.logout(),
+                    child: Row(
+                      children: [
+                        Text('Logout'),
+                        const SizedBox(width: AppSizes.sm),
+                        Icon(AppIcons.logout, size: 20,),
+                        const SizedBox(width: AppSizes.sm),
+                      ],
+                    )
+                )
               : InkWell(
-              onTap: () => NavigationHelper.navigateToLoginScreen(),
-              child: Row(
-                children: [
-                  Icon(Iconsax.user),
-                  const SizedBox(width: AppSizes.sm),
-                  Text('Login', style: TextStyle(fontSize: 15),),
-                  const SizedBox(width: AppSizes.md),
-                ],
-              )
-          )
+                    onTap: () => NavigationHelper.navigateToLoginScreen(),
+                    child: Row(
+                      children: [
+                        Icon(Iconsax.user),
+                        const SizedBox(width: AppSizes.sm),
+                        Text('Login', style: TextStyle(fontSize: 15),),
+                        const SizedBox(width: AppSizes.md),
+                      ],
+                    )
+                )
           ),
         ],
         seeSettingButton ? IconButton( icon: Icon(Icons.settings), onPressed: () => Get.to(() => SettingScreen())) : const SizedBox.shrink(),

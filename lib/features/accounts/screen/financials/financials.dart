@@ -11,6 +11,7 @@ import '../../../../common/widgets/shimmers/order_shimmer.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../settings/app_settings.dart';
+import '../../../setup/screens/app_user_list.dart';
 import '../../controller/financial/financial_controller.dart';
 import 'balance_sheet.dart';
 import 'general_matrix.dart';
@@ -46,6 +47,19 @@ class Financials extends StatelessWidget {
               child: Text(tab, style: const TextStyle(fontSize: 13)),
             )).toList(),
           ),
+          widgetInActions: Obx(() {
+            if(controller.userEmail == 'aramarket.in@gmail.com'){
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.defaultSpace),
+                child: TextButton(
+                  onPressed: () => Get.to(() => AppUserList()),
+                  child: Text('Users: ${controller.userCount}', style: TextStyle(color: AppColors.linkColor),),
+                )
+              );
+            }else {
+              return SizedBox.shrink();
+            }
+          }),
         ),
         body: TabBarView(
           children: financialsTabs.map((financialsTab) {

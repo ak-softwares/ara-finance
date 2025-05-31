@@ -286,6 +286,7 @@ class CartFieldName {
   static const String parentName = 'parent_name';
   static const String isCODBlocked = 'easyapp_cod_blocked';
   static const String pageSource = 'page_source';
+  static const String vendor = 'vendor';
 }
 
 class StoragePath{
@@ -384,6 +385,7 @@ class TransactionFieldName {
   static const String toEntityType = 'to_entity_type';
   static const String transactionType = 'transaction_type';
   static const String purchaseId = 'purchase_id';
+  static const String salesIds = 'sales_ids';
 }
 
 class PaymentMethodName {

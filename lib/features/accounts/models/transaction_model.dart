@@ -8,14 +8,15 @@ class TransactionModel {
   int? transactionId;
   DateTime? date;
   double? amount;
-  String? fromEntityId; // ID of the sender
+  String? fromEntityId;
   String? fromEntityName;
-  EntityType? fromEntityType; // Type: "Customer", "Vendor", "PaymentMethod"
-  String? toEntityId; // ID of the receiver
+  EntityType? fromEntityType;
+  String? toEntityId;
   String? toEntityName;
-  EntityType? toEntityType; // Type: "Customer", "Vendor", "PaymentMethod"
-  TransactionType? transactionType; // Enum-based transaction type
-  int? _purchaseId; // Private field
+  EntityType? toEntityType;
+  TransactionType? transactionType;
+  int? _purchaseId;
+  List<int>? _salesIds;
 
   TransactionModel({
     this.id,
@@ -30,16 +31,20 @@ class TransactionModel {
     this.toEntityName,
     this.toEntityType,
     this.transactionType,
-    int? purchaseId, // Constructor parameter
+    int? purchaseId,
+    List<int>? salesIds,
   }) {
     if (transactionType == TransactionType.purchase && purchaseId == null) {
       throw ArgumentError('Purchase ID is required for purchase transactions.');
     }
+    if (transactionType == TransactionType.sale && (salesIds == null || salesIds.isEmpty)) {
+      throw ArgumentError('Sales IDs are required for sale transactions.');
+    }
     _purchaseId = purchaseId;
+    _salesIds = salesIds;
   }
 
   int? get purchaseId => _purchaseId;
-
   set purchaseId(int? value) {
     if (transactionType == TransactionType.purchase && value == null) {
       throw ArgumentError('Purchase ID is required for purchase transactions.');
@@ -47,7 +52,14 @@ class TransactionModel {
     _purchaseId = value;
   }
 
-  /// Factory method to create an instance from JSON
+  List<int>? get salesIds => _salesIds;
+  set salesIds(List<int>? value) {
+    if (transactionType == TransactionType.sale && (value == null || value.isEmpty)) {
+      throw ArgumentError('Sales IDs are required for sale transactions.');
+    }
+    _salesIds = value;
+  }
+
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
       id: json[TransactionFieldName.id] is ObjectId
@@ -70,9 +82,10 @@ class TransactionModel {
       transactionType: json[TransactionFieldName.transactionType] != null
           ? TransactionType.values.byName(json[TransactionFieldName.transactionType])
           : null,
-      purchaseId: json.containsKey(TransactionFieldName.purchaseId)
-          ? json[TransactionFieldName.purchaseId] as int?
-          : null, // Only parse purchaseId if it exists
+      purchaseId: json[TransactionFieldName.purchaseId] as int?,
+      salesIds: (json[TransactionFieldName.salesIds] as List<dynamic>?)
+          ?.map((e) => int.tryParse(e.toString()) ?? 0)
+          .toList(),
     );
   }
 
@@ -96,15 +109,11 @@ class TransactionModel {
       },
       if (transactionType == TransactionType.purchase && purchaseId != null)
         TransactionFieldName.purchaseId: purchaseId,
+      if (transactionType == TransactionType.sale && salesIds != null)
+        TransactionFieldName.salesIds: salesIds,
     };
   }
 
-
-
-
-  /// Convert TransactionModel to a Map (alias for toJson)
   Map<String, dynamic> toMap() => toJson();
-
-  /// Factory method to create a TransactionModel from a Map (alias for fromJson)
   factory TransactionModel.fromMap(Map<String, dynamic> map) => TransactionModel.fromJson(map);
 }

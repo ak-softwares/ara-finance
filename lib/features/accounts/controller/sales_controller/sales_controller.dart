@@ -7,7 +7,9 @@ import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/order_model.dart';
+import '../../models/transaction_model.dart';
 import '../product/product_controller.dart';
+import '../transaction/transaction_controller.dart';
 import 'payment_controller.dart';
 
 class SaleController extends GetxController {
@@ -24,7 +26,6 @@ class SaleController extends GetxController {
   final mongoOrderRepo = Get.put(MongoOrderRepo());
   final productController = Get.put(ProductController());
   final auth = Get.put(AuthenticationController());
-
 
   // Get All Sale
   Future<void> getSales() async {
@@ -120,28 +121,22 @@ class SaleController extends GetxController {
 
   Future<void> updatePaymentStatus({required OrderModel sale}) async {
     try{
-      await UpdatePaymentController.instance.processPaymentStatus(sales: [sale]);
+      await Get.put(UpdatePaymentController()).processPaymentStatus(sales: [sale]);
       await refreshSales();
+      AppMassages.showToastMessage(message: 'Payment updated successfully');
     }catch(e){
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
 
-  Future<void> revertPaymentStatus({required OrderModel sale}) async {
-    try {
-      final OrderModel revertedSale = OrderModel(
-        id: sale.id,
-        setPaid: false,
-        status: OrderStatus.inTransit, // or use original status if needed
-      );
-
-      await mongoOrderRepo.updateOrder(order: revertedSale);
-
-      await refreshSales();
-      AppMassages.showSnackBar(massage: 'Undo successful');
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-    }
-  }
+  // Future<void> reversePaymentStatus({required OrderModel sale}) async {
+  //   try{
+  //     await Get.put(UpdatePaymentController()).reversePaymentStatus(sale: sale);
+  //     await refreshSales();
+  //     AppMassages.showToastMessage(message: 'Payment reversed successfully');
+  //   }catch(e){
+  //     AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+  //   }
+  // }
 
 }

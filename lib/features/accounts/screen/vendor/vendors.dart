@@ -51,7 +51,7 @@ class Vendors extends StatelessWidget {
       animation: Images.pencilAnimation,
     );
     return Scaffold(
-        appBar: const AppAppBar(title: 'Vendors', searchType: SearchType.customers),
+        appBar: const AppAppBar(title: 'Vendors', searchType: SearchType.customer),
         floatingActionButton: FloatingActionButton(
           shape: CircleBorder(),
           backgroundColor: Colors.blue,

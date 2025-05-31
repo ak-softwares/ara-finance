@@ -15,6 +15,7 @@ import '../../models/cart_item_model.dart';
 import '../../models/order_model.dart';
 import '../../models/product_model.dart';
 import '../product/product_controller.dart';
+import 'add_barcode_sale.dart';
 import 'sales_controller.dart';
 
 class AddSaleController extends GetxController {
@@ -31,6 +32,7 @@ class AddSaleController extends GetxController {
   final mongoOrderRepo = Get.put(MongoOrderRepo());
   final productController = Get.put(ProductController());
   final userController = Get.put(UserController());
+  final addBarcodeSaleController = Get.put(AddBarcodeSaleController());
 
   RxList<CartModel> selectedProducts = <CartModel>[].obs;
   Rx<UserModel> selectedCustomer = UserModel().obs;
@@ -42,6 +44,10 @@ class AddSaleController extends GetxController {
     super.onInit();
     invoiceId.value = await mongoOrderRepo.fetchOrderGetNextId(orderType: orderType, userId: userId);
     updateSaleTotal();
+  }
+
+  void addCustomer(UserModel getSelectedCustomer) {
+    selectedCustomer.value = getSelectedCustomer;
   }
 
   void addProducts(List<ProductModel> getSelectedProducts) {
@@ -75,10 +81,6 @@ class AddSaleController extends GetxController {
       selectedProducts.removeAt(index);
     }
     updateSaleTotal();
-  }
-
-  void addCustomer(UserModel getSelectedCustomer) {
-    selectedCustomer.value = getSelectedCustomer;
   }
 
   void selectDate(BuildContext context) async {
@@ -156,7 +158,7 @@ class AddSaleController extends GetxController {
     OrderModel sale = OrderModel(
       invoiceNumber: invoiceId.value,
       dateCreated: DateTime.tryParse(dateController.text),
-      dateCompleted: DateTime.now(),
+      dateShipped: DateTime.now(),
       userId: AuthenticationController.instance.admin.value.id,
       user: selectedCustomer.value,
       lineItems: selectedProducts,
@@ -179,12 +181,7 @@ class AddSaleController extends GetxController {
         throw 'Internet Not connected';
       }
 
-      final fetchedInvoiceId = await mongoOrderRepo.fetchOrderGetNextId(orderType: orderType, userId: userId);
-      if (fetchedInvoiceId != invoiceId.value) {
-        sale.invoiceNumber = fetchedInvoiceId;
-      }
-
-      await pushSales(sales: [sale]);
+      await addBarcodeSaleController.processAddSales(sales: [sale]);
 
       await clearSale();
       FullScreenLoader.stopLoading();
@@ -194,41 +191,6 @@ class AddSaleController extends GetxController {
       //remove Loader
       FullScreenLoader.stopLoading();
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-    }
-  }
-
-  Future<void> pushSales({required List<OrderModel> sales}) async {
-    try {
-
-      // Check if any invoiceId is null
-      final hasMissingInvoice = sales.any((sale) => sale.invoiceNumber == null);
-
-      if (hasMissingInvoice) {
-        int nextInvoiceId = await mongoOrderRepo.fetchOrderGetNextId(orderType: orderType, userId: userId);
-
-        for (var sale in sales) {
-          if (sale.invoiceNumber == null) {
-            sale.invoiceNumber = nextInvoiceId;
-            nextInvoiceId++; // increment for the next one
-          }
-        }
-      }
-
-      // Flatten all line items from each sale
-      final List<CartModel> allLineItems = sales.expand<CartModel>((sale) => sale.lineItems ?? []).toList();
-
-      // Define the async operations
-      final updateProductQuantities = productController.updateProductQuantity(cartItems: allLineItems);
-
-      Future<void> uploadSales = mongoOrderRepo.pushOrders(orders: sales); // Use batch insert function
-
-      // Execute all three operations
-      await Future.wait([updateProductQuantities, uploadSales]);
-
-      await saleController.refreshSales();
-
-    } catch(e) {
-      rethrow;
     }
   }
 

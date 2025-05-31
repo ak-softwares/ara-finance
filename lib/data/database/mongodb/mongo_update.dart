@@ -43,7 +43,7 @@ class MongoUpdate extends MongoDatabase {
       final result = await db!.collection(collectionName).updateOne(
         {'_id': objectId},
         {
-          '\$set': updatedData,
+          '\$set': filteredData,
         },
         upsert: true,
       );
@@ -182,6 +182,8 @@ class MongoUpdate extends MongoDatabase {
             ProductFieldName.dateModified: DateTime.now(),
             if (isPurchase && cartItem.purchasePrice != null)
               ProductFieldName.purchasePrice: cartItem.purchasePrice!,
+            if (isPurchase && cartItem.vendor?.id != null)
+              ProductFieldName.vendor: cartItem.vendor?.toMap(),
           },
         };
 

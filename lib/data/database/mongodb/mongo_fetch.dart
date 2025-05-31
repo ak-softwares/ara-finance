@@ -178,7 +178,6 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-
   Future<double> fetchTotalStockValue({
     required String collectionName,
     Map<String, dynamic> filter = const {},
@@ -228,7 +227,6 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-
   Future<double> fetchTotalAccountBalance({
     required String collectionName,
     Map<String, dynamic>? filter, // Add filter parameter
@@ -266,7 +264,6 @@ class MongoFetch extends MongoDatabase {
       throw Exception('Failed to calculate total balance: $e');
     }
   }
-
 
   Future<double> calculateAccountPayable({
     required String collectionName,
@@ -433,6 +430,27 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
+  Future<Map<String, dynamic>?> fetchTransactionBySale({
+    required String collectionName,
+    required int orderNumber,
+  }) async {
+    await _ensureConnected();
+    try {
+      final query = where
+          .eq(TransactionFieldName.transactionType, TransactionType.sale.name)
+          .eq(TransactionFieldName.salesIds, orderNumber); // Match sale id in array
+
+      final result = await db!
+          .collection(collectionName)
+          .findOne(query); // use findOne to get a single map
+
+      return result;
+    } catch (e) {
+      throw Exception('Failed to fetch transaction: $e');
+    }
+  }
+
+
   Future<int> fetchNextId({
     required String collectionName,
     required String fieldName,
@@ -505,10 +523,7 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<Map<String, dynamic>?> findOne({
-    required String collectionName,
-    required Map<String, dynamic> filter,
-  }) async {
+  Future<Map<String, dynamic>?> findOne({required String collectionName, required Map<String, dynamic> filter,}) async {
     await _ensureConnected();
     try {
       return await db!.collection(collectionName).findOne(filter);

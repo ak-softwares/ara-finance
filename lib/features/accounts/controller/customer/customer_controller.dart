@@ -17,94 +17,13 @@ class CustomerController extends GetxController{
   RxInt currentPage = 1.obs;
   RxBool isLoading = false.obs;
   RxBool isLoadingMore = false.obs;
-  RxBool isStopped = false.obs; // New: Track if the user wants to stop syncing
-  RxBool isSyncing = false.obs;
-  RxBool isGettingCount = false.obs;
-  RxInt processedCustomers = 0.obs;
-  RxInt totalProcessedCustomers = 0.obs;
-  RxInt fincomCustomersCount = 0.obs;
-  RxInt wooCustomersCount = 0.obs;
+
   RxList<UserModel> customers = <UserModel>[].obs;
   final mongoUserRepository = Get.put(MongoUserRepository());
   final wooCustomersRepository = Get.put(WooCustomersRepository());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
-
-  Future<void> syncCustomers() async {
-    try {
-      isSyncing(true);
-      isStopped(false); // Reset stop flag
-      processedCustomers.value = 0; // Reset progress
-      totalProcessedCustomers.value = 0; // Reset total compared customers count
-
-      int batchSize = 500; // Adjust based on API limits and DB capacity
-
-      // **Step 1: Fetch Existing Customer IDs Efficiently**
-      Set<int> uploadedCustomerIds = await mongoUserRepository.fetchUserIds(userId: userId); // Consider paginating this
-
-      int currentPage = 1;
-      while (!isStopped.value) {
-        // **Step 2: Fetch a batch of customers from API**
-        List<UserModel> customers = await wooCustomersRepository.fetchAllCustomers(page: currentPage.toString());
-
-        if (customers.isEmpty) break; // Stop if no more customers are available
-
-        totalProcessedCustomers.value += customers.length; // Track total compared customers
-
-        // **Step 3: Filter only new customers**
-        List<UserModel> newCustomers = customers.where((customer) {
-          return !uploadedCustomerIds.contains(customer.documentId);
-        }).toList();
-
-        // **Step 4: Bulk Insert**
-        if (newCustomers.isNotEmpty) {
-          for (int i = 0; i < newCustomers.length; i += batchSize) {
-            if (isStopped.value) {
-              AppMassages.warningSnackBar(title: 'Sync Stopped', message: 'Syncing stopped by user.');
-              return;
-            }
-
-            int end = (i + batchSize < newCustomers.length) ? i + batchSize : newCustomers.length;
-            List<UserModel> chunk = newCustomers.sublist(i, end);
-
-            await mongoUserRepository.insertUsers(customers: chunk); // Upload chunk
-
-            processedCustomers.value += chunk.length; // Update progress
-          }
-        }
-
-        currentPage++; // Move to the next page
-      }
-
-      if (!isStopped.value) {
-        AppMassages.successSnackBar(title: 'Sync Complete', message: 'All new customers uploaded.');
-      }
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Sync Error', message: e.toString());
-    } finally {
-      isSyncing(false);
-    }
-  }
-
-  void stopSyncing() {
-    isStopped(true);
-  }
-
-  // Get total customer count
-  Future<void> getTotalCustomerCount() async {
-    try {
-      isGettingCount(true);
-      int fincomCustomersCounts = await mongoUserRepository.fetchUserCount(userId: userId);
-      fincomCustomersCount.value = fincomCustomersCounts;
-      int wooCustomersCounts = await wooCustomersRepository.fetchCustomerCount();
-      wooCustomersCount.value = wooCustomersCounts;
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Customer Count Fetching', message: e.toString());
-    } finally {
-      isGettingCount(false);
-    }
-  }
 
   // Get All Customer
   Future<List<UserModel>> getCustomersSearchQuery({required String query, required int page}) async {

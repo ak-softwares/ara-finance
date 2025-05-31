@@ -21,7 +21,7 @@ class ExpensesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double expenseTileHeight = AppSizes.paymentTileHeight;
+    const double expenseTileHeight = AppSizes.accountTileHeight;
 
     final ScrollController scrollController = ScrollController();
     final expenseController = Get.put(ExpenseController());

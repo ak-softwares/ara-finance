@@ -12,7 +12,7 @@ import '../../../authentication/controllers/authentication_controller/authentica
 import '../../models/expense_model.dart';
 import '../../models/account_model.dart';
 import '../../models/transaction_model.dart';
-import '../transaction/add_transaction_controller.dart';
+import '../transaction/add_payment_controller.dart';
 import '../transaction/transaction_controller.dart';
 import 'expenses_controller.dart';
 
@@ -29,7 +29,7 @@ class AddExpenseController extends GetxController {
 
   final expenseController = Get.put(ExpenseController());
   final mongoExpenseRepo = Get.put(MongoExpenseRepo());
-  final addTransactionController = Get.put(AddTransactionController());
+  final transactionController = Get.put(TransactionController());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
@@ -103,7 +103,7 @@ class AddExpenseController extends GetxController {
         throw 'Expense ID conflict detected';
       }
 
-      final String? transactionId =  await addTransactionController.processTransaction(transaction: expense.transaction!);
+      final String? transactionId =  await transactionController.processTransaction(transaction: expense.transaction!);
       expense.transaction?.id = transactionId;
       await mongoExpenseRepo.pushExpense(expense: expense);
 
@@ -172,7 +172,7 @@ class AddExpenseController extends GetxController {
         return;
       }
 
-      await addTransactionController.processUpdateTransaction(oldTransaction: expense.transaction ?? TransactionModel(), newTransaction: newTransaction);
+      await transactionController.processUpdateTransaction(oldTransaction: expense.transaction ?? TransactionModel(), newTransaction: newTransaction);
       await mongoExpenseRepo.updateExpense(id: expense.id ?? '', expense: expense);
 
       FullScreenLoader.stopLoading();

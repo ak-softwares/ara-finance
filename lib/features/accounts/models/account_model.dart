@@ -21,6 +21,8 @@ class AccountModel {
     this.accountName,
   });
 
+  double get closingBalance => (openingBalance ?? 0) + (balance ?? 0);
+
   factory AccountModel.fromJson(Map<String, dynamic> json) {
     return AccountModel(
       id: json[AccountFieldName.id] is ObjectId

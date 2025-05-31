@@ -100,7 +100,7 @@ class AddNewSale extends StatelessWidget {
                         // Navigate to the search screen and wait for the result
                         final UserModel getSelectedCustomer = await showSearch(context: context,
                           delegate: SearchVoucher1(
-                              searchType: SearchType.customers,
+                              searchType: SearchType.customer,
                               selectedItems: addSaleController.selectedCustomer.value
                           ),
                         );

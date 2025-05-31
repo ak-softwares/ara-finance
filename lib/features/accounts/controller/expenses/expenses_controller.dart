@@ -16,7 +16,7 @@ import '../../../authentication/controllers/authentication_controller/authentica
 import '../../models/expense_model.dart';
 import '../../models/account_model.dart';
 import '../../models/transaction_model.dart';
-import '../transaction/add_transaction_controller.dart';
+import '../transaction/add_payment_controller.dart';
 import '../transaction/transaction_controller.dart';
 
 class ExpenseController extends GetxController {
@@ -30,7 +30,7 @@ class ExpenseController extends GetxController {
   RxList<ExpenseModel> expenses = <ExpenseModel>[].obs;
 
   final mongoExpenseRepo = Get.put(MongoExpenseRepo());
-  final addTransactionController = Get.put(AddTransactionController());
+  final transactionController = Get.put(TransactionController());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
@@ -120,7 +120,7 @@ class ExpenseController extends GetxController {
         onSubmit: () async {
 
           await Future.wait([
-            addTransactionController.processTransaction(transaction: expense.transaction ?? TransactionModel(), isDelete: true),
+            transactionController.processTransaction(transaction: expense.transaction ?? TransactionModel(), isDelete: true),
             mongoExpenseRepo.deleteExpense(id: expense.id ?? ''),
             refreshExpenses(),
           ]);

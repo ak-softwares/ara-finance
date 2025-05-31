@@ -16,11 +16,11 @@ class AccountTileSimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double paymentTileHeight = AppSizes.paymentTileHeight;
-    const double paymentTileWidth = AppSizes.paymentTileWidth;
-    const double paymentTileRadius = AppSizes.paymentTileRadius;
-    const double paymentImageHeight = AppSizes.paymentImageHeight;
-    const double paymentImageWidth = AppSizes.paymentImageWidth;
+    const double paymentTileHeight = AppSizes.accountTileHeight;
+    const double paymentTileWidth = AppSizes.accountTileWidth;
+    const double paymentTileRadius = AppSizes.accountTileRadius;
+    const double paymentImageHeight = AppSizes.accountImageHeight;
+    const double paymentImageWidth = AppSizes.accountImageWidth;
 
     return GridLayout(
         itemCount: itemCount,

@@ -37,7 +37,6 @@ class MongoAuthenticationRepository extends GetxController {
       if (existingUser != null) {
         throw 'Email or phone number already exists';
       }
-      user.userType =  UserType.admin;
       Map<String, dynamic> userMap = user.toMap();
       await _mongoInsert.insertDocument(collectionName, userMap); // Use batch insert function
     } catch (e) {

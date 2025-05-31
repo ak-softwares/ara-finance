@@ -112,16 +112,19 @@ class SearchVoucher1 extends SearchDelegate {
         case SearchType.products:
           searchResults = _fetchProductSuggestions(query);
           break;
-        case SearchType.customers:
+        case SearchType.customer:
           searchResults = _fetchCustomerSuggestions(query);
           break;
-        case SearchType.orders:
+        case SearchType.sale:
           searchResults = _fetchUserSuggestions(query);
           break;
         case SearchType.vendor:
           // TODO: Handle this case.
           throw UnimplementedError();
-        case SearchType.paymentMethod:
+        case SearchType.account:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case SearchType.purchase:
           // TODO: Handle this case.
           throw UnimplementedError();
       }
@@ -148,14 +151,17 @@ class SearchVoucher1 extends SearchDelegate {
     switch (searchType) {
       case SearchType.products:
         return 'Product';
-      case SearchType.customers:
+      case SearchType.customer:
         return 'Customer';
-      case SearchType.orders:
+      case SearchType.sale:
         return 'User';
       case SearchType.vendor:
         return 'Vendor';
-      case SearchType.paymentMethod:
-        return 'Payment Method';
+      case SearchType.account:
+        return 'Account';
+      case SearchType.purchase:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 }

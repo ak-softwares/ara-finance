@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../../../common/dialog_box_massages/animation_loader.dart';
-import '../../../../../../common/layout_models/orders_grid_layout.dart';
+import '../../../../../../common/layout_models/sales_grid_layout.dart';
 import '../../../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../../../common/styles/spacing_style.dart';
 import '../../../../../../common/text/section_heading.dart';
@@ -167,7 +167,7 @@ class SearchScreen3 extends StatelessWidget {
                       );
                     }
                   }),
-              SearchType.customers => Obx(() {
+              SearchType.customer => Obx(() {
                 const double customerVoucherTileHeight = AppSizes.customerVoucherTileHeight; // Updated constant
                 if (searchVoucherController.isLoading.value) {
                   return CustomersTileShimmer(itemCount: 2);
@@ -233,9 +233,8 @@ class SearchScreen3 extends StatelessWidget {
                   );
                 }
               }),
-              SearchType.orders => OrdersGridLayout(
+              SearchType.sale => SalesGridLayout(
                 controller: searchVoucherController,
-                sourcePage: 'Search',
               ),
               SearchType.vendor => Obx(() {
                 const double vendorTileHeight = AppSizes.vendorTileHeight; // Updated constant
@@ -307,21 +306,21 @@ class SearchScreen3 extends StatelessWidget {
                   );
                 }
               }),
-              SearchType.paymentMethod => Obx(() {
-                const double paymentTileHeight = AppSizes.paymentTileHeight; // Updated constant
+              SearchType.account => Obx(() {
+                const double accountTileHeight = AppSizes.accountTileHeight; // Updated constant
                 if (searchVoucherController.isLoading.value) {
                   return  AccountTileSimmer(itemCount: 2);
                 } else if(searchQuery.isEmpty) {
-                  return searchVoucherController.selectedPayment.value.accountName != null
+                  return searchVoucherController.selectedAccounts.value.accountName != null
                       ? Obx(() {
-                          final selectedPayment = searchVoucherController.selectedPayment.value;
+                          final selectedAccount = searchVoucherController.selectedAccounts.value;
                           return Stack(
                             children: [
                               SizedBox(
                                 width: double.infinity,
                                 child: AccountTile(
-                                  account: selectedPayment,
-                                  onTap: () => searchVoucherController.togglePaymentSelection(selectedPayment),
+                                  account: selectedAccount,
+                                  onTap: () => searchVoucherController.toggleAccountSelection(selectedAccount),
                                 ),
                               ),
                               Positioned(
@@ -333,26 +332,26 @@ class SearchScreen3 extends StatelessWidget {
                           );
                         })
                       : SizedBox.shrink();
-                } else if(searchVoucherController.payments.isEmpty) {
+                } else if(searchVoucherController.accounts.isEmpty) {
                   return const AnimationLoaderWidgets(text: 'Whoops! No Payment Method Method found...', animation: Images.pencilAnimation);
                 } else {
-                  final payments = searchVoucherController.payments;
+                  final accounts = searchVoucherController.accounts;
                   return GridLayout(
-                      itemCount: searchVoucherController.isLoadingMore.value ? payments.length + 2 : payments.length,
+                      itemCount: searchVoucherController.isLoadingMore.value ? accounts.length + 2 : accounts.length,
                       crossAxisCount: 1,
-                      mainAxisExtent: paymentTileHeight,
+                      mainAxisExtent: accountTileHeight,
                       itemBuilder: (context, index) {
-                        if (index < payments.length) {
+                        if (index < accounts.length) {
                           return Obx(() {
-                            final payment = searchVoucherController.payments[index];
-                            final isSelected = searchVoucherController.payments.contains(searchVoucherController.selectedPayment.value);
+                            final account = searchVoucherController.accounts[index];
+                            final isSelected = searchVoucherController.accounts.contains(searchVoucherController.selectedAccounts.value);
                             return Stack(
                               children: [
                                 SizedBox(
                                   width: double.infinity,
-                                  child: InkWell(
-                                    onTap: () => searchVoucherController.togglePaymentSelection(payment),
-                                      child: AccountTile(account: payment)
+                                  child: AccountTile(
+                                      account: account,
+                                      onTap: () => searchVoucherController.toggleAccountSelection(account),
                                   ),
                                 ),
                                 if (isSelected)
@@ -371,6 +370,8 @@ class SearchScreen3 extends StatelessWidget {
                   );
                 }
               }),
+              // TODO: Handle this case.
+              SearchType.purchase => throw UnimplementedError(),
             }
           ],
         ),

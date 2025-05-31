@@ -10,7 +10,7 @@ import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/formatters/formatters.dart';
 import '../../controller/transaction/transaction_controller.dart';
 import '../../models/transaction_model.dart';
-import 'add_transaction.dart';
+import 'common/add_payment.dart';
 import 'widget/transaction_tile.dart';
 
 class SingleTransaction extends StatefulWidget {
@@ -60,7 +60,7 @@ class _SingleTransactionState extends State<SingleTransaction> {
                 actionButtonText: 'Done',
               );
             } else {
-              Get.to(() => AddTransaction(transaction: transaction));
+              Get.to(() => AddPayment(transaction: transaction));
             }
           },
           child: Text('Edit', style: TextStyle(color: AppColors.linkColor)),

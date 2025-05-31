@@ -7,6 +7,7 @@ import '../../../../common/styles/spacing_style.dart';
 import '../../../../common/text/section_heading.dart';
 import '../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../accounts/screen/accounts/accounts.dart';
@@ -115,6 +116,8 @@ class UserProfileScreen extends StatelessWidget {
                     SingleAddress(
                       address: controller.admin.value.billing ?? AddressModel.empty(),
                       onTap: () => Get.to(() => UpdateAddressScreen(
+                          userId: controller.admin.value.id ?? '',
+                          userType: UserType.admin,
                           address: controller.admin.value.billing ?? AddressModel.empty()
                       )),
                       // onTap: () => controller.selectAddress(addresses[index])
@@ -138,21 +141,21 @@ class UserProfileScreen extends StatelessWidget {
                   ],
                 ),
 
-                // Select Account
-                Column(
-                  children: [
-                    const SectionHeading(title: 'Selected Account', seeActionButton: false),
-                    InkWell(
-                      onTap: () => Get.to(() => Accounts()),
-                      child: Container(
-                          width: double.infinity,
-                          color: Theme.of(context).colorScheme.surface,
-                          padding: AppSpacingStyle.defaultPagePadding,
-                          child: Text(controller.admin.value.selectedAccount?.accountName ?? 'Select Account for payment received', style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 15), overflow: TextOverflow.ellipsis)
-                      ),
-                    ),
-                  ],
-                ),
+                // // Select Account
+                // Column(
+                //   children: [
+                //     const SectionHeading(title: 'Selected Account', seeActionButton: false),
+                //     InkWell(
+                //       onTap: () => Get.to(() => Accounts()),
+                //       child: Container(
+                //           width: double.infinity,
+                //           color: Theme.of(context).colorScheme.surface,
+                //           padding: AppSpacingStyle.defaultPagePadding,
+                //           child: Text(controller.admin.value.selectedAccount?.accountName ?? 'Select Account for payment received', style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 15), overflow: TextOverflow.ellipsis)
+                //       ),
+                //     ),
+                //   ],
+                // ),
 
                 // Delete
                 Center(

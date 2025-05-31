@@ -23,35 +23,35 @@ class SingleAccount extends StatefulWidget {
 }
 
 class _SingleAccountState extends State<SingleAccount> {
-  late AccountModel payment;
+  late AccountModel account;
   final controller = Get.put(AccountController());
 
   @override
   void initState() {
     super.initState();
-    payment = widget.account; // Initialize with the passed purchase
+    account = widget.account; // Initialize with the passed purchase
   }
 
   Future<void> _refreshPayment() async {
-    final updatedPayment = await controller.getPaymentByID(id: payment.id ?? '');
+    final updatedPayment = await controller.getPaymentByID(id: account.id ?? '');
     setState(() {
-      payment = updatedPayment; // Update the purchase data
+      account = updatedPayment; // Update the purchase data
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    const double paymentTileHeight = AppSizes.paymentTileHeight;
-    const double paymentTileWidth = AppSizes.paymentTileWidth;
-    const double paymentTileRadius = AppSizes.paymentTileRadius;
-    const double paymentImageHeight = AppSizes.paymentImageHeight;
-    const double paymentImageWidth = AppSizes.paymentImageWidth;
+    const double paymentTileHeight = AppSizes.accountTileHeight;
+    const double paymentTileWidth = AppSizes.accountTileWidth;
+    const double paymentTileRadius = AppSizes.accountTileRadius;
+    const double paymentImageHeight = AppSizes.accountImageHeight;
+    const double paymentImageWidth = AppSizes.accountImageWidth;
 
     return Scaffold(
         appBar: AppAppBar(
-          title: payment.accountName ?? 'Account',
+          title: account.accountName ?? 'Account',
           widgetInActions: TextButton(
-              onPressed: () => Get.to(() => AddAccount(payment: payment)),
+              onPressed: () => Get.to(() => AddAccount(payment: account)),
               child: Text('Edit', style: TextStyle(color: AppColors.linkColor),)
           )
         ),
@@ -75,28 +75,35 @@ class _SingleAccountState extends State<SingleAccount> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Accounts Id'),
-                        Text('#${payment.accountId.toString()}', style: TextStyle(fontSize: 14))
+                        Text('#${account.accountId.toString()}', style: TextStyle(fontSize: 14))
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Accounts Method'),
-                        Text(payment.accountName ?? '', style: TextStyle(fontSize: 14))
+                        Text(account.accountName ?? '', style: TextStyle(fontSize: 14))
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Opening Balance'),
-                        Text(payment.openingBalance.toString(), style: TextStyle(fontSize: 14))
+                        Text(account.openingBalance.toString(), style: TextStyle(fontSize: 14))
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Balance'),
-                        ColoredAmount(amount: payment.balance ?? 0.0)
+                        ColoredAmount(amount: account.balance ?? 0.0)
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Closing Balance'),
+                        ColoredAmount(amount: account.closingBalance ?? 0.0),
                       ],
                     ),
                   ],
@@ -109,12 +116,12 @@ class _SingleAccountState extends State<SingleAccount> {
             SizedBox(height: AppSizes.spaceBtwItems),
             SizedBox(
                 height: 350,
-                child: TransactionsByEntity(entityType: EntityType.account, entityId: payment.id ?? '')
+                child: TransactionsByEntity(entityType: EntityType.account, entityId: account.id ?? '')
             ),
 
             // Delete
             Center(child: TextButton(
-                onPressed: () => controller.deleteAccount(context: context, id: payment.id ?? ''),
+                onPressed: () => controller.deleteAccount(context: context, id: account.id ?? ''),
                 child: Text('Delete', style: TextStyle(color: Colors.red),))
             )
           ],

@@ -152,12 +152,19 @@ class AppSizes {
   static const double vendorImageHeight = 30.0;
   static const double vendorImageWidth = 30.0;
 
+  // User Tile
+  static const double userTileHeight = 110;
+  static const double userTileWidth = 100.0;
+  static const double userTileRadius = 5.0;
+  static const double userImageHeight = 30.0;
+  static const double userImageWidth = 30.0;
+
   // Payment Tile
-  static const double paymentTileHeight = 105;
-  static const double paymentTileWidth = 100.0;
-  static const double paymentTileRadius = 5.0;
-  static const double paymentImageHeight = 30.0;
-  static const double paymentImageWidth = 30.0;
+  static const double accountTileHeight = 135;
+  static const double accountTileWidth = 100.0;
+  static const double accountTileRadius = 5.0;
+  static const double accountImageHeight = 30.0;
+  static const double accountImageWidth = 30.0;
 
   // Transaction Tile
   static const double transactionTileHeight = 145;

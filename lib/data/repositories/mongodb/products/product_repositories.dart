@@ -179,8 +179,10 @@ class MongoProductRepo extends GetxController {
   Future<ProductModel> fetchProductById({required String id}) async {
     try {
       // Fetch a single document by ID
-      final Map<String, dynamic>? productData =
-          await _mongoFetch.fetchDocumentById(collectionName: collectionName, id: id);
+      final Map<String, dynamic> productData = await _mongoFetch.fetchDocumentById(
+        id: id,
+        collectionName: collectionName,
+      );
 
       // Check if the document exists
       if (productData == null) {

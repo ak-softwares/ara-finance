@@ -103,7 +103,7 @@ class AddNewPurchase extends StatelessWidget {
                         final UserModel getSelectedVendor = await showSearch(context: context,
                           delegate: SearchVoucher1(
                               searchType: SearchType.vendor,
-                              selectedItems: addPurchaseController.selectedSupplier.value
+                              selectedItems: addPurchaseController.selectedVendor.value
                           ),
                         );
                         // If products are selected, update the state
@@ -120,12 +120,12 @@ class AddNewPurchase extends StatelessWidget {
                     ),
                   ],
                 ),
-                Obx(() => addPurchaseController.selectedSupplier.value.companyName != '' && addPurchaseController.selectedSupplier.value.companyName != null
+                Obx(() => addPurchaseController.selectedVendor.value.companyName != '' && addPurchaseController.selectedVendor.value.companyName != null
                     ? Dismissible(
-                          key: Key(addPurchaseController.selectedSupplier.value.companyName ?? ''), // Unique key for each item
+                          key: Key(addPurchaseController.selectedVendor.value.companyName ?? ''), // Unique key for each item
                           direction: DismissDirection.endToStart, // Swipe left to remove
                           onDismissed: (direction) {
-                            addPurchaseController.selectedSupplier.value = UserModel();
+                            addPurchaseController.selectedVendor.value = UserModel();
                             ScaffoldMessenger.of(context).hideCurrentSnackBar();
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
                           },
@@ -135,7 +135,7 @@ class AddNewPurchase extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: const Icon(Icons.delete, color: Colors.white),
                           ),
-                          child: SizedBox(width: double.infinity, child: VendorTile(vendor: addPurchaseController.selectedSupplier.value))
+                          child: SizedBox(width: double.infinity, child: VendorTile(vendor: addPurchaseController.selectedVendor.value))
                       )
                     : SizedBox.shrink(),
                 ),

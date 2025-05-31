@@ -7,6 +7,7 @@ import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/purchase/purchase_controller.dart';
@@ -48,7 +49,7 @@ class Purchase extends StatelessWidget {
     );
 
     return Scaffold(
-        appBar: const AppAppBar(title: 'Purchases Voucher'),
+        appBar: const AppAppBar(title: 'Purchases Voucher', searchType: SearchType.purchase),
         floatingActionButton: FloatingActionButton(
           shape: CircleBorder(),
           backgroundColor: Colors.blue,

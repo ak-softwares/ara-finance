@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../../common/navigation_bar/appbar.dart';
 import '../../../../../common/widgets/common/input_field_with_button.dart';
 import '../../../../../utils/constants/colors.dart';
+import '../../../../../utils/constants/enums.dart';
 import '../../../../../utils/constants/sizes.dart';
+import '../../../../personalization/models/user_model.dart';
 import '../../../../settings/app_settings.dart';
 import '../../../controller/sales_controller/add_barcode_sale.dart';
+import '../../customers/widget/customer_tile.dart';
+import '../../purchase/purchase_entry/widget/search_products.dart';
 import '../widget/barcode_sale_tile.dart';
 
 class AddBarcodeSale extends StatelessWidget {
@@ -94,6 +99,61 @@ class AddBarcodeSale extends StatelessWidget {
               onPressed: () async {
                 await controller.addManualOrder();
               },
+            ),
+          ),
+
+          // Customer
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              spacing: AppSizes.spaceBtwItems,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Select Customer'),
+                    InkWell(
+                      onTap: () async {
+                        // Navigate to the search screen and wait for the result
+                        final UserModel getSelectedCustomer = await showSearch(context: context,
+                          delegate: SearchVoucher1(
+                              searchType: SearchType.customer,
+                              selectedItems: controller.selectedCustomer.value
+                          ),
+                        );
+                        // If products are selected, update the state
+                        if (getSelectedCustomer.id != null) {
+                          controller.addCustomer(getSelectedCustomer);
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.add, color: AppColors.linkColor),
+                          Text('Add', style:  TextStyle(color: AppColors.linkColor),)
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Obx(() => controller.selectedCustomer.value.id != '' && controller.selectedCustomer.value.id != null
+                    ? Dismissible(
+                    key: Key(controller.selectedCustomer.value.id ?? ''), // Unique key for each item
+                    direction: DismissDirection.endToStart, // Swipe left to remove
+                    onDismissed: (direction) {
+                      controller.selectedCustomer.value = UserModel();
+                      AppMassages.showSnackBar(massage: 'Customer removed');
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: SizedBox(width: double.infinity, child: CustomerTile(customer: controller.selectedCustomer.value))
+                )
+                    : SizedBox.shrink(),
+                ),
+              ],
             ),
           ),
 

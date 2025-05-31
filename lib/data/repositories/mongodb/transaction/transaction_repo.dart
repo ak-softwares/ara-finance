@@ -201,4 +201,20 @@ class MongoTransactionRepo extends GetxController {
     }
   }
 
+  Future<TransactionModel> fetchTransactionBySale({required int orderNumber}) async {
+    try {
+      final Map<String, dynamic>? transactionData = await _mongoFetch.fetchTransactionBySale(
+        collectionName: collectionName,
+        orderNumber: orderNumber,
+      );
+      if(transactionData == null){
+        return TransactionModel();
+      }
+      return TransactionModel.fromJson(transactionData);
+    } catch (e) {
+      throw Exception('Failed to fetch transaction: $e');
+    }
+  }
+
+
 }

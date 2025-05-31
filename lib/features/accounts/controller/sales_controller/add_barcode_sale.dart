@@ -6,10 +6,17 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../data/repositories/woocommerce/orders/woo_orders_repository.dart';
+import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../personalization/models/user_model.dart';
+import '../../models/cart_item_model.dart';
 import '../../models/order_model.dart';
+import '../../models/transaction_model.dart';
+import '../product/product_controller.dart';
+import '../transaction/transaction_controller.dart';
 import 'add_sale_controller.dart';
 import 'sales_controller.dart';
 
@@ -20,6 +27,7 @@ class AddBarcodeSaleController extends GetxController {
   final OrderType orderType = OrderType.sale;
 
   RxList<OrderModel> newSales = <OrderModel>[].obs;
+  Rx<UserModel> selectedCustomer = UserModel().obs;
 
   int get saleTotal => newSales.fold(0, (sum, order) => sum + (order.total ?? 0).toInt());
 
@@ -27,19 +35,59 @@ class AddBarcodeSaleController extends GetxController {
 
   final authenticationController = Get.put(AuthenticationController);
   final saleController = Get.put(SaleController());
-  final addSaleController = Get.put(AddSaleController());
   final wooOrdersRepository = Get.put(WooOrdersRepository());
+  final transactionController = Get.put(TransactionController());
+  final productController = Get.put(ProductController());
+  final mongoOrderRepo = Get.put(MongoOrderRepo());
+
+  UserModel get admin => AuthenticationController.instance.admin.value;
 
   @override
   void onClose() {
     cameraController.dispose();
     super.onClose();
   }
+  void addCustomer(UserModel getSelectedCustomer) {
+    selectedCustomer.value = getSelectedCustomer;
+  }
 
   final MobileScannerController cameraController = MobileScannerController(
     torchEnabled: false,
     formats: [BarcodeFormat.all],
   );
+
+
+  Future<void> handleDetection(BarcodeCapture capture) async {
+    if (isScanning.value) return;
+    try {
+      FullScreenLoader.onlyCircularProgressDialog('Fetching Order...');
+      isScanning.value = true;
+
+      for (final barcode in capture.barcodes) {
+        final value = barcode.rawValue;
+        bool exists = newSales.any((order) => order.orderId.toString() == value);
+        if (value != null && !exists) {
+          HapticFeedback.mediumImpact();
+          final OrderModel sale = await wooOrdersRepository.fetchOrderById(orderId: value);
+          // checkIsSaleExist
+          final OrderModel checkIsSaleExist = await saleController.getSaleByOrderId(orderId: sale.orderId!);
+          if(checkIsSaleExist.id != null) {
+            throw 'Sale already exist';
+          }
+          sale.userId = AuthenticationController.instance.admin.value.id;
+          newSales.insert(0, sale);
+        }
+      }
+
+      Future.delayed(const Duration(seconds: 2), () {
+        isScanning.value = false;
+      });
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error in Order Fetching', message: e.toString());
+    } finally {
+      FullScreenLoader.stopLoading();
+    }
+  }
 
   Future<void> addManualOrder() async {
     try {
@@ -61,45 +109,13 @@ class AddBarcodeSaleController extends GetxController {
           throw 'Sale already exist';
         }
         sale.userId = AuthenticationController.instance.admin.value.id;
-        newSales.add(sale);
+        newSales.insert(0, sale);
       }
     } catch(e){
       AppMassages.errorSnackBar(title: 'Error', message: 'Add manual order failed: ${e.toString()}');
     } finally{
       FullScreenLoader.stopLoading();
       isScanning(false);
-    }
-  }
-
-  Future<void> handleDetection(BarcodeCapture capture) async {
-    if (isScanning.value) return;
-    try {
-      FullScreenLoader.onlyCircularProgressDialog('Fetching Order...');
-      isScanning.value = true;
-
-      for (final barcode in capture.barcodes) {
-        final value = barcode.rawValue;
-        bool exists = newSales.any((order) => order.orderId.toString() == value);
-        if (value != null && !exists) {
-          HapticFeedback.mediumImpact();
-          final OrderModel sale = await wooOrdersRepository.fetchOrderById(orderId: value);
-          // checkIsSaleExist
-          final OrderModel checkIsSaleExist = await saleController.getSaleByOrderId(orderId: sale.orderId!);
-          if(checkIsSaleExist.id != null) {
-            throw 'Sale already exist';
-          }
-          sale.userId = AuthenticationController.instance.admin.value.id;
-          newSales.add(sale);
-        }
-      }
-
-      Future.delayed(const Duration(seconds: 2), () {
-        isScanning.value = false;
-      });
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Order Fetching', message: e.toString());
-    } finally {
-      FullScreenLoader.stopLoading();
     }
   }
 
@@ -168,20 +184,82 @@ class AddBarcodeSaleController extends GetxController {
 
   Future<void> addBarcodeSale() async {
     try {
-      FullScreenLoader.onlyCircularProgressDialog('Fetching Order...');
+      FullScreenLoader.onlyCircularProgressDialog('Adding Sales...');
       for (var order in newSales) {
         order.status = OrderStatus.inTransit;
+        order.dateShipped = DateTime.now();
         order.orderType = orderType;
-        order.dateCompleted = DateTime.now();
       }
-      await addSaleController.pushSales(sales: newSales);
+      await processAddSales(sales: newSales);
       newSales.clear();
       Get.back();
       AppMassages.showToastMessage(message: 'Sale Added Successfully');
     } catch(e) {
-      AppMassages.errorSnackBar(title: 'Error sale Sale', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Error sale', message: e.toString());
     } finally {
       FullScreenLoader.stopLoading();
     }
   }
+
+  Future<void> processAddSales({required List<OrderModel> sales}) async {
+    try {
+      // Check if any invoiceId is null
+      final hasMissingInvoice = sales.any((sale) => sale.invoiceNumber == null);
+
+      if (hasMissingInvoice) {
+        int nextInvoiceId = await mongoOrderRepo.fetchOrderGetNextId(orderType: orderType, userId: admin.id!);
+
+        for (var sale in sales) {
+          if (sale.invoiceNumber == null) {
+            sale.invoiceNumber = nextInvoiceId;
+            nextInvoiceId++; // increment for the next one
+          }
+        }
+      }
+
+      if (selectedCustomer.value.id == null) {
+        throw('Please select customer');
+      }
+
+      // Calculate total amount from pending sales
+      final totalAmount = sales.fold(0.0, (sum, sale) => sum + (sale.total ?? 0.0));
+
+      // Collect orderIds for the transaction
+      final salesIds = sales.map((sale) => sale.orderId).whereType<int>().toList();
+
+      // Create the transaction model
+      final transaction = TransactionModel(
+        amount: totalAmount,
+        date: DateTime.now(),
+        userId: admin.id,
+        toEntityId: selectedCustomer.value.id,
+        toEntityName: selectedCustomer.value.name,
+        toEntityType: EntityType.customer,
+        transactionType: TransactionType.sale,
+        salesIds: salesIds,
+      );
+
+      // Process the transaction
+      final transactionId = await transactionController.processTransaction(transaction: transaction);
+      transaction.id = transactionId;
+
+      for (var sale in sales) {
+        sale.status = OrderStatus.inTransit;
+        sale.dateShipped = DateTime.now();
+        sale.orderType = orderType;
+        sale.transaction = transaction;
+      }
+
+      // Flatten all line items from each return
+      final List<CartModel> allLineItems = sales.expand<CartModel>((returned) => returned.lineItems ?? []).toList();
+
+      // Define the async operations
+      await productController.updateProductQuantity(cartItems: allLineItems, isAddition: false);
+
+      await mongoOrderRepo.pushOrders(orders: sales);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }

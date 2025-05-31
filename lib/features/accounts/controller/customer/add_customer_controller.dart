@@ -12,21 +12,17 @@ import '../../../personalization/models/address_model.dart';
 import '../../../personalization/models/user_model.dart';
 import 'customer_controller.dart';
 
-class AddCustomerController extends GetxController{
+class AddCustomerController extends GetxController {
   static AddCustomerController get instance => Get.find();
 
   final UserType userType = UserType.customer;
   RxInt customerId = 0.obs;
 
-  final nameController = TextEditingController();
+  final nameController  = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
-  final address1Controller = TextEditingController();
-  final address2Controller = TextEditingController();
-  final cityController = TextEditingController();
-  final stateController = TextEditingController();
-  final pincodeController = TextEditingController();
-  final countryController = TextEditingController();
+  final openingBalance  = TextEditingController();
+  final balance         = TextEditingController();
   GlobalKey<FormState> customerFormKey = GlobalKey<FormState>();
 
   final mongoCustomersRepo = Get.put(MongoUserRepository());
@@ -45,34 +41,22 @@ class AddCustomerController extends GetxController{
     nameController.text = customer.name ?? '';
     emailController.text = customer.email ?? '';
     phoneController.text = customer.phone ?? '';
-
-    address1Controller.text = customer.billing?.address1 ?? '';
-    address2Controller.text = customer.billing?.address2 ?? '';
-    cityController.text = customer.billing?.city ?? '';
-    stateController.text = customer.billing?.state ?? '';
-    pincodeController.text = customer.billing?.pincode ?? '';
-    countryController.text = customer.billing?.country ?? '';
+    openingBalance.text = customer.openingBalance.toString();
+    balance.text = customer.balance.toString();
   }
 
   void saveCustomer() {
-    AddressModel address = AddressModel(
-      phone: phoneController.text,
-      email: emailController.text,
-      address1: address1Controller.text,
-      address2: address2Controller.text,
-      city: cityController.text,
-      state: stateController.text,
-      pincode: pincodeController.text,
-      country: countryController.text,
-    );
 
     UserModel customer = UserModel(
+      userId: userId,
       documentId: customerId.value,
       name: nameController.text,
       email: emailController.text,
-      billing: address,
+      phone: phoneController.text,
+      openingBalance: double.parse(openingBalance.text),
+      balance: double.parse(balance.text),
       userType: userType,
-      dateCreated: DateTime.now().toString(),
+      dateCreated: DateTime.now(),
     );
 
     addCustomer(customer: customer);
@@ -115,23 +99,15 @@ class AddCustomerController extends GetxController{
   }
 
   void saveUpdatedCustomer({required UserModel previousCustomer}) {
-    AddressModel address = AddressModel(
-      phone: phoneController.text,
-      email: emailController.text,
-      address1: address1Controller.text,
-      address2: address2Controller.text,
-      city: cityController.text,
-      state: stateController.text,
-      pincode: pincodeController.text,
-      country: countryController.text,
-    );
 
     UserModel customer = UserModel(
       id: previousCustomer.id,
       documentId: previousCustomer.documentId,
       name: nameController.text,
       email: emailController.text,
-      billing: address,
+      phone: phoneController.text,
+      openingBalance: double.parse(openingBalance.text),
+      balance: double.parse(balance.text),
       userType: userType,
       dateCreated: previousCustomer.dateCreated,
     );
@@ -156,7 +132,7 @@ class AddCustomerController extends GetxController{
         FullScreenLoader.stopLoading();
         return;
       }
-      await mongoCustomersRepo.updateUser(user: customer);
+      await mongoCustomersRepo.updateUserById(userId: customer.id ?? '', user: customer);
 
       // Update in RxList
       final index = customerController.customers.indexWhere((c) => c.id == customer.id);
@@ -181,7 +157,7 @@ class AddCustomerController extends GetxController{
         billing: address,
         userType: userType
       );
-      await mongoCustomersRepo.updateUser(user: user);
+      await mongoCustomersRepo.updateUserById(userId: id, user: user);
     } catch (e) {
       rethrow;
     }

@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/data/state_iso_code_map.dart';
 import '../../../../utils/validators/validation.dart';
@@ -12,8 +13,10 @@ import '../../models/address_model.dart';
 import '../change_profile/change_user_profile.dart';
 
 class UpdateAddressScreen extends StatelessWidget {
-  const UpdateAddressScreen({super.key,required this.address,});
+  const UpdateAddressScreen({super.key,required this.address, required this.userId, required this.userType,});
 
+  final String userId;
+  final UserType userType;
   final AddressModel address;
 
   @override
@@ -24,6 +27,16 @@ class UpdateAddressScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppAppBar(title: 'Update Address'),
+      bottomNavigationBar: SizedBox(
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSizes.defaultSpace),
+            child: ElevatedButton(
+                onPressed: () => addressController.updateAddress(userId: userId, userType: userType),
+                child: const Text('Update Address')
+            ),
+          )
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(AppSizes.defaultSpace),
@@ -117,23 +130,6 @@ class UpdateAddressScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: AppSizes.spaceBtwItems),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('To Edit Phone and Email', style: Theme.of(context).textTheme.labelLarge),
-                      TextButton(
-                          onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangeUserProfile()));},
-                          child: Text('Click here', style: Theme.of(context).textTheme.labelLarge!.copyWith(color: AppColors.linkColor)))
-                    ]
-                ),
-                const SizedBox(height: AppSizes.spaceBtwItems),
-                SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: () => addressController.updateAddress(),
-                        child: const Text('Update Address')
-                    )
-                )
               ],
             ),
           ),

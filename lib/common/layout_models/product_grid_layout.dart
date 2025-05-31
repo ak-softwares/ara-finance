@@ -13,15 +13,11 @@ class ProductGridLayout extends StatelessWidget {
   const ProductGridLayout({
     super.key,
     required this.controller,
-    this.sourcePage = '',
-    this.orientation = OrientationType.vertical,
     this.emptyWidget = const AnimationLoaderWidgets(text: 'Whoops! No products found...', animation: Images.pencilAnimation),
     this.onTap,
   });
 
   final dynamic controller;
-  final String sourcePage;
-  final OrientationType orientation;
   final Widget emptyWidget;
   final ValueChanged<ProductModel>? onTap;
 
@@ -36,8 +32,8 @@ class ProductGridLayout extends StatelessWidget {
         final products = controller.products;
         return GridLayout(
           itemCount: controller.isLoadingMore.value ? products.length + 2 : products.length,
-          crossAxisCount: orientation == OrientationType.vertical ? 2 : 1,
-          mainAxisExtent: orientation == OrientationType.vertical ? AppSizes.productCardVerticalHeight : AppSizes.productVoucherTileHeight,
+          crossAxisCount: 1,
+          mainAxisExtent: AppSizes.productVoucherTileHeight,
           itemBuilder: (context, index) {
             if (index < products.length) {
               return ProductTile(

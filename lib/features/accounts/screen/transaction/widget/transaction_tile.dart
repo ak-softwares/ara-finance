@@ -45,7 +45,16 @@ class TransactionTile extends StatelessWidget {
                 Text(AppFormatter.formatStringDate(transaction.date.toString()), style: const TextStyle(fontSize: 14)),
               ],
             ),
-            Row(
+            if(transaction.transactionType == TransactionType.sale)
+              Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Sale ID', style: TextStyle(fontSize: 14)),
+                Text(transaction.salesIds.toString(), style: const TextStyle(fontSize: 14)),
+              ],
+            )
+            else
+              Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('From Entity', style: TextStyle(fontSize: 14)),

@@ -55,7 +55,6 @@ class _SingleProductState extends State<SingleProduct> {
 
   @override
   Widget build(BuildContext context) {
-    print('===========${product.vendor?.id}');
     return Scaffold(
       appBar: AppAppBar(
         title: 'Product',

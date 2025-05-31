@@ -75,47 +75,28 @@ class AddCustomer extends StatelessWidget {
                   keyboardType: TextInputType.phone,
                 ),
                 TextFormField(
-                  controller: controller.address1Controller,
+                  controller: controller.phoneController,
                   decoration: InputDecoration(
-                    labelText: 'Address 1',
+                    labelText: 'Phone',
                     border: OutlineInputBorder(),
                   ),
+                  keyboardType: TextInputType.phone,
                 ),
                 TextFormField(
-                  controller: controller.address2Controller,
+                  controller: controller.openingBalance,
                   decoration: InputDecoration(
-                    labelText: 'Address 2',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                TextFormField(
-                  controller: controller.cityController,
-                  decoration: InputDecoration(
-                    labelText: 'City',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                TextFormField(
-                  controller: controller.stateController,
-                  decoration: InputDecoration(
-                    labelText: 'State',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                TextFormField(
-                  controller: controller.pincodeController,
-                  decoration: InputDecoration(
-                    labelText: 'Pincode',
+                    labelText: 'Opening balance',
                     border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                 ),
                 TextFormField(
-                  controller: controller.countryController,
+                  controller: controller.balance,
                   decoration: InputDecoration(
-                    labelText: 'Country',
+                    labelText: 'Balance',
                     border: OutlineInputBorder(),
                   ),
+                  keyboardType: TextInputType.number,
                 ),
               ],
             ),

@@ -133,15 +133,15 @@ class AddExpenseScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Payment Method'),
+                        Text('Select Account'),
                         InkWell(
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final AccountModel getSelectedPayment = await showSearch(context: context,
-                              delegate: SearchVoucher1(searchType: SearchType.paymentMethod),
+                              delegate: SearchVoucher1(searchType: SearchType.account),
                             );
                             // If products are selected, update the state
-                            if (getSelectedPayment.accountName != null) {
+                            if (getSelectedPayment.id != null) {
                               controller.selectedAccountType(getSelectedPayment);
                             }
                           },
