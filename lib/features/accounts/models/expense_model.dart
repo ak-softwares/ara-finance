@@ -1,31 +1,22 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
-import '../../../utils/constants/enums.dart';
-import 'account_model.dart';
-import 'transaction_model.dart';
 
 class ExpenseModel {
   final String? id;
   final String? userId;
+  final String? title;
   final int? expenseId;
-  final ExpenseType? expenseType;
-  final double? amount;
-  final String? description;
-  final AccountModel? account;
+  final double? openingBalance;
   final DateTime? dateCreated;
-  TransactionModel? transaction;
 
   ExpenseModel({
     this.id,
     this.userId,
+    this.title,
     this.expenseId,
-    this.amount,
-    this.description,
-    this.expenseType,
-    this.account,
+    this.openingBalance,
     this.dateCreated,
-    this.transaction,
   });
 
 
@@ -36,34 +27,27 @@ class ExpenseModel {
           ? (json[ExpenseFieldName.id] as ObjectId).toHexString()
           : json[ExpenseFieldName.id]?.toString(),
       userId: json[ExpenseFieldName.userId] as String?,
+      title: json[ExpenseFieldName.title] as String?,
       expenseId: json[ExpenseFieldName.expenseId] as int?,
-      amount: json[ExpenseFieldName.amount] != null ? double.tryParse(json[ExpenseFieldName.amount].toString()) : null,
-      description: json[ExpenseFieldName.description] as String?,
-      expenseType: ExpenseTypeExtension.fromString(json[ExpenseFieldName.expenseType] ?? ''),
-      account: json[ExpenseFieldName.account] != null
-          ? AccountModel.fromJson(json[ExpenseFieldName.account])
-          : AccountModel(),
+      openingBalance: json[ExpenseFieldName.openingBalance] != null ? double.tryParse(json[ExpenseFieldName.openingBalance].toString()) : null,
       dateCreated: json[ExpenseFieldName.dateCreated],
-      transaction: json[ExpenseFieldName.transaction] != null
-          ? TransactionModel.fromJson(json[ExpenseFieldName.transaction])
-          : TransactionModel(),
     );
   }
 
   // Convert model to JSON for database insertion
   Map<String, dynamic> toJson() {
-    return {
-      ExpenseFieldName.id: id,
-      ExpenseFieldName.userId: userId,
-      ExpenseFieldName.expenseId: expenseId,
-      ExpenseFieldName.amount: amount,
-      ExpenseFieldName.description: description,
-      ExpenseFieldName.expenseType: expenseType?.name,
-      ExpenseFieldName.account: account?.toMap(),
-      ExpenseFieldName.dateCreated: dateCreated,
-      ExpenseFieldName.transaction: transaction?.toMap(),
-    };
+    final Map<String, dynamic> data = {};
+
+    if (id != null) data[ExpenseFieldName.id] = id;
+    if (userId != null) data[ExpenseFieldName.userId] = userId;
+    if (title != null) data[ExpenseFieldName.title] = title;
+    if (expenseId != null) data[ExpenseFieldName.expenseId] = expenseId;
+    if (openingBalance != null) data[ExpenseFieldName.openingBalance] = openingBalance;
+    if (dateCreated != null) data[ExpenseFieldName.dateCreated] = dateCreated;
+
+    return data;
   }
+
 
   /// Convert TransactionModel to a Map (alias for toJson)
   Map<String, dynamic> toMap() => toJson();

@@ -10,17 +10,18 @@ import '../../../../utils/constants/image_strings.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../personalization/models/user_model.dart';
 import '../../models/account_model.dart';
+import '../../models/account_voucher_model.dart';
 import '../../models/transaction_model.dart';
 import 'transaction_controller.dart';
 
 class AddReceiptController extends GetxController {
   static AddReceiptController get instance => Get.find();
 
+  final AccountVoucherType voucherType = AccountVoucherType.receipt;
   RxInt transactionId = 0.obs;
 
-
-  Rx<UserModel> selectedCustomer = UserModel().obs;
-  Rx<AccountModel> selectedAccount = AccountModel().obs;
+  Rx<AccountVoucherModel> selectedBankAccount = AccountVoucherModel().obs;
+  Rx<AccountVoucherModel> selectedSender = AccountVoucherModel().obs;
 
   final amount = TextEditingController();
   final date = TextEditingController();
@@ -34,8 +35,8 @@ class AddReceiptController extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
-    date.text = DateTime.now().toIso8601String(); // Store in ISO format
-    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
+    date.text = DateTime.now().toIso8601String();
+    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
   }
 
   @override
@@ -44,8 +45,8 @@ class AddReceiptController extends GetxController {
     super.onClose();
   }
 
-  void addCustomer(UserModel getSelectedCustomer) {
-    selectedCustomer.value = getSelectedCustomer;
+  void addSender(AccountVoucherModel getSelectedSender) {
+    selectedSender.value = getSelectedSender;
   }
 
   void selectDate(BuildContext context) async {
@@ -57,50 +58,41 @@ class AddReceiptController extends GetxController {
     );
 
     if (pickedDate != null) {
-      date.text = pickedDate.toIso8601String(); // Store as ISO format
-      update(); // Ensure UI update
+      date.text = pickedDate.toIso8601String();
+      update();
     }
   }
 
-  // Save new transaction
   void saveReceiptTransaction() {
     TransactionModel transaction = TransactionModel(
       userId: userId,
       transactionId: transactionId.value,
       amount: double.tryParse(amount.text) ?? 0.0,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
-      fromEntityId: selectedCustomer.value.id, // Example vendor ID
-      fromEntityName: selectedCustomer.value.name, // Example vendor ID
-      fromEntityType: EntityType.customer,
-      toEntityId: selectedAccount.value.id,
-      toEntityName: selectedAccount.value.accountName,
-      toEntityType: EntityType.account,
-      transactionType: TransactionType.receipt,
+      formAccountVoucher: selectedSender.value,
+      toAccountVoucher: selectedBankAccount.value,
+      transactionType: AccountVoucherType.receipt,
     );
 
     addReceiptTransaction(transaction: transaction);
   }
 
-  // Upload transaction
   Future<void> addReceiptTransaction({required TransactionModel transaction}) async {
     try {
-      FullScreenLoader.openLoadingDialog('Updating your receipt transaction...', Images.docerAnimation);
+      FullScreenLoader.openLoadingDialog('Adding your receipt transaction...', Images.docerAnimation);
 
-      // Check internet connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         FullScreenLoader.stopLoading();
         throw 'Internet Not connected';
       }
 
-      // Form Validation
       if (!receiptFormKey.currentState!.validate()) {
         FullScreenLoader.stopLoading();
         throw 'Form is not valid';
       }
 
       await transactionController.processTransaction(transaction: transaction);
-
       await clearReceiptTransaction();
 
       FullScreenLoader.stopLoading();
@@ -113,70 +105,55 @@ class AddReceiptController extends GetxController {
     }
   }
 
-
   Future<void> clearReceiptTransaction() async {
-    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
+    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
     amount.text = '';
-    selectedAccount.value = AccountModel();
-    selectedCustomer.value = UserModel();
+    selectedBankAccount.value = AccountVoucherModel();
+    selectedSender.value = AccountVoucherModel();
     date.text = DateTime.now().toIso8601String();
   }
 
-  // Reset fields before editing transaction
-  void resetValue(TransactionModel receiptTransaction) {
-    transactionId.value = receiptTransaction.transactionId ?? 0;
-    amount.text = receiptTransaction.amount.toString();
-    date.text = receiptTransaction.date?.toIso8601String() ?? '';
-    selectedCustomer.value = UserModel(
-      id: receiptTransaction.toEntityId,
-      name: receiptTransaction.toEntityName,
-    );
-    selectedAccount.value = AccountModel(
-      id: receiptTransaction.fromEntityId,
-      accountName: receiptTransaction.fromEntityName,
-    );
+  void resetValue(TransactionModel transaction) {
+    transactionId.value = transaction.transactionId ?? 0;
+    amount.text = transaction.amount.toString();
+    date.text = transaction.date?.toIso8601String() ?? '';
+    selectedSender.value = transaction.formAccountVoucher ?? AccountVoucherModel();
+    selectedBankAccount.value = transaction.toAccountVoucher ?? AccountVoucherModel();
   }
 
   void saveUpdatedReceiptTransaction({required TransactionModel oldReceiptTransaction}) {
-
     TransactionModel newReceiptTransaction = TransactionModel(
       id: oldReceiptTransaction.id,
       transactionId: oldReceiptTransaction.transactionId,
       amount: double.tryParse(amount.text) ?? oldReceiptTransaction.amount,
       date: DateTime.tryParse(date.text) ?? oldReceiptTransaction.date,
-      fromEntityId: selectedCustomer.value.id ?? oldReceiptTransaction.fromEntityId,
-      fromEntityName: selectedCustomer.value.name ?? oldReceiptTransaction.fromEntityName,
-      fromEntityType: oldReceiptTransaction.fromEntityType,
-      toEntityId: selectedAccount.value.id ?? oldReceiptTransaction.toEntityId,
-      toEntityName: selectedAccount.value.accountName ?? oldReceiptTransaction.toEntityName,
-      toEntityType: oldReceiptTransaction.toEntityType,
+      formAccountVoucher: selectedSender.value,
+      toAccountVoucher: selectedBankAccount.value,
       transactionType: oldReceiptTransaction.transactionType,
     );
 
-    updateReceiptTransaction(newReceiptTransaction: newReceiptTransaction, oldReceiptTransaction: oldReceiptTransaction);
+    updateTransaction(transaction: newReceiptTransaction);
   }
 
-  Future<void> updateReceiptTransaction({required TransactionModel newReceiptTransaction, required TransactionModel oldReceiptTransaction}) async {
+  Future<void> updateTransaction({required TransactionModel transaction}) async {
     try {
       FullScreenLoader.openLoadingDialog('Updating receipt transaction...', Images.docerAnimation);
 
-      // Check internet connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         FullScreenLoader.stopLoading();
         throw 'Internet Not connected';
       }
 
-      // Form Validation
       if (!receiptFormKey.currentState!.validate()) {
         FullScreenLoader.stopLoading();
         throw 'Form is not valid';
       }
 
-      await transactionController.processUpdateTransaction(newTransaction: newReceiptTransaction, oldTransaction: oldReceiptTransaction);
+      await transactionController.processUpdateTransaction(transaction: transaction);
 
       FullScreenLoader.stopLoading();
-      transactionController.refreshTransactions();
+      await transactionController.refreshTransactions();
       AppMassages.showToastMessage(message: 'Receipt transaction updated successfully!');
       Get.close(2);
     } catch (e) {
@@ -184,6 +161,4 @@ class AddReceiptController extends GetxController {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
-
-
 }

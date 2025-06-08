@@ -60,7 +60,7 @@ class Sales extends StatelessWidget {
     return Scaffold(
         appBar: AppAppBar(
           title: 'Sales',
-          searchType: SearchType.sale,
+          voucherType: AccountVoucherType.sale,
           widgetInActions: Row(
             children: [
               IconButton(

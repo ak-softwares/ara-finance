@@ -4,15 +4,13 @@ import 'package:get/get.dart';
 import '../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../common/widgets/network_manager/network_manager.dart';
+import '../../../data/repositories/mongodb/user/user_repositories.dart';
 import '../../../data/repositories/woocommerce/customers/woo_customer_repository.dart';
-import '../../../utils/constants/db_constants.dart';
 import '../../../utils/constants/enums.dart';
 import '../../../utils/constants/image_strings.dart';
 import '../../../utils/data/state_iso_code_map.dart';
-import '../../accounts/controller/customer/add_customer_controller.dart';
 import '../models/address_model.dart';
 import '../models/user_model.dart';
-import '../../authentication/controllers/authentication_controller/authentication_controller.dart';
 
 class AddressController extends GetxController{
   static AddressController get instance => Get.find();
@@ -29,9 +27,7 @@ class AddressController extends GetxController{
   final country = TextEditingController();
   GlobalKey<FormState> addressFormKey = GlobalKey<FormState>();
 
-
-  final addCustomerController = Get.put(AddCustomerController());
-
+  final mongoUserRepository = Get.put(MongoUserRepository());
 
   void initializedInPutField({required AddressModel address}) {
     firstName.text = address.firstName!;
@@ -73,7 +69,13 @@ class AddressController extends GetxController{
         country: CountryData.getISOFromCountry(country.text.trim()),
       );
 
-      await addCustomerController.updateCustomerAddressById(id: userId, userType: userType, address: address);
+      final user = UserModel(
+          id: userId,
+          billing: address,
+          userType: userType
+      );
+
+      await mongoUserRepository.updateUserById(userId: userId, user: user);
 
       // remove Loader
       FullScreenLoader.stopLoading();

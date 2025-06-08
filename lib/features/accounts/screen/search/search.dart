@@ -12,7 +12,7 @@ class SearchVoucher extends SearchDelegate {
   RxList<String> suggestionList = RxList<String>(); // Observable for suggestion list
 
   final localStorage = GetStorage();
-  final SearchType searchType; // Enum to differentiate search types
+  final AccountVoucherType searchType; // Enum to differentiate search types
 
   @override
   String? get searchFieldLabel => 'Search ${_getSearchLabel()}..';
@@ -100,7 +100,7 @@ class SearchVoucher extends SearchDelegate {
       return SearchScreen(
         title: 'Search result for ${query.isEmpty ? '' : '"$query"'}',
         searchQuery: query,
-        searchType: searchType,
+        voucherType: searchType,
         orientation: OrientationType.horizontal,
       );
   }
@@ -142,24 +142,17 @@ class SearchVoucher extends SearchDelegate {
       // Fetch suggestions based on search type
       List<String> searchResults;
       switch (searchType) {
-        case SearchType.products:
+        case AccountVoucherType.product:
           searchResults = _fetchProductSuggestions(query);
           break;
-        case SearchType.customer:
+        case AccountVoucherType.customer:
           searchResults = _fetchCustomerSuggestions(query);
           break;
-        case SearchType.sale:
+        case AccountVoucherType.sale:
           searchResults = _fetchUserSuggestions(query);
           break;
-        case SearchType.vendor:
-          // TODO: Handle this case.
-          throw UnimplementedError();
-        case SearchType.account:
-          // TODO: Handle this case.
-          throw UnimplementedError();
-        case SearchType.purchase:
-          // TODO: Handle this case.
-          throw UnimplementedError();
+        default:
+          searchResults = [];
       }
       suggestionList.value = searchResults.take(5).toList();
     }
@@ -182,18 +175,22 @@ class SearchVoucher extends SearchDelegate {
 
   String _getSearchLabel() {
     switch (searchType) {
-      case SearchType.products:
+      case AccountVoucherType.product:
         return 'Product';
-      case SearchType.customer:
+      case AccountVoucherType.customer:
         return 'Customer';
-      case SearchType.sale:
+      case AccountVoucherType.sale:
         return 'Sale';
-      case SearchType.purchase:
+      case AccountVoucherType.purchase:
         return 'Purchase';
-      case SearchType.vendor:
+      case AccountVoucherType.vendor:
         return 'Vendor';
-      case SearchType.account:
-        return 'Account';
+      case AccountVoucherType.bankAccount:
+        return 'Bank accounts';
+      case AccountVoucherType.expense:
+        return 'Expenses';
+      default:
+        return '';
     }
   }
 }

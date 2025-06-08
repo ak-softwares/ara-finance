@@ -144,16 +144,10 @@ class SaleReturnController extends GetxController {
         amount: totalAmount,
         date: DateTime.now(),
         userId: admin.id,
-        fromEntityId: selectedCustomer.value.id,
-        fromEntityName: selectedCustomer.value.name,
-        fromEntityType: EntityType.customer,
-        transactionType: TransactionType.creditNote,
-        salesIds: salesIds,
       );
 
       // Process the transaction
       final transactionId = await transactionController.processTransaction(transaction: transaction);
-      transaction.id = transactionId;
       for (var sale in pendingSales) {
         sale.transaction = transaction;
       }      // Update the status of only pending orders

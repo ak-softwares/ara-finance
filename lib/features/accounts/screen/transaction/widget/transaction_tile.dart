@@ -45,12 +45,11 @@ class TransactionTile extends StatelessWidget {
                 Text(AppFormatter.formatStringDate(transaction.date.toString()), style: const TextStyle(fontSize: 14)),
               ],
             ),
-            if(transaction.transactionType == TransactionType.sale)
+            if(transaction.transactionType == AccountVoucherType.sale)
               Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Sale ID', style: TextStyle(fontSize: 14)),
-                Text(transaction.salesIds.toString(), style: const TextStyle(fontSize: 14)),
               ],
             )
             else
@@ -58,7 +57,7 @@ class TransactionTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('From Entity', style: TextStyle(fontSize: 14)),
-                Text(transaction.fromEntityName ?? '', style: const TextStyle(fontSize: 14)),
+                Text(transaction.formAccountVoucher?.title ?? '', style: const TextStyle(fontSize: 14)),
               ],
             ),
             Row(
@@ -68,27 +67,18 @@ class TransactionTile extends StatelessWidget {
                 Text(transaction.amount?.toStringAsFixed(2) ?? 'N/A', style: const TextStyle(fontSize: 14)),
               ],
             ),
-            if(transaction.toEntityType != null)
-              Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('To Entity', style: TextStyle(fontSize: 14)),
-                Text(transaction.toEntityName ?? '', style: const TextStyle(fontSize: 14)),
+                Text(transaction.toAccountVoucher?.title ?? '', style: const TextStyle(fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Payment Method', style: TextStyle(fontSize: 14)),
+                const Text('Transaction Type', style: TextStyle(fontSize: 14)),
                 Text(transaction.transactionType?.name.capitalizeFirst ?? '', style: const TextStyle(fontSize: 14)),
-              ],
-            ),
-            if(transaction.transactionType == TransactionType.purchase)
-              Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Purchase ID', style: TextStyle(fontSize: 14)),
-                Text('#${transaction.purchaseId.toString()}', style: const TextStyle(fontSize: 14)),
               ],
             ),
           ],

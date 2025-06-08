@@ -10,7 +10,6 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../../../accounts/screen/accounts/accounts.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../setup/screens/platform_selection_screen.dart';
 import '../../models/address_model.dart';

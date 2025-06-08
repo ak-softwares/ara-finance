@@ -178,10 +178,7 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<double> fetchTotalStockValue({
-    required String collectionName,
-    Map<String, dynamic> filter = const {},
-  }) async {
+  Future<double> fetchTotalStockValue({required String collectionName, Map<String, dynamic> filter = const {},}) async {
     await _ensureConnected();
     try {
       final matchFilter = {
@@ -227,10 +224,7 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<double> fetchTotalAccountBalance({
-    required String collectionName,
-    Map<String, dynamic>? filter, // Add filter parameter
-  }) async {
+  Future<double> fetchTotalAccountBalance({required String collectionName, Map<String, dynamic>? filter}) async {
     await _ensureConnected();
     try {
       final matchStage = {
@@ -297,6 +291,70 @@ class MongoFetch extends MongoDatabase {
       }
     } catch (e) {
       throw Exception('Failed to calculate total account balance: $e');
+    }
+  }
+
+  Future<double> calculateVoucherBalance({
+    required String voucherId,
+    required String collectionName,
+  }) async {
+    await _ensureConnected();
+    try {
+      final pipeline = [
+        {
+          r'$match': {
+            r'$or': [
+              {'form_account_voucher._id': voucherId},
+              {'to_account_voucher._id': voucherId},
+            ]
+          }
+        },
+        {
+          r'$project': {
+            'amount': 1,
+            'isForm': {
+              r'$eq': ['\$form_account_voucher._id', voucherId]
+            },
+            'isTo': {
+              r'$eq': ['\$to_account_voucher._id', voucherId]
+            }
+          }
+        },
+        {
+          r'$project': {
+            'netAmount': {
+              r'$cond': [
+                {'\$eq': ['\$isForm', true]},  // If voucher is form
+                {'\$multiply': ['\$amount', -1]},
+                {'\$cond': [
+                  {'\$eq': ['\$isTo', true]},  // Else if voucher is to
+                  '\$amount',                    // Add amount
+                  0                            // Else 0 (shouldn't happen)
+                ]}
+              ]
+            }
+          }
+        },
+        {
+          r'$group': {
+            '_id': null,
+            'totalBalance': {r'$sum': '\$netAmount'}
+          }
+        }
+      ];
+
+      final result = await db!
+          .collection(collectionName)
+          .aggregateToStream(pipeline)
+          .toList();
+
+      if (result.isNotEmpty && result[0]['totalBalance'] != null) {
+        return (result[0]['totalBalance'] as num).toDouble();
+      } else {
+        return 0.0;
+      }
+    } catch (e) {
+      throw Exception('Failed to calculate voucher balance: $e');
     }
   }
 
@@ -406,25 +464,21 @@ class MongoFetch extends MongoDatabase {
 
   Future<List<Map<String, dynamic>>> fetchTransactionByEntity({
     required String collectionName,
-    required EntityType entityType,
-    required String entityId,
+    required String voucherId,
     int page = 1,
     int itemsPerPage = 10,
   }) async {
     await _ensureConnected();
     try {
       final skip = (page - 1) * itemsPerPage;
-      final query = where
-          .eq('from_entity_type', entityType.name)
-          .eq('from_entity_id', entityId)
-          .or(where
-          .eq('to_entity_type', entityType.name)
-          .eq('to_entity_id', entityId))
+      final query = where.eq('${TransactionFieldName.formAccountVoucher}._id', voucherId)
+          .or(where.eq('${TransactionFieldName.toAccountVoucher}._id', voucherId))
           .sortBy('_id', descending: true)
           .skip(skip)
           .limit(itemsPerPage);
 
-      return await db!.collection(collectionName).find(query).toList();
+      final result =  await db!.collection(collectionName).find(query).toList();
+      return result;
     } catch (e) {
       throw Exception('Failed to fetch transactions: $e');
     }
@@ -437,8 +491,8 @@ class MongoFetch extends MongoDatabase {
     await _ensureConnected();
     try {
       final query = where
-          .eq(TransactionFieldName.transactionType, TransactionType.sale.name)
-          .eq(TransactionFieldName.salesIds, orderNumber); // Match sale id in array
+          .eq(TransactionFieldName.transactionType, AccountVoucherType.sale.name);
+          // .eq(TransactionFieldName.salesIds, orderNumber); // Match sale id in array
 
       final result = await db!
           .collection(collectionName)
@@ -451,11 +505,7 @@ class MongoFetch extends MongoDatabase {
   }
 
 
-  Future<int> fetchNextId({
-    required String collectionName,
-    required String fieldName,
-    Map<String, dynamic>? filter,
-  }) async {
+  Future<int> fetchNextId({required String collectionName, required String fieldName, Map<String, dynamic>? filter,}) async {
     await _ensureConnected();
     var collection = db!.collection(collectionName);
     try {

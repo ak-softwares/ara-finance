@@ -23,7 +23,7 @@ class ColoredAmount extends StatelessWidget {
     }
 
     return Text(
-      AppSettings.currencySymbol + amount.toString(),
+      AppSettings.currencySymbol + amount.toStringAsFixed(0),
       style: TextStyle(
         fontSize: 14,
         color: textColor,

@@ -13,6 +13,7 @@ class DbCollections{
   static const String accounts = 'accounts';
   static const String transactions = 'transactions';
   static const String expenses = 'expenses';
+  static const String accountVouchers = 'account_vouchers';
 }
 
 
@@ -361,8 +362,9 @@ class AccountFieldName {
 class ExpenseFieldName {
   static const String id = '_id';
   static const String userId = 'user_id';
+  static const String title = 'title';
   static const String expenseId = 'expense_id';
-  static const String amount = 'amount';
+  static const String openingBalance = 'openingBalance';
   static const String description = 'description';
   static const String expenseType = 'expense_type';
   static const String account = 'account';
@@ -371,21 +373,26 @@ class ExpenseFieldName {
   static const String transaction = 'transaction';
 }
 
+class AccountVoucherFieldName {
+  static const String id = '_id';
+  static const String userId = 'user_id';
+  static const String voucherId = 'voucher_id';
+  static const String title = 'title';
+  static const String openingBalance = 'opening_balance';
+  static const String dateCreated = 'date_created';
+  static const String voucherType = 'voucher_type';
+}
+
 class TransactionFieldName {
   static const String id = '_id';
   static const String userId = 'user_id';
   static const String transactionId = 'transaction_id';
   static const String date = 'date';
   static const String amount = 'amount';
-  static const String fromEntityId = 'from_entity_id';
-  static const String fromEntityName = 'from_entity_name';
-  static const String fromEntityType = 'from_entity_type';
-  static const String toEntityId = 'to_entity_id';
-  static const String toEntityName = 'to_entity_Name';
-  static const String toEntityType = 'to_entity_type';
+  static const String formAccountVoucher = 'form_account_voucher';
+  static const String toAccountVoucher = 'to_account_voucher';
   static const String transactionType = 'transaction_type';
-  static const String purchaseId = 'purchase_id';
-  static const String salesIds = 'sales_ids';
+  static const String products = 'products';
 }
 
 class PaymentMethodName {

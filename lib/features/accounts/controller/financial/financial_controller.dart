@@ -9,12 +9,8 @@ import '../../../authentication/controllers/authentication_controller/authentica
 import '../../models/coupon_model.dart';
 import '../../models/expense_model.dart';
 import '../../models/order_model.dart';
-import '../account/account_controller.dart';
-import '../expenses/expenses_controller.dart';
 import '../product/product_controller.dart';
-import '../purchase/purchase_controller.dart';
 import '../sales_controller/sales_controller.dart';
-import '../vendor/vendor_controller.dart';
 
 class FinancialController extends GetxController {
 
@@ -65,11 +61,10 @@ class FinancialController extends GetxController {
   final OrderStatus returnStatus = OrderStatus.returned;
 
   final saleController = Get.put(SaleController());
-  final purchaseController = Get.put(PurchaseController());
   final productController = Get.put(ProductController());
-  final accountsController = Get.put(AccountController());
-  final expenseController = Get.put(ExpenseController());
-  final vendorController = Get.put(VendorController());
+  // final bankAccountController = Get.put(BankAccountController());
+  // final expenseController = Get.put(ExpenseController());
+  // final vendorController = Get.put(VendorController());
   final mongoUserRepository = Get.put(MongoUserRepository());
 
   String get userEmail => AuthenticationController.instance.admin.value.email ?? '';
@@ -175,11 +170,11 @@ class FinancialController extends GetxController {
     try {
         isLoading(true);
         final fetchedSales = await saleController.getSalesByDate(startDate: startDate.value, endDate: endDate.value);
-        final fetchedPurchases = await purchaseController.getPurchasesByDate(startDate: startDate.value, endDate: endDate.value);
-        final fetchedExpenses = await expenseController.getExpensesByDate(startDate: startDate.value, endDate: endDate.value);
+        // final fetchedPurchases = await purchaseController.getPurchasesByDate(startDate: startDate.value, endDate: endDate.value);
+        // final fetchedExpenses = await expenseController.getExpensesByDate(startDate: startDate.value, endDate: endDate.value);
         sales.assignAll(fetchedSales);
-        purchases.assignAll(fetchedPurchases);
-        expenses.assignAll(fetchedExpenses);
+        // purchases.assignAll(fetchedPurchases);
+        // expenses.assignAll(fetchedExpenses);
         await calculateCogs();
     } catch(e){
         AppMassages.errorSnackBar(title: 'Error', message: e.toString());
@@ -215,7 +210,7 @@ class FinancialController extends GetxController {
   int get expensesCogsInTransitPercent => assets == 0 ? 0 : ((expensesCogsInTransit / assets) * 100).round();
 
   // Total of all expenses
-  int get expensesTotal => expenses.fold(0, (sum, e) => sum + ((e.amount ?? 0).round()));
+  int get expensesTotal => expenses.fold(0, (sum, e) => sum + ((e.openingBalance ?? 0).round()));
 
   // Total per expenseType as a Map
   List<ExpenseSummary> get expenseSummaries {
@@ -223,9 +218,9 @@ class FinancialController extends GetxController {
     final Map<String, int> grouped = {};
 
     for (var e in expenses) {
-      final type = e.expenseType?.name ?? 'Unknown';
-      final amount = (e.amount ?? 0).toInt();
-      grouped[type] = (grouped[type] ?? 0) + amount;
+      // final type = e.expenseType?.name ?? 'Unknown';
+      // final amount = (e.openingBalance ?? 0).toInt();
+      // grouped[type] = (grouped[type] ?? 0) + amount;
     }
 
     return grouped.entries.map((entry) {
@@ -353,8 +348,8 @@ class FinancialController extends GetxController {
 
   Future<void> calculateCash() async {
     try {
-      final double totalStockValue = await accountsController.getTotalBalance();
-      cash.value = totalStockValue.toInt();
+      // final double totalStockValue = await bankAccountController.getTotalBalance();
+      // cash.value = totalStockValue.toInt();
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
@@ -373,8 +368,8 @@ class FinancialController extends GetxController {
 
   Future<void> calculateAccountsPayable() async {
     try {
-      final double totalAccountsPayable = await vendorController.calculateAccountPayable();
-      accountsPayable.value = (totalAccountsPayable.toInt()).abs();
+      // final double totalAccountsPayable = await vendorController.calculateAccountPayable();
+      // accountsPayable.value = (totalAccountsPayable.toInt()).abs();
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }

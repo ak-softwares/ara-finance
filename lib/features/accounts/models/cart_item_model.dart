@@ -1,5 +1,6 @@
 import '../../../utils/constants/db_constants.dart';
 import '../../personalization/models/user_model.dart';
+import 'account_voucher_model.dart';
 
 class CartModel {
   int? id;
@@ -22,7 +23,7 @@ class CartModel {
   String? parentName;
   bool? isCODBlocked;
   String? pageSource;
-  UserModel? vendor;
+  AccountVoucherModel? vendor;
 
   //constructor
   CartModel({
@@ -114,8 +115,8 @@ class CartModel {
       parentName: json[CartFieldName.parentName] ?? '',
       isCODBlocked: json[CartFieldName.isCODBlocked] ?? false,
       vendor: json[CartFieldName.vendor] != null
-          ? UserModel.fromJson(json[CartFieldName.vendor])
-          : UserModel(),
+          ? AccountVoucherModel.fromJson(json[CartFieldName.vendor])
+          : AccountVoucherModel(),
     );
   }
 
@@ -146,8 +147,8 @@ class CartModel {
       isCODBlocked: json[CartFieldName.isCODBlocked] ?? false,
       pageSource: json[CartFieldName.pageSource] ?? '',
       vendor: json[CartFieldName.vendor] != null
-          ? UserModel.fromJson(json[CartFieldName.vendor])
-          : UserModel(),
+          ? AccountVoucherModel.fromJson(json[CartFieldName.vendor])
+          : AccountVoucherModel(),
     );
   }
 
@@ -197,7 +198,7 @@ class CartModel {
     String? parentName,
     bool? isCODBlocked,
     String? pageSource,
-    UserModel? vendor,
+    AccountVoucherModel? vendor,
   }) {
     return CartModel(
       id: id ?? this.id,

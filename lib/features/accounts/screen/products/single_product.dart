@@ -1,6 +1,3 @@
-import 'package:ara_finance/common/layout_models/product_list_layout.dart';
-import 'package:ara_finance/features/accounts/screen/purchase/purchase.dart';
-import 'package:ara_finance/features/accounts/screen/purchase/widget/purchase_tile.dart';
 import 'package:ara_finance/utils/constants/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -139,7 +136,8 @@ class _SingleProductState extends State<SingleProduct> {
                     if(orders[index].orderType == OrderType.sale){
                       return SaleTile(sale: orders[index]);
                     }else {
-                      return PurchaseTile(purchase: orders[index]);
+                      return SizedBox();
+                      // return PurchaseTile(purchase: orders[index]);
                     }
                   }
               ),

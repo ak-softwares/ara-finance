@@ -91,7 +91,7 @@ class MongoExpenseRepo extends GetxController {
   }
 
   // Get the next expense ID
-  Future<int> fetchExpenseNextId({required String userId}) async {
+  Future<int> fetchExpenseGetNextId({required String userId}) async {
     try {
       return await _mongoFetch.fetchNextId(
           collectionName: collectionName,

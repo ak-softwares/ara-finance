@@ -232,16 +232,10 @@ class AddBarcodeSaleController extends GetxController {
         amount: totalAmount,
         date: DateTime.now(),
         userId: admin.id,
-        toEntityId: selectedCustomer.value.id,
-        toEntityName: selectedCustomer.value.name,
-        toEntityType: EntityType.customer,
-        transactionType: TransactionType.sale,
-        salesIds: salesIds,
       );
 
       // Process the transaction
       final transactionId = await transactionController.processTransaction(transaction: transaction);
-      transaction.id = transactionId;
 
       for (var sale in sales) {
         sale.status = OrderStatus.inTransit;

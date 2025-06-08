@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class RequestPermissions {
 
@@ -53,13 +52,4 @@ class RequestPermissions {
     return permissionStatus.isGranted;
   }
 
-  static Future<bool> openAccessibilitySettings() async {
-    const url = 'package:flutter_settings_screens/flutter_settings_screens.dart';
-    if (await canLaunchUrl(url as Uri)) {
-      await launchUrl(url as Uri);
-      return true; // Successfully opened accessibility settings
-    } else {
-      return false; // Failed to open accessibility settings
-    }
-  }
 }

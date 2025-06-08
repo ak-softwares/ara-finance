@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
@@ -23,9 +21,7 @@ import '../../models/order_model.dart';
 import '../../models/product_model.dart';
 import '../../models/transaction_model.dart';
 import '../product/product_controller.dart';
-import '../transaction/add_payment_controller.dart';
 import '../transaction/transaction_controller.dart';
-import 'purchase_controller.dart';
 
 class AddPurchaseController extends GetxController {
   static AddPurchaseController get instance => Get.find();
@@ -47,7 +43,6 @@ class AddPurchaseController extends GetxController {
   TextEditingController dateController = TextEditingController();
 
   final wooOrdersRepository = Get.put(WooOrdersRepository());
-  final purchaseController = Get.put(PurchaseController());
   final mongoOrderRepo = Get.put(MongoOrderRepo());
   final productsVoucherController = Get.put(ProductController());
   final userController = Get.put(UserController());
@@ -181,7 +176,6 @@ class AddPurchaseController extends GetxController {
       image: product.mainImage,
       parentName: '0',
       isCODBlocked: product.isCODBlocked,
-      vendor: product.vendor?.id == null ? selectedVendor.value : null,
     );
   }
 
@@ -227,11 +221,6 @@ class AddPurchaseController extends GetxController {
       userId: userId,
       amount: purchaseTotal.value,
       date: DateTime.tryParse(dateController.text),
-      fromEntityType: EntityType.vendor,
-      fromEntityId: selectedVendor.value.id,
-      fromEntityName: selectedVendor.value.companyName,
-      purchaseId: invoiceId.value,
-      transactionType: TransactionType.purchase,
     );
 
     OrderModel purchase = OrderModel(
@@ -268,7 +257,6 @@ class AddPurchaseController extends GetxController {
       await performPushPurchase(purchase: purchase);
 
       await clearPurchase();
-      await purchaseController.refreshPurchases();
 
       FullScreenLoader.stopLoading();
       AppMassages.showToastMessage(message: 'Purchase uploaded successfully!');
@@ -283,9 +271,9 @@ class AddPurchaseController extends GetxController {
 
     await productsVoucherController.updateProductQuantityById(cartItems: purchase.lineItems ?? [], isAddition: true, isPurchase: true);
 
-    final String? transactionId = await transactionController.processTransaction(transaction: purchase.transaction!);
-
-    purchase.transaction?.id = transactionId;
+    // final String? transactionId = await transactionController.processTransaction(transaction: purchase.transaction!);
+    //
+    // purchase.transaction?.id = transactionId;
 
     await mongoOrderRepo.pushOrders(orders: [purchase]);
   }
@@ -343,11 +331,6 @@ class AddPurchaseController extends GetxController {
       userId: userId,
       amount: purchaseTotal.value,
       date: DateTime.tryParse(dateController.text),
-      fromEntityType: EntityType.vendor,
-      fromEntityId: selectedVendor.value.id,
-      fromEntityName: selectedVendor.value.companyName,
-      purchaseId: oldPurchase.invoiceNumber,
-      transactionType: TransactionType.purchase,
     );
 
     OrderModel purchase = OrderModel(
@@ -374,10 +357,8 @@ class AddPurchaseController extends GetxController {
         throw 'No Internet Connection';
       }
 
-      await purchaseController.performDeletePurchase(purchase: oldPurchase);
       await performPushPurchase(purchase: newPurchase);
 
-      await purchaseController.refreshPurchases();
       FullScreenLoader.stopLoading();
       AppMassages.showToastMessage(message: 'Purchase updated successfully!');
       Get.close(2);

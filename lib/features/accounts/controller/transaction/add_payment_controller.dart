@@ -10,17 +10,18 @@ import '../../../../utils/constants/image_strings.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../personalization/models/user_model.dart';
 import '../../models/account_model.dart';
+import '../../models/account_voucher_model.dart';
 import '../../models/transaction_model.dart';
 import 'transaction_controller.dart';
 
 class AddPaymentController extends GetxController {
   static AddPaymentController get instance => Get.find();
 
+  final AccountVoucherType voucherType = AccountVoucherType.payment;
   RxInt transactionId = 0.obs;
 
-
-  Rx<UserModel> selectedVendor = UserModel().obs;
-  Rx<AccountModel> selectedAccount = AccountModel().obs;
+  Rx<AccountVoucherModel> selectedBankAccount = AccountVoucherModel().obs;
+  Rx<AccountVoucherModel> selectedVendor = AccountVoucherModel().obs;
 
   final amount = TextEditingController();
   final date = TextEditingController();
@@ -34,8 +35,8 @@ class AddPaymentController extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
-    date.text = DateTime.now().toIso8601String(); // Store in ISO format
-    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
+    date.text = DateTime.now().toIso8601String();
+    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
   }
 
   @override
@@ -44,8 +45,8 @@ class AddPaymentController extends GetxController {
     super.onClose();
   }
 
-  void addVendor(UserModel getSelectedVendor) {
-    selectedVendor.value = getSelectedVendor;
+  void addVendor(AccountVoucherModel getSelectedReceiver) {
+    selectedVendor.value = getSelectedReceiver;
   }
 
   void selectDate(BuildContext context) async {
@@ -57,50 +58,41 @@ class AddPaymentController extends GetxController {
     );
 
     if (pickedDate != null) {
-      date.text = pickedDate.toIso8601String(); // Store as ISO format
-      update(); // Ensure UI update
+      date.text = pickedDate.toIso8601String();
+      update();
     }
   }
 
-  // Save new transaction
   void savePaymentTransaction() {
     TransactionModel transaction = TransactionModel(
       userId: userId,
       transactionId: transactionId.value,
       amount: double.tryParse(amount.text) ?? 0.0,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
-      fromEntityId: selectedAccount.value.id, // Example vendor ID
-      fromEntityName: selectedAccount.value.accountName, // Example vendor ID
-      fromEntityType: EntityType.account,
-      toEntityId: selectedVendor.value.id,
-      toEntityName: selectedVendor.value.companyName,
-      toEntityType: EntityType.vendor,
-      transactionType: TransactionType.payment,
+      formAccountVoucher: selectedBankAccount.value,
+      toAccountVoucher: selectedVendor.value,
+      transactionType: AccountVoucherType.payment,
     );
 
     addPaymentTransaction(transaction: transaction);
   }
 
-  // Upload transaction
   Future<void> addPaymentTransaction({required TransactionModel transaction}) async {
     try {
-      FullScreenLoader.openLoadingDialog('Updating your payment transaction...', Images.docerAnimation);
+      FullScreenLoader.openLoadingDialog('Adding your payment transaction...', Images.docerAnimation);
 
-      // Check internet connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         FullScreenLoader.stopLoading();
         throw 'Internet Not connected';
       }
 
-      // Form Validation
       if (!paymentFormKey.currentState!.validate()) {
         FullScreenLoader.stopLoading();
         throw 'Form is not valid';
       }
 
       await transactionController.processTransaction(transaction: transaction);
-
       await clearPaymentTransaction();
 
       FullScreenLoader.stopLoading();
@@ -114,68 +106,54 @@ class AddPaymentController extends GetxController {
   }
 
   Future<void> clearPaymentTransaction() async {
-    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
+    transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
     amount.text = '';
-    selectedAccount.value = AccountModel();
-    selectedVendor.value = UserModel();
+    selectedBankAccount.value = AccountVoucherModel();
+    selectedVendor.value = AccountVoucherModel();
     date.text = DateTime.now().toIso8601String();
   }
 
-  // Reset fields before editing transaction
   void resetValue(TransactionModel transaction) {
     transactionId.value = transaction.transactionId ?? 0;
     amount.text = transaction.amount.toString();
     date.text = transaction.date?.toIso8601String() ?? '';
-    selectedVendor.value = UserModel(
-      id: transaction.toEntityId,
-      companyName: transaction.toEntityName,
-    );
-    selectedAccount.value = AccountModel(
-      id: transaction.fromEntityId,
-      accountName: transaction.fromEntityName,
-    );
+    selectedBankAccount.value = transaction.formAccountVoucher ?? AccountVoucherModel();
+    selectedVendor.value = transaction.toAccountVoucher ?? AccountVoucherModel();
   }
 
   void saveUpdatedPaymentTransaction({required TransactionModel oldPaymentTransaction}) {
-
     TransactionModel newPaymentTransaction = TransactionModel(
       id: oldPaymentTransaction.id,
       transactionId: oldPaymentTransaction.transactionId,
       amount: double.tryParse(amount.text) ?? oldPaymentTransaction.amount,
       date: DateTime.tryParse(date.text) ?? oldPaymentTransaction.date,
-      fromEntityId: selectedAccount.value.id ?? oldPaymentTransaction.fromEntityId,
-      fromEntityName: selectedAccount.value.accountName ?? oldPaymentTransaction.fromEntityName,
-      fromEntityType: oldPaymentTransaction.fromEntityType,
-      toEntityId: selectedVendor.value.id ?? oldPaymentTransaction.toEntityId,
-      toEntityName: selectedVendor.value.companyName ?? oldPaymentTransaction.toEntityName,
-      toEntityType: oldPaymentTransaction.toEntityType,
+      formAccountVoucher: selectedBankAccount.value,
+      toAccountVoucher: selectedVendor.value,
       transactionType: oldPaymentTransaction.transactionType,
     );
 
-    updateTransaction(newPaymentTransaction: newPaymentTransaction, oldPaymentTransaction: oldPaymentTransaction);
+    updateTransaction(transaction: newPaymentTransaction);
   }
 
-  Future<void> updateTransaction({required TransactionModel newPaymentTransaction, required TransactionModel oldPaymentTransaction}) async {
+  Future<void> updateTransaction({required TransactionModel transaction}) async {
     try {
       FullScreenLoader.openLoadingDialog('Updating payment transaction...', Images.docerAnimation);
 
-      // Check internet connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         FullScreenLoader.stopLoading();
         throw 'Internet Not connected';
       }
 
-      // Form Validation
       if (!paymentFormKey.currentState!.validate()) {
         FullScreenLoader.stopLoading();
         throw 'Form is not valid';
       }
 
-      await transactionController.processUpdateTransaction(newTransaction: newPaymentTransaction, oldTransaction: oldPaymentTransaction);
+      await transactionController.processUpdateTransaction(transaction: transaction);
 
       FullScreenLoader.stopLoading();
-      transactionController.refreshTransactions();
+      await transactionController.refreshTransactions();
       AppMassages.showToastMessage(message: 'Payment transaction updated successfully!');
       Get.close(2);
     } catch (e) {
@@ -183,5 +161,4 @@ class AddPaymentController extends GetxController {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
-
 }

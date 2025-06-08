@@ -13,11 +13,8 @@ import '../../../settings/app_settings.dart';
 import '../../controller/sales_controller/add_sale_controller.dart';
 import '../../models/order_model.dart';
 import '../../models/product_model.dart';
-import '../customers/widget/customer_tile.dart';
-import '../purchase/purchase_entry/widget/search_products.dart';
-import '../purchase/widget/product_tile.dart';
-import '../search/search.dart';
-import '../vendor/widget/vendor_tile.dart';
+import '../search/search_and_select/search_products.dart';
+import '../transaction/add_transactions/purchase/widget/product_tile.dart';
 
 class AddNewSale extends StatelessWidget {
   const AddNewSale({super.key, this.previousSale});
@@ -100,7 +97,7 @@ class AddNewSale extends StatelessWidget {
                         // Navigate to the search screen and wait for the result
                         final UserModel getSelectedCustomer = await showSearch(context: context,
                           delegate: SearchVoucher1(
-                              searchType: SearchType.customer,
+                              voucherType: AccountVoucherType.customer,
                               selectedItems: addSaleController.selectedCustomer.value
                           ),
                         );
@@ -118,24 +115,6 @@ class AddNewSale extends StatelessWidget {
                     ),
                   ],
                 ),
-                Obx(() => addSaleController.selectedCustomer.value.name != '' && addSaleController.selectedCustomer.value.name != null
-                    ? Dismissible(
-                          key: Key(addSaleController.selectedCustomer.value.name ?? ''), // Unique key for each item
-                          direction: DismissDirection.endToStart, // Swipe left to remove
-                          onDismissed: (direction) {
-                            addSaleController.selectedCustomer.value = UserModel();
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Customer removed")),);
-                          },
-                          background: Container(
-                            color: Colors.red,
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: const Icon(Icons.delete, color: Colors.white),
-                          ),
-                          child: SizedBox(width: double.infinity, child: CustomerTile(customer: addSaleController.selectedCustomer.value))
-                      )
-                    : SizedBox.shrink()),
               ],
             ),
 
@@ -152,7 +131,7 @@ class AddNewSale extends StatelessWidget {
                       onTap: () async {
                         // Navigate to the search screen and wait for the result
                         final List<ProductModel> getSelectedProducts = await showSearch(context: context,
-                          delegate: SearchVoucher1(searchType: SearchType.products),
+                          delegate: SearchVoucher1(voucherType: AccountVoucherType.product),
                         );
                         // If products are selected, update the state
                         if (getSelectedProducts.isNotEmpty) {

@@ -7,10 +7,11 @@ import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/formatters/formatters.dart';
 import '../../controller/transaction/transaction_controller.dart';
 import '../../models/transaction_model.dart';
-import 'common/add_payment.dart';
+import 'add_transactions/add_expenses.dart';
+import 'add_transactions/add_payment.dart';
+import 'add_transactions/add_receipt.dart';
 import 'widget/transaction_tile.dart';
 
 class SingleTransaction extends StatefulWidget {
@@ -50,17 +51,12 @@ class _SingleTransactionState extends State<SingleTransaction> {
         title: 'Transaction #${transaction.transactionId}', // Updated title
         widgetInActions: TextButton(
           onPressed: () {
-            if(transaction.transactionType == TransactionType.purchase) {
-              DialogHelper.showDialog(
-                context: context,
-                title: 'Error in Update Transaction',
-                message: 'You can not update this purchase transactions instead you can update purchase '
-                    'this transaction will update automatically',
-                onSubmit: () async { },
-                actionButtonText: 'Done',
-              );
-            } else {
-              Get.to(() => AddPayment(transaction: transaction));
+            if(transaction.transactionType == AccountVoucherType.expense) {
+              Get.to(() => AddExpenseTransaction(expense: transaction));
+            } else if(transaction.transactionType == AccountVoucherType.payment) {
+              Get.to(() => AddPayment(payment: transaction));
+            } else if(transaction.transactionType == AccountVoucherType.receipt) {
+              Get.to(() => AddReceipt(receipt: transaction));
             }
           },
           child: Text('Edit', style: TextStyle(color: AppColors.linkColor)),
@@ -78,10 +74,7 @@ class _SingleTransactionState extends State<SingleTransaction> {
             // Delete Button
             Center(
               child: TextButton(
-                onPressed: () => transactionController.deleteTransactionByDialog(
-                  context: context,
-                  transaction: transaction
-                ),
+                onPressed: () => transactionController.deleteTransactionByDialog(context: context, id: transaction.id ?? ''),
                 child: const Text('Delete', style: TextStyle(color: Colors.red)),
               ),
             ),

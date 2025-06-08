@@ -3,16 +3,12 @@ import 'db_constants.dart';
 enum TextSizes { small, medium, large }
 
 enum UserType { customer, vendor, admin, }
+
 enum OrderType { purchase, sale, }
 
 enum OrientationType {horizontal, vertical}
 
 enum EcommercePlatform { none, woocommerce, shopify, amazon}
-
-// Enum to specify search type
-enum SearchType { products, customer, sale, purchase, vendor, account}
-
-enum TransactionType { payment, refund, transfer, purchase, delete, expense, sale, receipt, creditNote}
 
 enum PurchaseListType { purchasable, purchased, notAvailable, vendors }
 
@@ -20,51 +16,74 @@ enum SyncType { add, update, check }
 
 enum SyncStatus { idle, fetching, checking, pushing, completed, failed }
 
-enum EntityType { vendor, account, customer, expense }
+enum AccountVoucherType { payment, vendor, refund, transfer, purchase, delete, expense, sale, receipt, creditNote, bankAccount, customer, product}
 
-extension EntityTypeExtension on EntityType {
-
+extension VoucherEntityTypeExtension on AccountVoucherType {
   String get name {
     switch (this) {
-      case EntityType.vendor:
+      // VoucherType cases
+      case AccountVoucherType.payment:
+        return 'payment';
+      case AccountVoucherType.vendor:
         return 'vendor';
-      case EntityType.account:
-        return 'account';
-      case EntityType.customer:
-        return 'customer';
-      case EntityType.expense:
+      case AccountVoucherType.refund:
+        return 'refund';
+      case AccountVoucherType.transfer:
+        return 'transfer';
+      case AccountVoucherType.purchase:
+        return 'purchase';
+      case AccountVoucherType.delete:
+        return 'delete';
+      case AccountVoucherType.expense:
         return 'expense';
+      case AccountVoucherType.sale:
+        return 'sale';
+      case AccountVoucherType.receipt:
+        return 'receipt';
+      case AccountVoucherType.creditNote:
+        return 'creditNote';
+      case AccountVoucherType.bankAccount:
+        return 'bankAccount';
+      case AccountVoucherType.customer:
+        return 'customer';
+      case AccountVoucherType.product:
+        return 'product';
     }
   }
 
   String get dbName {
     switch (this) {
-      case EntityType.vendor:
+    // Cases where dbName was defined in EntityType
+      case AccountVoucherType.vendor:
+      case AccountVoucherType.customer:
         return DbCollections.users;
-      case EntityType.account:
+      case AccountVoucherType.bankAccount:
         return DbCollections.accounts;
-      case EntityType.customer:
-        return DbCollections.users;
-      case EntityType.expense:
+      case AccountVoucherType.expense:
         return DbCollections.expenses;
+
+      // Default case (if not defined in original EntityType)
+      default:
+        throw UnimplementedError('dbName not defined for ${this.name}');
     }
   }
 
   String get fieldName {
     switch (this) {
-      case EntityType.vendor:
+      // Cases where fieldName was defined in EntityType
+      case AccountVoucherType.vendor:
         return VendorFieldName.vendorId;
-      case EntityType.account:
+      case AccountVoucherType.bankAccount:
         return AccountFieldName.accountId;
-      case EntityType.customer:
+      case AccountVoucherType.customer:
         return UserFieldConstants.documentId;
-      case EntityType.expense:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+
+      // Default case (if not defined in original EntityType)
+      default:
+        throw UnimplementedError('fieldName not defined for ${this.name}');
     }
   }
 }
-
 
 enum PaymentMethods { cod, prepaid, paytm, razorpay }
 extension PaymentMethodsExtension on PaymentMethods {

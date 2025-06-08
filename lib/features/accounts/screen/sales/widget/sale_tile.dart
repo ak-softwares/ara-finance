@@ -6,12 +6,9 @@ import '../../../../../common/styles/spacing_style.dart';
 import '../../../../../utils/constants/colors.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/formatters/formatters.dart';
-import '../../../../../utils/helpers/order_helper.dart';
-import '../../../../../utils/constants/api_constants.dart';
 import '../../../../../utils/constants/enums.dart';
 import '../../../../settings/app_settings.dart';
 import '../../../models/order_model.dart';
-import '../../../../../common/web_view/my_web_view.dart';
 import '../../orders/widgets/order_image_gallery.dart';
 import '../single_sale.dart';
 
@@ -91,16 +88,6 @@ class SaleTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(sale.status?.prettyName ?? ''),
-                    if (OrderHelper.checkOrderStatusForInTransit(sale.status ?? OrderStatus.unknown)) ...[
-                      const SizedBox(width: 6),
-                      InkWell(
-                        onTap: () => Get.to(() => MyWebView(
-                          title: 'Track Order #${sale.orderId}',
-                          url: APIConstant.wooTrackingUrl + sale.orderId.toString(),
-                        )),
-                        child: const Icon(Icons.open_in_new, size: 17, color: AppColors.linkColor),
-                      ),
-                    ]
                   ],
                 ),
               ],

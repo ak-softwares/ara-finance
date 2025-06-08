@@ -10,6 +10,7 @@ import '../../models/transaction_model.dart';
 import 'add_payment_controller.dart';
 
 class TransactionController extends GetxController {
+
   // Variables
   RxInt currentPage = 1.obs;
   RxBool isLoading = false.obs;
@@ -46,11 +47,10 @@ class TransactionController extends GetxController {
   }
 
   // Get All products
-  Future<void> getTransactionByEntity({required EntityType entityType, required String entityId}) async {
+  Future<void> getTransactionByEntity({required String voucherId}) async {
     try {
       final fetchedTransactions = await mongoTransactionRepo.fetchTransactionByEntity(
-          entityType: entityType,
-          entityId: entityId,
+          voucherId: voucherId,
           page: currentPage.value
       );
       transactionsByEntity.addAll(fetchedTransactions);
@@ -70,12 +70,12 @@ class TransactionController extends GetxController {
     }
   }
 
-  Future<void> refreshTransactionByEntityId({required EntityType entityType, required String entityId}) async {
+  Future<void> refreshTransactionByEntityId({required String voucherId}) async {
     try {
       isLoading(true);
       currentPage.value = 1; // Reset page number
       transactionsByEntity.clear(); // Clear existing orders
-      await getTransactionByEntity(entityType: entityType, entityId: entityId);
+      await getTransactionByEntity(voucherId: voucherId);
     } catch (e) {
       AppMassages.warningSnackBar(title: 'Errors', message: e.toString());
     } finally {
@@ -101,105 +101,49 @@ class TransactionController extends GetxController {
     }
   }
 
-  Future<String?> processTransaction({
-    required TransactionModel transaction,
-    bool isDelete = false,
-    bool isUpdated = false,
-  }) async {
-    try{
-      List<Future<void>> futures = [];
-      if (transaction.fromEntityType != null) {
-        // Create update requests
-        Future<void> updateFromEntity = mongoTransactionRepo.updateBalanceById(
-          collectionName: transaction.fromEntityType?.dbName ?? '',
-          entityId: transaction.fromEntityId ?? '',
-          amount: transaction.amount ?? 0,
-          isAddition: isDelete ? true : false, // Set to true for addition, false for subtraction
-        );
-        futures.add(updateFromEntity);
-      }
-
-      if (transaction.toEntityType != null) {
-        // Create update requests
-        Future<void> updateToEntity = mongoTransactionRepo.updateBalanceById(
-          collectionName: transaction.toEntityType?.dbName ?? '',
-          entityId: transaction.toEntityId ?? '',
-          amount: transaction.amount ?? 0,
-          isAddition: isDelete ? false : true, // Set to true for addition, false for subtraction
-        );
-        futures.add(updateToEntity);
-      }
-      if(isDelete) {
-        futures.add(mongoTransactionRepo.deleteTransaction(id: transaction.id ?? ''));
-      }else if(isUpdated){
-        futures.add(mongoTransactionRepo.pushTransaction(transaction: transaction));
-      } else{
-        // Fetch next transaction ID and check for conflicts
-        final fetchedTransactionId = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId);
-        transaction.transactionId ??= fetchedTransactionId;
-        final String transactionId  = await mongoTransactionRepo.pushTransaction(transaction: transaction);
-        return transactionId;
-      }
-
-      await Future.wait(futures);
-
-    } catch(e) {
-      rethrow;
-    }
-    return null;
-  }
-
-  Future<void> processUpdateTransaction({required TransactionModel newTransaction, required TransactionModel oldTransaction}) async {
-    try{
-      List<Future<void>> futures = [];
-
-      futures.add(processTransaction(transaction: oldTransaction, isDelete: true));
-      futures.add(processTransaction(transaction: newTransaction, isUpdated: true));
-
-      await Future.wait(futures);
-
-    } catch(e) {
-      rethrow;
-    }
-  }
-
-  List<TransactionType> getNonDeletableTransactionTypes() {
-    return [TransactionType.purchase, TransactionType.sale];
-  }
-
-  Future<void> deleteTransactionByDialog({
-    required TransactionModel transaction,
-    required BuildContext context,
-  }) async {
+  Future<void> processTransaction({required TransactionModel transaction}) async {
     try {
-      final nonDeletableTypes = getNonDeletableTransactionTypes();
+      // Fetch next transaction ID and check for conflicts
+      final fetchedTransactionId = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: transaction.transactionType!);
+      transaction.transactionId ??= fetchedTransactionId;
+      await mongoTransactionRepo.pushTransaction(transaction: transaction);
+    } catch(e) {
+      rethrow;
+    }
+  }
 
-      if (nonDeletableTypes.contains(transaction.transactionType)) {
-        DialogHelper.showDialog(
-          context: context,
-          title: 'Error in Delete ${transaction.transactionType?.name} Transaction',
-          message: 'You cannot delete ${transaction.transactionType?.name} transactions. '
-              'Instead, delete the related entry and this transaction will be removed automatically.',
-          onSubmit: () async {},
-          actionButtonText: 'Done',
-        );
-        return;
-      } else {
-        // Default delete confirmation for other transaction types
+  // Delete a transaction
+  Future<void> deleteTransaction({required String id}) async {
+    try {
+      await mongoTransactionRepo.deleteTransaction(id: id);
+    } catch (e) {
+      throw 'Failed to delete transaction: $e';
+    }
+  }
+
+  Future<void> processUpdateTransaction({required TransactionModel transaction}) async {
+    try{
+      await mongoTransactionRepo.updateTransactionById(id: transaction.id!, transaction: transaction);
+    } catch(e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteTransactionByDialog({required String id, required BuildContext context}) async {
+    try {
         DialogHelper.showDialog(
           context: context,
           title: 'Delete Transaction',
           message: 'Are you sure you want to delete this transaction?',
           onSubmit: () async {
-            await processTransaction(transaction: transaction, isDelete: true);
-            refreshTransactions();
+            await deleteTransaction(id: id);
+            await refreshTransactions();
             Navigator.pop(context);
           },
           toastMessage: 'Transaction deleted successfully!',
         );
-      }
+
     } catch (e) {
-      debugPrint('Error deleting transaction: $e');
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }

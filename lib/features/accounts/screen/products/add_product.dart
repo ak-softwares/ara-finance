@@ -8,8 +8,7 @@ import '../../../../utils/constants/sizes.dart';
 import '../../../personalization/models/user_model.dart';
 import '../../controller/product/add_product_controller.dart';
 import '../../models/product_model.dart';
-import '../purchase/purchase_entry/widget/search_products.dart';
-import '../vendor/widget/vendor_tile.dart';
+import '../search/search_and_select/search_products.dart';
 
 class AddProducts extends StatelessWidget {
   const AddProducts({super.key, this.product});
@@ -83,7 +82,7 @@ class AddProducts extends StatelessWidget {
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final UserModel getSelectedVendor = await showSearch(context: context,
-                              delegate: SearchVoucher1(searchType: SearchType.vendor),
+                              delegate: SearchVoucher1(voucherType: AccountVoucherType.vendor),
                             );
                             // If products are selected, update the state
                             if (getSelectedVendor.id != null) {
@@ -99,25 +98,25 @@ class AddProducts extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Obx(() => controller.selectedVendor.value.id != null
-                        ? Dismissible(
-                        key: Key(controller.selectedVendor.value.id ?? ''), // Unique key for each item
-                        direction: DismissDirection.endToStart, // Swipe left to remove
-                        onDismissed: (direction) {
-                          controller.selectedVendor.value = UserModel();
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
-                        },
-                        background: Container(
-                          color: Colors.red,
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: const Icon(Icons.delete, color: Colors.white),
-                        ),
-                        child: SizedBox(width: double.infinity, child: VendorTile(vendor: controller.selectedVendor.value))
-                    )
-                        : SizedBox.shrink(),
-                    ),
+                    // Obx(() => controller.selectedVendor.value.id != null
+                    //     ? Dismissible(
+                    //           key: Key(controller.selectedVendor.value.id ?? ''), // Unique key for each item
+                    //           direction: DismissDirection.endToStart, // Swipe left to remove
+                    //           onDismissed: (direction) {
+                    //             controller.selectedVendor.value = UserModel();
+                    //             ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    //             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
+                    //           },
+                    //           background: Container(
+                    //             color: Colors.red,
+                    //             alignment: Alignment.centerRight,
+                    //             padding: const EdgeInsets.symmetric(horizontal: 20),
+                    //             child: const Icon(Icons.delete, color: Colors.white),
+                    //           ),
+                    //           child: SizedBox(width: double.infinity, child: VendorTile(vendor: controller.selectedVendor.value))
+                    //       )
+                    //     : SizedBox.shrink(),
+                    // ),
                   ],
                 ),
               ],

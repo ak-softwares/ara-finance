@@ -25,7 +25,7 @@ class AppAppTheme {
     scheme: FlexScheme.blueM3,
   ).copyWith(
     appBarTheme: AppAppBarTheme.lightAppBarTheme,
-    tabBarTheme: AppTabBarTheme.lightTabBarTheme,
+    // tabBarTheme: AppTabBarTheme.lightTabBarTheme,
     iconTheme: AppIconTheme.lightIconTheme,
     listTileTheme: AppListTileTheme.lightListTileTheme,
     bottomSheetTheme: AppBottomSheetTheme.lightBottomSheetTheme,
@@ -47,7 +47,7 @@ class AppAppTheme {
     scheme: FlexScheme.blueM3,
   ).copyWith(
     appBarTheme: AppAppBarTheme.darkAppBarTheme,
-    tabBarTheme: AppTabBarTheme.darkTabBarTheme,
+    // tabBarTheme: AppTabBarTheme.darkTabBarTheme,
     iconTheme: AppIconTheme.darkIconTheme,
     listTileTheme: AppListTileTheme.darkListTileTheme,
     bottomSheetTheme: AppBottomSheetTheme.darkBottomSheetTheme,

@@ -6,7 +6,6 @@ import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../common/text/section_heading.dart';
-import '../../../../common/web_view/my_web_view.dart';
 import '../../../../utils/constants/api_constants.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
@@ -256,18 +255,6 @@ class _SingleSaleScreenState extends State<SingleSaleScreen> {
                       // Track order section
                       Column(
                         children: [
-                          // Track Package
-                          ListTile(
-                            tileColor: Theme.of(context).colorScheme.surface,
-                            onTap: () => Get.to(() => MyWebView(
-                                title: 'Track Order #${currentOrder.orderId}',
-                                url: APIConstant.wooTrackingUrl +
-                                    currentOrder.orderId.toString())),
-                            title: Text('Track Package'),
-                            trailing: Icon(Icons.open_in_new,
-                                size: 20, color: Colors.blue),
-                          ),
-
                           // Transaction
                           if(currentOrder.transaction?.id != null)
                             Column(

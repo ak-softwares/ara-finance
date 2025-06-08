@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../features/accounts/screen/account_voucher/account_vouchers.dart';
 import '../../features/accounts/screen/financials/financials.dart';
 import '../../features/accounts/screen/products/products.dart';
-import '../../features/accounts/screen/purchase/purchase.dart';
 import '../../features/accounts/screen/sales/sales.dart';
 import '../../features/personalization/screens/user_menu/user_menu_screen.dart';
 
+import '../../utils/constants/enums.dart';
 import '../../utils/constants/icons.dart';
 import '../dialog_box_massages/snack_bar_massages.dart';
 
@@ -27,7 +28,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
   final screens = [
     const Financials(),
     const Sales(),
-    const Purchase(),
+    const AccountVouchers(voucherType: AccountVoucherType.purchase),
     const Products(),
     const UserMenuScreen(),
   ];

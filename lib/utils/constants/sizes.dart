@@ -160,7 +160,7 @@ class AppSizes {
   static const double userImageWidth = 30.0;
 
   // Payment Tile
-  static const double accountTileHeight = 135;
+  static const double accountTileHeight = 165;
   static const double accountTileWidth = 100.0;
   static const double accountTileRadius = 5.0;
   static const double accountImageHeight = 30.0;

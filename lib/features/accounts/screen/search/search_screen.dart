@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/layout_models/customers_grid_layout.dart';
-import '../../../../common/layout_models/purchase_grid_layout.dart';
 import '../../../../common/layout_models/sales_grid_layout.dart';
 import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/styles/spacing_style.dart';
@@ -19,14 +17,14 @@ class SearchScreen extends StatelessWidget {
     required this.title,
     required this.searchQuery,
     this.orientation = OrientationType.horizontal,
-    required this.searchType,
+    required this.voucherType,
     this.onProductTap,
   });
 
   final OrientationType orientation;
   final String title;
   final String searchQuery;
-  final SearchType searchType;
+  final AccountVoucherType voucherType;
   final ValueChanged<ProductModel>? onProductTap;
 
   @override
@@ -39,7 +37,7 @@ class SearchScreen extends StatelessWidget {
     // Schedule the search refresh to occur after the current frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!searchVoucherController.isLoading.value) {
-        searchVoucherController.refreshSearch(query: searchQuery, searchType: searchType);
+        searchVoucherController.refreshSearch(query: searchQuery, voucherType: voucherType);
       }
     });
 
@@ -54,7 +52,7 @@ class SearchScreen extends StatelessWidget {
           }
           searchVoucherController.isLoadingMore(true);
           searchVoucherController.currentPage++; // Increment current page
-          await searchVoucherController.getItemsBySearchQuery(query: searchQuery, searchType: searchType, page: searchVoucherController.currentPage.value);
+          await searchVoucherController.getItemsBySearchQuery(query: searchQuery, voucherType: voucherType, page: searchVoucherController.currentPage.value);
           searchVoucherController.isLoadingMore(false);
         }
       }
@@ -64,31 +62,19 @@ class SearchScreen extends StatelessWidget {
 
       body: RefreshIndicator(
         color: AppColors.refreshIndicator,
-        onRefresh: () async => searchVoucherController.refreshSearch(query: searchQuery, searchType: searchType),
+        onRefresh: () async => searchVoucherController.refreshSearch(query: searchQuery, voucherType: voucherType),
         child: ListView(
           controller: scrollController,
           padding: AppSpacingStyle.defaultPagePadding,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             SectionHeading(title: title),
-            switch (searchType) {
-              SearchType.products => ProductGridLayout(
+            switch (voucherType) {
+              AccountVoucherType.product => ProductGridLayout(
                 controller: searchVoucherController,
                 onTap: (product) => Get.to(() => SingleProduct(product: product)),
               ),
-              SearchType.customer => CustomersGridLayout(
-                controller: searchVoucherController,
-              ),
-              SearchType.sale => SalesGridLayout(
-                controller: searchVoucherController,
-              ),
-              SearchType.purchase => PurchaseGridLayout(
-                controller: searchVoucherController,
-              ),
-              // TODO: Handle this case.
-              SearchType.vendor => throw UnimplementedError(),
-              // TODO: Handle this case.
-              SearchType.account => throw UnimplementedError(),
+              _ => throw UnimplementedError(),
             }
           ],
         ),

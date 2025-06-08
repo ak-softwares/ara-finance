@@ -12,8 +12,7 @@ import '../../../../../utils/constants/sizes.dart';
 import '../../../../personalization/models/user_model.dart';
 import '../../../../settings/app_settings.dart';
 import '../../../controller/sales_controller/add_barcode_sale.dart';
-import '../../customers/widget/customer_tile.dart';
-import '../../purchase/purchase_entry/widget/search_products.dart';
+import '../../search/search_and_select/search_products.dart';
 import '../widget/barcode_sale_tile.dart';
 
 class AddBarcodeSale extends StatelessWidget {
@@ -117,7 +116,7 @@ class AddBarcodeSale extends StatelessWidget {
                         // Navigate to the search screen and wait for the result
                         final UserModel getSelectedCustomer = await showSearch(context: context,
                           delegate: SearchVoucher1(
-                              searchType: SearchType.customer,
+                              voucherType: AccountVoucherType.customer,
                               selectedItems: controller.selectedCustomer.value
                           ),
                         );
@@ -134,24 +133,6 @@ class AddBarcodeSale extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-                Obx(() => controller.selectedCustomer.value.id != '' && controller.selectedCustomer.value.id != null
-                    ? Dismissible(
-                    key: Key(controller.selectedCustomer.value.id ?? ''), // Unique key for each item
-                    direction: DismissDirection.endToStart, // Swipe left to remove
-                    onDismissed: (direction) {
-                      controller.selectedCustomer.value = UserModel();
-                      AppMassages.showSnackBar(massage: 'Customer removed');
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: SizedBox(width: double.infinity, child: CustomerTile(customer: controller.selectedCustomer.value))
-                )
-                    : SizedBox.shrink(),
                 ),
               ],
             ),

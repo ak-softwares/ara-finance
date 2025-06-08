@@ -2,6 +2,11 @@ import 'package:intl/intl.dart';
 
 class AppFormatter {
 
+  static String formatDateSmall(DateTime? date) {
+    if (date == null) return '';
+    return DateFormat('dd/MM').format(date); // e.g., 01/06
+  }
+
   static String formatDate(DateTime? date) {
     if(date == null){
       return '';

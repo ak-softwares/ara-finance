@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 
-import '../../../../../common/styles/spacing_style.dart';
-import '../../../../../utils/constants/colors.dart';
 import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/formatters/formatters.dart';
-import '../../../../../utils/helpers/order_helper.dart';
-import '../../../../../utils/constants/api_constants.dart';
-import '../../../../../utils/constants/enums.dart';
 import '../../../../settings/app_settings.dart';
-import '../../../models/order_model.dart';
-import '../../../../../common/web_view/my_web_view.dart';
-import '../../orders/widgets/order_image_gallery.dart';
-import '../single_sale.dart';
 
 class BarcodeSaleTile extends StatelessWidget {
   const BarcodeSaleTile({

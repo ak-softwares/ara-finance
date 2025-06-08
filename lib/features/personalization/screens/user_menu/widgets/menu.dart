@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../../utils/constants/enums.dart';
 import '../../../../../utils/constants/icons.dart';
-import '../../../../accounts/screen/accounts/accounts.dart';
-import '../../../../accounts/screen/customers/customers.dart';
-import '../../../../accounts/screen/expenses/expenses.dart';
+import '../../../../accounts/screen/account_voucher/account_vouchers.dart';
 import '../../../../accounts/screen/products/products.dart';
-import '../../../../accounts/screen/purchase/purchase.dart';
 import '../../../../accounts/screen/purchase_list/purchase_list.dart';
-import '../../../../accounts/screen/sales/sales.dart';
 import '../../../../accounts/screen/transaction/transactions.dart';
-import '../../../../accounts/screen/vendor/vendors.dart';
 import '../../../../setup/screens/platform_selection_screen.dart';
-
 
 class Menu extends StatelessWidget {
   const Menu({
@@ -34,35 +29,35 @@ class Menu extends StatelessWidget {
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
         ListTile(
-          onTap: () => Get.to(() => const CustomersVoucher()),
+          onTap: () => Get.to(() => AccountVouchers(voucherType: AccountVoucherType.customer)),
           leading: Icon(AppIcons.customers, size: 25),
           title: Text('Customers',),
           subtitle: Text('List of customers',),
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
         ListTile(
-          onTap: () => Get.to(() => const Sales()),
+          onTap: () => Get.to(() => AccountVouchers(voucherType: AccountVoucherType.sale)),
           leading: Icon(AppIcons.sales, size: 20),
           title: Text('Sales'),
-          subtitle: Text('List of sales'),
+          subtitle: Text('List of sale vouchers'),
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
         ListTile(
-          onTap: () => Get.to(() => const Purchase()),
+          onTap: () => Get.to(() => AccountVouchers(voucherType: AccountVoucherType.purchase)),
           leading: Icon(AppIcons.purchase, size: 20),
           title: Text('Purchase'),
-          subtitle: Text('List of purchase'),
+          subtitle: Text('List of purchase vouchers'),
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
         ListTile(
-          onTap: () => Get.to(() => const Accounts()),
+          onTap: () => Get.to(() => AccountVouchers(voucherType: AccountVoucherType.bankAccount)),
           leading: Icon(Icons.money,size: 20),
-          title: Text('Accounts'),
-          subtitle: Text('All Accounts list'),
+          title: Text('Bank Accounts'),
+          subtitle: Text('All Bank Accounts list'),
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
         ListTile(
-          onTap: () => Get.to(() => const ExpensesScreen()),
+          onTap: () => Get.to(() => AccountVouchers(voucherType: AccountVoucherType.expense)),
           leading: Icon(Icons.money,size: 20),
           title: Text('Expenses'),
           subtitle: Text('All Expenses list'),
@@ -76,7 +71,7 @@ class Menu extends StatelessWidget {
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
         ListTile(
-          onTap: () => Get.to(() => const Vendors()),
+          onTap: () => Get.to(() => AccountVouchers(voucherType: AccountVoucherType.vendor)),
           leading: Icon(AppIcons.customers,size: 20),
           title: Text('Vendors'),
           subtitle: Text('All Vendors list'),

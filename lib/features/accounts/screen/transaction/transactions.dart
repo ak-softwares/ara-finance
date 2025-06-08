@@ -11,8 +11,10 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/transaction/transaction_controller.dart';
-import 'common/add_payment.dart'; // Updated import
-import 'common/add_receipt.dart';
+import 'add_transactions/add_expenses.dart';
+import 'add_transactions/add_payment.dart';
+import 'add_transactions/purchase/add_purchase.dart';
+import 'add_transactions/add_receipt.dart';
 import 'widget/transaction_simmer.dart';
 import 'widget/transaction_tile.dart'; // Updated import
 
@@ -64,16 +66,28 @@ class Transactions extends StatelessWidget {
         tooltip: 'Actions',
         children: [
           SpeedDialChild(
-            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            child: Icon(Icons.attach_money, color: Colors.white),
             backgroundColor: Colors.green,
             label: 'Add Receipt',
             onTap: () => Get.to(() => AddReceipt()),
           ),
           SpeedDialChild(
-            child: Icon(Icons.add_shopping_cart, color: Colors.white),
-            backgroundColor: Colors.red,
+            child: Icon(Icons.account_balance_wallet, color: Colors.white),
+            backgroundColor: Colors.orange,
             label: 'Add Payment',
             onTap: () => Get.to(() => AddPayment()),
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.receipt_long, color: Colors.white),
+            backgroundColor: Colors.red,
+            label: 'Add Expense',
+            onTap: () => Get.to(() => AddExpenseTransaction()),
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.receipt, color: Colors.white),
+            backgroundColor: Colors.blue,
+            label: 'Add Purchase',
+            onTap: () => Get.to(() => AddPurchase()),
           ),
           // Add more submenu buttons as needed
         ],

@@ -1,19 +1,15 @@
-import 'package:line_icons/line_icons.dart';
-
 import '../../../../common/dialog_box_massages/animation_loader.dart';
 import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../common/navigation_bar/appbar.dart';
-import '../../accounts/screen/customers/widget/customer_tile.dart';
-import '../../accounts/screen/customers/widget/customer_tile_simmer.dart';
 import '../controllers/app_user_list_controller.dart';
+import 'widget/user_shimmer.dart';
 import 'widget/user_tile.dart';
 
 class AppUserList extends StatelessWidget {
@@ -61,7 +57,7 @@ class AppUserList extends StatelessWidget {
             children: [
               Obx(() {
                 if (controller.isLoading.value) {
-                  return  CustomersTileShimmer(itemCount: 2);
+                  return  UserShimmer();
                 } else if(controller.users.isEmpty) {
                   return emptyWidget;
                 } else {
@@ -76,7 +72,7 @@ class AppUserList extends StatelessWidget {
                             if (index < customers.length) {
                               return UserTile(user: customers[index]);
                             } else {
-                              return CustomersTileShimmer();
+                              return UserShimmer();
                             }
                           }
                       ),

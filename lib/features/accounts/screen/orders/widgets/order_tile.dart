@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 
 
 import '../../../../../common/styles/spacing_style.dart';
-import '../../../../../common/web_view/my_web_view.dart';
 import '../../../../../utils/constants/api_constants.dart';
 import '../../../../../utils/constants/colors.dart';
 import '../../../../../utils/constants/enums.dart';
@@ -96,11 +95,6 @@ class OrderTile extends StatelessWidget {
                             spacing: AppSizes.sm,
                             children: [
                               Text(order.status?.prettyName ?? ''),
-                              if(OrderHelper.checkOrderStatusForInTransit(order.status ?? OrderStatus.unknown))
-                                InkWell(
-                                onTap: () => Get.to(() => MyWebView(title: 'Track Order #${order.id}', url: APIConstant.wooTrackingUrl + order.id.toString())),
-                                child: const Icon(Icons.open_in_new, size: 17, color: AppColors.linkColor,),
-                              )
                             ],
                           ),
                         ],

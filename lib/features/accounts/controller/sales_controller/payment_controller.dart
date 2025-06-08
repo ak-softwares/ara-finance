@@ -88,7 +88,7 @@ class UpdatePaymentController extends GetxController {
       final int orderNumberIndex = headers.indexOf('Order Number');
 
       if (orderNumberIndex == -1) {
-        AppMassages.errorSnackBar(title: 'Error', message: 'Required columns not found in CSV.');
+        AppMassages.errorSnackBar(title: 'Error', message: 'Required "Order Number" columns not found in CSV.');
         return;
       }
 
@@ -206,19 +206,11 @@ class UpdatePaymentController extends GetxController {
         amount: totalAmount,
         date: DateTime.now(),
         userId: admin.id,
-        fromEntityId: selectedCustomer.value.id,
-        fromEntityName: selectedCustomer.value.name,
-        fromEntityType: EntityType.customer,
-        toEntityId: admin.selectedAccount?.id,
-        toEntityName: admin.selectedAccount?.accountName,
-        toEntityType: EntityType.account,
-        transactionType: TransactionType.receipt,
-        salesIds: salesIds,
+
       );
 
       // Process the transaction
       final transactionId = await transactionController.processTransaction(transaction: transaction);
-      transaction.id = transactionId;
       for (var sale in pendingSales) {
         sale.transaction = transaction;
       }      // Update the status of only pending orders
@@ -242,7 +234,7 @@ class UpdatePaymentController extends GetxController {
       };
 
       // Delete the transaction
-      await transactionController.processTransaction(transaction: sale.transaction!, isDelete: true);
+      await transactionController.processTransaction(transaction: sale.transaction!);
       await mongoOrderRepo.updateOrders(orders: [sale], updatedData: data);
 
     } catch (e) {

@@ -86,7 +86,7 @@ class MongoTransactionRepo extends GetxController {
   }
 
   // Update a transaction
-  Future<void> updateTransaction({required String id, required TransactionModel transaction}) async {
+  Future<void> updateTransactionById({required String id, required TransactionModel transaction}) async {
     try {
       Map<String, dynamic> transactionMap = transaction.toJson();
          await _mongoUpdate.updateDocumentById(id: id, collectionName: collectionName, updatedData: transactionMap);
@@ -100,7 +100,7 @@ class MongoTransactionRepo extends GetxController {
     try {
       await _mongoDelete.deleteDocumentById(id: id, collectionName: collectionName);
     } catch (e) {
-      throw 'Failed to delete transaction: $e';
+      rethrow;
     }
   }
 
@@ -109,7 +109,7 @@ class MongoTransactionRepo extends GetxController {
       // Fetch the transaction linked to the given purchase ID
       final transaction = await _mongoFetch.findOne(
         collectionName: collectionName,
-        filter: {TransactionFieldName.purchaseId: purchaseId},
+        filter: {TransactionFieldName.transactionId: purchaseId},
       );
 
       if (transaction == null) {
@@ -134,7 +134,7 @@ class MongoTransactionRepo extends GetxController {
       // Fetch the transaction linked to the given purchase ID
       final transactionData = await _mongoFetch.findOne(
         collectionName: collectionName,
-        filter: {TransactionFieldName.purchaseId: purchaseId},
+        filter: {TransactionFieldName.transactionId: purchaseId},
       );
 
       if (transactionData == null) {
@@ -152,11 +152,11 @@ class MongoTransactionRepo extends GetxController {
 
 
   // Get the next id
-  Future<int> fetchTransactionGetNextId({required String userId}) async {
+  Future<int> fetchTransactionGetNextId({required String userId, required AccountVoucherType voucherType}) async {
     try {
       int nextID = await _mongoFetch.fetchNextId(
           collectionName: collectionName,
-          filter: {TransactionFieldName.userId: userId},
+          filter: {TransactionFieldName.userId: userId, TransactionFieldName.transactionType: voucherType.name},
           fieldName: TransactionFieldName.transactionId
       );
       return nextID;
@@ -179,15 +179,14 @@ class MongoTransactionRepo extends GetxController {
     }
   }
 
-  Future<List<TransactionModel>> fetchTransactionByEntity({required EntityType entityType, required String entityId, int page = 1,}) async {
+  Future<List<TransactionModel>> fetchTransactionByEntity({required String voucherId, int page = 1}) async {
     try {
 
       // Fetch transactions matching the given entity type and ID
       final List<Map<String, dynamic>> transactionData =
             await _mongoFetch.fetchTransactionByEntity(
               collectionName: collectionName,
-              entityType: entityType,
-              entityId: entityId,
+                voucherId: voucherId,
               page: page
             );
 
