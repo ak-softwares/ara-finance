@@ -69,7 +69,7 @@ class AddExpenseTransactionController extends GetxController {
       transactionId: transactionId.value,
       amount: double.tryParse(amount.text) ?? 0.0,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
-      formAccountVoucher: selectedBankAccount.value,
+      fromAccountVoucher: selectedBankAccount.value,
       toAccountVoucher: selectedExpense.value,
       transactionType: AccountVoucherType.expense,
     );
@@ -92,7 +92,7 @@ class AddExpenseTransactionController extends GetxController {
         throw 'Form is not valid';
       }
 
-      await transactionController.processTransaction(transaction: transaction);
+      await transactionController.processTransactions(transactions: [transaction]);
       await clearExpenseTransaction();
 
       FullScreenLoader.stopLoading();
@@ -117,7 +117,7 @@ class AddExpenseTransactionController extends GetxController {
     transactionId.value = transaction.transactionId ?? 0;
     amount.text = transaction.amount.toString();
     date.text = transaction.date?.toIso8601String() ?? '';
-    selectedBankAccount.value = transaction.formAccountVoucher ?? AccountVoucherModel();
+    selectedBankAccount.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
     selectedExpense.value = transaction.toAccountVoucher ?? AccountVoucherModel();
   }
 
@@ -127,7 +127,7 @@ class AddExpenseTransactionController extends GetxController {
       transactionId: oldExpenseTransaction.transactionId,
       amount: double.tryParse(amount.text) ?? oldExpenseTransaction.amount,
       date: DateTime.tryParse(date.text) ?? oldExpenseTransaction.date,
-      formAccountVoucher: selectedBankAccount.value,
+      fromAccountVoucher: selectedBankAccount.value,
       toAccountVoucher: selectedExpense.value,
       transactionType: oldExpenseTransaction.transactionType,
     );

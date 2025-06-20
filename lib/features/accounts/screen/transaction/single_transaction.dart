@@ -12,6 +12,8 @@ import '../../models/transaction_model.dart';
 import 'add_transactions/add_expenses.dart';
 import 'add_transactions/add_payment.dart';
 import 'add_transactions/add_receipt.dart';
+import 'add_transactions/purchase/add_purchase.dart';
+import 'add_transactions/sale/add_sale.dart';
 import 'widget/transaction_tile.dart';
 
 class SingleTransaction extends StatefulWidget {
@@ -57,6 +59,10 @@ class _SingleTransactionState extends State<SingleTransaction> {
               Get.to(() => AddPayment(payment: transaction));
             } else if(transaction.transactionType == AccountVoucherType.receipt) {
               Get.to(() => AddReceipt(receipt: transaction));
+            } else if(transaction.transactionType == AccountVoucherType.purchase) {
+              Get.to(() => AddPurchase(purchase: transaction));
+            } else if(transaction.transactionType == AccountVoucherType.sale) {
+              Get.to(() => AddSale(sale: transaction));
             }
           },
           child: Text('Edit', style: TextStyle(color: AppColors.linkColor)),
@@ -74,7 +80,7 @@ class _SingleTransactionState extends State<SingleTransaction> {
             // Delete Button
             Center(
               child: TextButton(
-                onPressed: () => transactionController.deleteTransactionByDialog(context: context, id: transaction.id ?? ''),
+                onPressed: () => transactionController.deleteTransactionByDialog(context: context, transaction: transaction),
                 child: const Text('Delete', style: TextStyle(color: Colors.red)),
               ),
             ),

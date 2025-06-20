@@ -9,8 +9,10 @@ import '../../../authentication/controllers/authentication_controller/authentica
 import '../../models/coupon_model.dart';
 import '../../models/expense_model.dart';
 import '../../models/order_model.dart';
+import '../../models/transaction_model.dart';
+import '../account_voucher/account_voucher_controller.dart';
 import '../product/product_controller.dart';
-import '../sales_controller/sales_controller.dart';
+import '../transaction/transaction_controller.dart';
 
 class FinancialController extends GetxController {
 
@@ -32,8 +34,8 @@ class FinancialController extends GetxController {
   Rx<DateTime> endDate = Rx<DateTime>(DateTime.now());
   RxInt userCount = 0.obs;
 
-  RxList<OrderModel> sales = <OrderModel>[].obs;
-  RxList<OrderModel> purchases = <OrderModel>[].obs;
+  RxList<TransactionModel> sales = <TransactionModel>[].obs;
+  RxList<TransactionModel> purchases = <TransactionModel>[].obs;
   RxList<ExpenseModel> expenses = <ExpenseModel>[].obs;
 
   RxList<Map<String, dynamic>> productPrice = <Map<String, dynamic>>[].obs;
@@ -60,12 +62,10 @@ class FinancialController extends GetxController {
   final OrderStatus inTransitStatus = OrderStatus.inTransit;
   final OrderStatus returnStatus = OrderStatus.returned;
 
-  final saleController = Get.put(SaleController());
   final productController = Get.put(ProductController());
-  // final bankAccountController = Get.put(BankAccountController());
-  // final expenseController = Get.put(ExpenseController());
-  // final vendorController = Get.put(VendorController());
   final mongoUserRepository = Get.put(MongoUserRepository());
+  final transactionController = Get.put(TransactionController());
+  final accountVoucherController = Get.put(AccountVoucherController());
 
   String get userEmail => AuthenticationController.instance.admin.value.email ?? '';
 
@@ -169,13 +169,10 @@ class FinancialController extends GetxController {
   Future<void> getSalesByShortcut() async {
     try {
         isLoading(true);
-        final fetchedSales = await saleController.getSalesByDate(startDate: startDate.value, endDate: endDate.value);
-        // final fetchedPurchases = await purchaseController.getPurchasesByDate(startDate: startDate.value, endDate: endDate.value);
-        // final fetchedExpenses = await expenseController.getExpensesByDate(startDate: startDate.value, endDate: endDate.value);
+        final fetchedSales = await transactionController.getTransactionsByDate(startDate: startDate.value, endDate: endDate.value, voucherType: AccountVoucherType.sale);
+        final fetchedPurchases = await transactionController.getTransactionsByDate(startDate: startDate.value, endDate: endDate.value, voucherType: AccountVoucherType.purchase);
         sales.assignAll(fetchedSales);
-        // purchases.assignAll(fetchedPurchases);
-        // expenses.assignAll(fetchedExpenses);
-        await calculateCogs();
+        purchases.assignAll(fetchedPurchases);
     } catch(e){
         AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     } finally {
@@ -183,30 +180,40 @@ class FinancialController extends GetxController {
     }
   }
 
-  int get revenue => sales.where((o) => o.status == completeStatus).fold(0, (sum, o) => sum + (o.total?.toInt() ?? 0));
+  int get revenue => sales.where((o) => o.status == completeStatus).fold(0, (sum, o) => sum + (o.amount?.toInt() ?? 0));
 
-  int get revenueTotal => sales.fold(0, (sum, order) => sum + (order.total?.toInt() ?? 0));
+  int get revenueTotal => sales.fold(0, (sum, order) => sum + (order.amount?.toInt() ?? 0));
   int get orderTotal => sales.length;
 
-  int get revenueCompleted => sales.where((o) => o.status == completeStatus).fold(0, (sum, o) => sum + (o.total?.toInt() ?? 0));
+  int get revenueCompleted => sales.where((o) => o.status == completeStatus).fold(0, (sum, o) => sum + (o.amount?.toInt() ?? 0));
   int get revenueCompletedPercent => revenueTotal == 0 ? 0 : ((revenueCompleted / revenueTotal) * 100).round();
   int get orderCompleted => sales.where((o) => o.status == completeStatus).length;
 
-  int get revenueInTransit => sales.where((o) => o.status == inTransitStatus).fold(0, (sum, o) => sum + (o.total?.toInt() ?? 0));
+  int get revenueInTransit => sales.where((o) => o.status == inTransitStatus).fold(0, (sum, o) => sum + (o.amount?.toInt() ?? 0));
   int get revenueInTransitPercent => revenueTotal == 0 ? 0 : ((revenueInTransit / revenueTotal) * 100).round();
   int get orderInTransit => sales.where((o) => o.status == inTransitStatus).length;
 
-  int get revenueReturn => sales.where((o) => o.status == returnStatus).fold(0, (sum, o) => sum + (o.total?.toInt() ?? 0));
+  int get revenueReturn => sales.where((o) => o.status == returnStatus).fold(0, (sum, o) => sum + (o.amount?.toInt() ?? 0));
   int get revenueReturnPercent => revenueTotal == 0 ? 0 : ((revenueReturn / revenueTotal) * 100).round();
   int get orderReturnCount => sales.where((o) => o.status == returnStatus).length;
 
   //----------------------------------------------------------------------------------------------//
 
   // Expenses
-  RxInt expensesCogs = 0.obs;
+  int get expensesCogs => sales.where((o) => o.status == completeStatus).fold(0, (totalCogs, sale) {
+    return totalCogs + sale.products!.fold(0, (saleCogs, product) {
+      return saleCogs + (product.purchasePrice! * product.quantity).toInt();
+    });
+  });
+
   int get expensesCogsPercent => revenue == 0 ? 0 : ((expensesCogs / revenue) * 100).round();
 
-  RxInt expensesCogsInTransit = 0.obs;
+  int get expensesCogsInTransit => sales.where((o) => o.status == inTransitStatus).fold(0, (totalCogs, sale) {
+    return totalCogs + sale.products!.fold(0, (saleCogs, product) {
+      return saleCogs + (product.purchasePrice! * product.quantity).toInt();
+    });
+  });
+
   int get expensesCogsInTransitPercent => assets == 0 ? 0 : ((expensesCogsInTransit / assets) * 100).round();
 
   // Total of all expenses
@@ -233,73 +240,6 @@ class FinancialController extends GetxController {
     }).toList();
   }
 
-
-  Future<void> calculateCogs() async {
-    try {
-      // Step 1: Collect product IDs from completed and in-transit sales
-      final List<int> productIds = sales.where((sale) =>
-      sale.status == completeStatus || sale.status == inTransitStatus)
-          .expand((sale) => sale.lineItems ?? [])
-          .map((item) => item.productId)
-          .whereType<int>()
-          .toSet()
-          .toList();
-
-      // Step 2: Get purchase prices for these product IDs
-      final List<Map<String, dynamic>> totalStockValue =
-          await productController.getCogsDetailsByProductIds(productIds: productIds);
-      productPrice.value = totalStockValue;
-
-      // Step 3: Build a quick lookup map from productId to purchasePrice
-      final Map<int, num> purchasePriceMap = {
-        for (var item in totalStockValue)
-          if (item[ProductFieldName.productId] != null && item[ProductFieldName.purchasePrice] != null)
-            item[ProductFieldName.productId] as int: item[ProductFieldName.purchasePrice] as num
-      };
-
-      // Step 4: Calculate total COGS from sales
-      int totalCogs = 0;
-      int totalCogsInTransit = 0;
-
-      for (var sale in sales) {
-        if (sale.status == completeStatus) {
-          for (var item in sale.lineItems ?? []) {
-            final int? productId = item.productId;
-            final int? quantity = item.quantity;
-            if (productId != null &&
-                quantity != null &&
-                purchasePriceMap.containsKey(productId)) {
-              final int cogs = (purchasePriceMap[productId]! * quantity).toInt();
-              totalCogs += cogs;
-            }
-          }
-        }
-      }
-
-      for (var sale in sales) {
-        if (sale.status == inTransitStatus) {
-          for (var item in sale.lineItems ?? []) {
-            final int? productId = item.productId;
-            final int? quantity = item.quantity;
-            if (productId != null &&
-                quantity != null &&
-                purchasePriceMap.containsKey(productId)) {
-              final int cogs = (purchasePriceMap[productId]! * quantity).toInt();
-              totalCogsInTransit += cogs;
-            }
-          }
-        }
-      }
-
-      // Step 5: Set the observable
-      expensesCogs.value = totalCogs;
-      expensesCogsInTransit.value = totalCogsInTransit;
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-    }
-  }
-
-
   RxInt expensesShipping = 0.obs;
   RxInt expensesAds = 0.obs;
   RxInt expensesRent = 0.obs;
@@ -307,14 +247,14 @@ class FinancialController extends GetxController {
   RxInt expensesTransport = 0.obs;
   RxInt expensesOthers = 0.obs;
 
-  int get expensesTotalOperatingCost => expensesCogs.value + expensesTotal;
+  int get expensesTotalOperatingCost => expensesCogs + expensesTotal;
   int get expensesTotalOperatingCostPercent => revenue == 0 ? 0 : ((expensesTotalOperatingCost / revenue) * 100).round();
 
 
 //----------------------------------------------------------------------------------------------//
 
   // Profit
-  int get grossProfit => revenue - expensesCogs.value;
+  int get grossProfit => revenue - expensesCogs;
   int get grossProfitPercent => revenue == 0 ? 0 : ((grossProfit / revenue) * 100).round();
 
   int get operatingProfit => revenue - expensesTotalOperatingCost;
@@ -331,7 +271,7 @@ class FinancialController extends GetxController {
   RxInt cash = 0.obs;
   RxInt accountReceivables = 0.obs;
 
-  int get assets => stock.value + expensesCogsInTransit.value + cash.value + accountReceivables.value;
+  int get assets => stock.value + expensesCogsInTransit + cash.value + accountReceivables.value;
 
   int get stockPercent => assets == 0 ? 0 : ((stock.value / assets) * 100).round();
 
@@ -368,8 +308,8 @@ class FinancialController extends GetxController {
 
   Future<void> calculateAccountsPayable() async {
     try {
-      // final double totalAccountsPayable = await vendorController.calculateAccountPayable();
-      // accountsPayable.value = (totalAccountsPayable.toInt()).abs();
+      final double totalAccountsPayable = await accountVoucherController.getAllVoucherBalance(voucherType: AccountVoucherType.vendor);
+      accountsPayable.value = (totalAccountsPayable.toInt()).abs();
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
@@ -382,7 +322,7 @@ class FinancialController extends GetxController {
 //----------------------------------------------------------------------------------------------//
 
   // Purchase
-  int get purchasesTotal => purchases.fold(0, (sum, order) => sum + (order.total?.toInt() ?? 0));
+  int get purchasesTotal => purchases.fold(0, (sum, order) => sum + (order.amount?.toInt() ?? 0));
   int get purchasesCount => purchases.length;
 
 //----------------------------------------------------------------------------------------------//
@@ -394,7 +334,6 @@ class FinancialController extends GetxController {
     final couponLines = order.couponLines as List?;
     return couponLines != null && couponLines.isNotEmpty;
   }).length;
-
   // Total coupon discount value
   double get couponDiscountTotal => sales.fold(0.0, (sum, order) {
     final List<CouponModel>? couponLines = order.couponLines;
@@ -411,7 +350,7 @@ class FinancialController extends GetxController {
   // Unit Matrix
   double get averageOrderValue => revenueTotal == 0 ? 0 : revenueTotal / orderTotal;
 
-  double get unitCogs => orderTotal == 0 ? 0 : expensesCogs.value / orderTotal;
+  double get unitCogs => orderTotal == 0 ? 0 : expensesCogs / orderTotal;
   int get unitCogsPercent => averageOrderValue == 0 ? 0 : ((unitCogs / averageOrderValue) * 100).round();
 
   double get unitShipping => orderTotal == 0 ? 0 : unitShippingExpenseTotal / orderTotal;
@@ -447,24 +386,23 @@ class FinancialController extends GetxController {
 //----------------------------------------------------------------------------------------------//
 
   // Attributes
-
   List<RevenueSummary> get revenueSummaries => getRevenueSummaries(sales);
 
-  List<RevenueSummary> getRevenueSummaries(List<OrderModel> orders) {
-    final Map<String, List<OrderModel>> groupedOrders = {};
+  List<RevenueSummary> getRevenueSummaries(List<TransactionModel> orders) {
+    final Map<String, List<TransactionModel>> groupedOrders = {};
 
     for (var order in orders) {
       final type = order.orderAttribute?.sourceType?.toLowerCase() ?? 'unknown';
       groupedOrders.putIfAbsent(type, () => []).add(order);
     }
 
-    final int totalRevenue = orders.fold(0, (sum, o) => sum + (o.total ?? 0).toInt());
+    final int totalRevenue = orders.fold(0, (sum, o) => sum + (o.amount ?? 0).toInt());
 
     return groupedOrders.entries.map((entry) {
       final type = entry.key;
-      final List<OrderModel> typeOrders = entry.value;
+      final List<TransactionModel> typeOrders = entry.value;
 
-      final Map<String, List<OrderModel>> sources = {};
+      final Map<String, List<TransactionModel>> sources = {};
       for (var order in typeOrders) {
         final source = order.orderAttribute?.source?.toLowerCase() ?? 'unknown';
         sources.putIfAbsent(source, () => []).add(order);
@@ -473,7 +411,7 @@ class FinancialController extends GetxController {
       final List<SourceBreakdown> breakdowns = sources.entries.map((s) {
         final source = s.key;
         final sourceOrders = s.value;
-        final revenue = sourceOrders.fold(0, (sum, o) => sum + (o.total ?? 0).toInt());
+        final revenue = sourceOrders.fold(0, (sum, o) => sum + (o.amount ?? 0).toInt());
         final count = sourceOrders.length;
         final percent = totalRevenue == 0 ? 0.0 : (revenue / totalRevenue * 100);
 
@@ -485,7 +423,7 @@ class FinancialController extends GetxController {
         );
       }).toList();
 
-      final total = typeOrders.fold(0, (sum, o) => sum + (o.total ?? 0).toInt());
+      final total = typeOrders.fold(0, (sum, o) => sum + (o.amount ?? 0).toInt());
       final percent = totalRevenue == 0 ? 0.0 : (total / totalRevenue * 100);
 
       return RevenueSummary(

@@ -124,9 +124,9 @@ class UserModel {
       shipping: AddressModel.fromJson(json[UserFieldConstants.shipping] ?? {}),
       isPayingCustomer: json[UserFieldConstants.isPayingCustomer] ?? false,
       avatarUrl: json[UserFieldConstants.avatarUrl] ?? '',
-      dateCreated: parseDate(json[UserFieldConstants.dateCreated]),
-      dateModified: parseDate(json[UserFieldConstants.dateModified]),
-      activeTime: parseDate(json[UserFieldConstants.activeTime]),
+      dateCreated: json[UserFieldConstants.dateCreated],
+      dateModified: json[UserFieldConstants.dateModified],
+      activeTime: json[UserFieldConstants.activeTime],
       isPhoneVerified: (json[UserFieldConstants.metaData] as List?)?.any((meta) =>
       meta['key'] == UserFieldConstants.verifyPhone && meta['value'] == true) ?? false,
       fCMToken: (json[UserFieldConstants.metaData] as List?)?.firstWhere(
@@ -221,19 +221,4 @@ class UserMetaDataModel {
       'value': value ?? '',
     };
   }
-}
-
-DateTime? parseDate(dynamic value) {
-  if (value == null) return null;
-
-  if (value is DateTime) {
-    return value;
-  } else if (value is String) {
-    try {
-      return DateTime.tryParse(value);
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
 }

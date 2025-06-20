@@ -21,7 +21,7 @@ class AddReceiptController extends GetxController {
   RxInt transactionId = 0.obs;
 
   Rx<AccountVoucherModel> selectedBankAccount = AccountVoucherModel().obs;
-  Rx<AccountVoucherModel> selectedSender = AccountVoucherModel().obs;
+  Rx<AccountVoucherModel> selectedCustomer = AccountVoucherModel().obs;
 
   final amount = TextEditingController();
   final date = TextEditingController();
@@ -46,7 +46,7 @@ class AddReceiptController extends GetxController {
   }
 
   void addSender(AccountVoucherModel getSelectedSender) {
-    selectedSender.value = getSelectedSender;
+    selectedCustomer.value = getSelectedSender;
   }
 
   void selectDate(BuildContext context) async {
@@ -69,7 +69,7 @@ class AddReceiptController extends GetxController {
       transactionId: transactionId.value,
       amount: double.tryParse(amount.text) ?? 0.0,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
-      formAccountVoucher: selectedSender.value,
+      fromAccountVoucher: selectedCustomer.value,
       toAccountVoucher: selectedBankAccount.value,
       transactionType: AccountVoucherType.receipt,
     );
@@ -92,7 +92,7 @@ class AddReceiptController extends GetxController {
         throw 'Form is not valid';
       }
 
-      await transactionController.processTransaction(transaction: transaction);
+      await transactionController.processTransactions(transactions: [transaction]);
       await clearReceiptTransaction();
 
       FullScreenLoader.stopLoading();
@@ -109,7 +109,7 @@ class AddReceiptController extends GetxController {
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
     amount.text = '';
     selectedBankAccount.value = AccountVoucherModel();
-    selectedSender.value = AccountVoucherModel();
+    selectedCustomer.value = AccountVoucherModel();
     date.text = DateTime.now().toIso8601String();
   }
 
@@ -117,7 +117,7 @@ class AddReceiptController extends GetxController {
     transactionId.value = transaction.transactionId ?? 0;
     amount.text = transaction.amount.toString();
     date.text = transaction.date?.toIso8601String() ?? '';
-    selectedSender.value = transaction.formAccountVoucher ?? AccountVoucherModel();
+    selectedCustomer.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
     selectedBankAccount.value = transaction.toAccountVoucher ?? AccountVoucherModel();
   }
 
@@ -127,7 +127,7 @@ class AddReceiptController extends GetxController {
       transactionId: oldReceiptTransaction.transactionId,
       amount: double.tryParse(amount.text) ?? oldReceiptTransaction.amount,
       date: DateTime.tryParse(date.text) ?? oldReceiptTransaction.date,
-      formAccountVoucher: selectedSender.value,
+      fromAccountVoucher: selectedCustomer.value,
       toAccountVoucher: selectedBankAccount.value,
       transactionType: oldReceiptTransaction.transactionType,
     );

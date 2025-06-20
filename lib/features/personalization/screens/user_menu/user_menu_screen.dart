@@ -13,6 +13,7 @@ import '../../../authentication/screens/check_login_screen/check_login_screen.da
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../settings/app_settings.dart';
 import '../user_profile/user_profile.dart';
+import 'widgets/contact_widget.dart';
 import 'widgets/menu.dart';
 
 class UserMenuScreen extends StatelessWidget {
@@ -47,17 +48,14 @@ class UserMenuScreen extends StatelessWidget {
                       Heading(title: 'Menu', paddingLeft: AppSizes.defaultSpace),
                       const Menu(),
 
+                      // Contacts
+                      SupportWidget(),
+
                       // Version
                       Center(
                         child: Column(
                           children: [
                             Text('Accounts', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
-                            // TRoundedImage(
-                            //   backgroundColor: Colors.transparent,
-                            //     width: 130,
-                            //     padding: 0,
-                            //     image: AppSettings.lightAppLogo
-                            // ),
                             Text('v${AppSettings.appVersion}', style: TextStyle(fontSize: 12),)
                           ],
                         ),

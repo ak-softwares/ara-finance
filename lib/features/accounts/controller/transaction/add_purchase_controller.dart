@@ -16,6 +16,7 @@ import '../../models/cart_item_model.dart';
 import '../../models/image_model.dart';
 import '../../models/product_model.dart';
 import '../../models/transaction_model.dart';
+import '../product/product_controller.dart';
 import 'transaction_controller.dart';
 
 class AddPurchaseTransactionController extends GetxController {
@@ -43,6 +44,7 @@ class AddPurchaseTransactionController extends GetxController {
 
   final mongoTransactionRepo = Get.put(MongoTransactionRepo());
   final transactionController = Get.put(TransactionController());
+  final productController = Get.put(ProductController());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
@@ -132,7 +134,7 @@ class AddPurchaseTransactionController extends GetxController {
       bool alreadyExists = selectedProducts.any((item) => item.productId == product.productId);
 
       if (!alreadyExists) {
-        final cartItem = convertProductToCart(
+        final cartItem = productController.convertProductToCart(
           product: product,
           quantity: 1,
           variationId: 0,
@@ -169,30 +171,6 @@ class AddPurchaseTransactionController extends GetxController {
     selectedProducts.refresh();
   }
 
-  CartModel convertProductToCart({required ProductModel product, required int quantity, int variationId = 0}) {
-    return CartModel(
-      id: 1,
-      userId: userId,
-      name: product.title,
-      product_id: product.id,
-      productId: product.productId ?? 0,
-      variationId: variationId,
-      quantity: quantity,
-      stockQuantity: product.stockQuantity,
-      category: product.categories?[0].name,
-      subtotal: (quantity * (product.purchasePrice ?? 0)).toStringAsFixed(0),
-      total: (quantity * (product.purchasePrice ?? 0)).toStringAsFixed(0),
-      subtotalTax: '0',
-      totalTax: '0',
-      sku: product.sku,
-      price: product.purchasePrice?.toInt(),
-      purchasePrice: product.purchasePrice,
-      image: product.mainImage,
-      parentName: '0',
-      isCODBlocked: product.isCODBlocked,
-      vendor: product.vendor?.id == null ? selectedVendor.value : null,
-    );
-  }
 
   void updateQuantity({required CartModel item, required int quantity}) {
     int index = selectedProducts.indexWhere((cartItem) => cartItem.productId == item.productId);
@@ -218,8 +196,8 @@ class AddPurchaseTransactionController extends GetxController {
       transactionId: transactionId.value,
       amount: purchaseTotal.value,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
-      formAccountVoucher: selectedPurchaseVoucher.value,
-      toAccountVoucher: selectedVendor.value,
+      fromAccountVoucher: selectedVendor.value,
+      toAccountVoucher: selectedPurchaseVoucher.value,
       products: selectedProducts,
       transactionType: AccountVoucherType.purchase,
     );
@@ -242,7 +220,7 @@ class AddPurchaseTransactionController extends GetxController {
         throw 'Form is not valid';
       }
 
-      await transactionController.processTransaction(transaction: transaction);
+      await transactionController.processTransactions(transactions: [transaction]);
       await clearPurchaseTransaction();
 
       FullScreenLoader.stopLoading();
@@ -291,8 +269,10 @@ class AddPurchaseTransactionController extends GetxController {
     transactionId.value = transaction.transactionId ?? 0;
     purchaseTotal.value = 0.0;
     date.text = transaction.date?.toIso8601String() ?? '';
-    selectedPurchaseVoucher.value = transaction.formAccountVoucher ?? AccountVoucherModel();
+    selectedPurchaseVoucher.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
     selectedVendor.value = transaction.toAccountVoucher ?? AccountVoucherModel();
+    selectedProducts.value = transaction.products ?? [];
+    updatePurchaseTotal();
   }
 
   void saveUpdatedPurchaseTransaction({required TransactionModel oldPurchaseTransaction}) {
@@ -301,8 +281,8 @@ class AddPurchaseTransactionController extends GetxController {
       transactionId: oldPurchaseTransaction.transactionId,
       amount: purchaseTotal.value,
       date: DateTime.tryParse(date.text) ?? oldPurchaseTransaction.date,
-      formAccountVoucher: selectedPurchaseVoucher.value,
-      toAccountVoucher: selectedVendor.value,
+      fromAccountVoucher: selectedVendor.value,
+      toAccountVoucher: selectedPurchaseVoucher.value,
       transactionType: oldPurchaseTransaction.transactionType,
     );
 

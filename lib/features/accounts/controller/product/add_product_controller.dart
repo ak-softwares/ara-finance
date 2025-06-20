@@ -8,6 +8,7 @@ import '../../../../data/repositories/mongodb/products/product_repositories.dart
 import '../../../../utils/constants/image_strings.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../personalization/models/user_model.dart';
+import '../../models/account_voucher_model.dart';
 import '../../models/product_model.dart';
 import 'product_controller.dart';
 
@@ -20,7 +21,7 @@ class AddProductController extends GetxController {
   TextEditingController purchasePriceController = TextEditingController();
   TextEditingController stockController = TextEditingController();
 
-  Rx<UserModel> selectedVendor = UserModel().obs;
+  Rx<AccountVoucherModel> selectedVendor = AccountVoucherModel().obs;
   final GlobalKey<FormState> productFormKey = GlobalKey<FormState>();
 
   final mongoProductRepo = Get.put(MongoProductRepo());
@@ -28,8 +29,8 @@ class AddProductController extends GetxController {
 
   String get userId => AuthenticationController.instance.admin.value.id ?? '';
 
-  void addSupplier(UserModel getSelectedSupplier) {
-    selectedVendor.value = getSelectedSupplier;
+  void addVendor(AccountVoucherModel getSelectedVendor) {
+    selectedVendor.value = getSelectedVendor;
   }
 
   // Save Product
@@ -75,7 +76,7 @@ class AddProductController extends GetxController {
     productTitleController.text = '';
     purchasePriceController.text = '';
     stockController.text = '';
-    selectedVendor.value = UserModel();
+    selectedVendor.value = AccountVoucherModel();
   }
 
   // Reset Product Values
@@ -83,7 +84,7 @@ class AddProductController extends GetxController {
     productTitleController.text = product.title ?? '';
     purchasePriceController.text = product.purchasePrice.toString();
     stockController.text = product.stockQuantity.toString();
-    selectedVendor.value = product.vendor ?? UserModel();
+    selectedVendor.value = product.vendor ?? AccountVoucherModel();
   }
 
   // Save Updated Product

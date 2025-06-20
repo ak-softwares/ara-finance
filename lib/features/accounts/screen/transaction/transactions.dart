@@ -1,3 +1,4 @@
+import 'package:ara_finance/utils/constants/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,10 @@ import 'add_transactions/add_expenses.dart';
 import 'add_transactions/add_payment.dart';
 import 'add_transactions/purchase/add_purchase.dart';
 import 'add_transactions/add_receipt.dart';
+import 'add_transactions/sale/add_bulk_receipt.dart';
+import 'add_transactions/sale/add_bulk_return.dart';
+import 'add_transactions/sale/add_bulk_sale.dart';
+import 'add_transactions/sale/add_sale.dart';
 import 'widget/transaction_simmer.dart';
 import 'widget/transaction_tile.dart'; // Updated import
 
@@ -53,7 +58,7 @@ class Transactions extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: const AppAppBar(title: 'Transactions'), // Updated title
+      appBar: const AppAppBar(title: 'Transactions', showSearchIcon: true, searchType: SearchType.transaction), // Updated title
       floatingActionButton: SpeedDial(
         heroTag: 'transactions_fab',
         backgroundColor: Colors.blue,
@@ -70,6 +75,12 @@ class Transactions extends StatelessWidget {
             backgroundColor: Colors.green,
             label: 'Add Receipt',
             onTap: () => Get.to(() => AddReceipt()),
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.attach_money, color: Colors.white),
+            backgroundColor: Colors.green,
+            label: 'Add Bulk Receipts',
+            onTap: () => Get.to(() => AddBulkReceipt()),
           ),
           SpeedDialChild(
             child: Icon(Icons.account_balance_wallet, color: Colors.white),
@@ -89,7 +100,28 @@ class Transactions extends StatelessWidget {
             label: 'Add Purchase',
             onTap: () => Get.to(() => AddPurchase()),
           ),
-          // Add more submenu buttons as needed
+          SpeedDialChild(
+            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            backgroundColor: Colors.green,
+            label: 'Add Sale',
+            onTap: () => Get.to(() => AddSale()),
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            backgroundColor: Colors.green,
+            label: 'Add Bulk Sale',
+            onTap: () {
+              Get.to(() => AddBarcodeSale());
+            },
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            backgroundColor: Colors.red,
+            label: 'Add Bulk Return',
+            onTap: () {
+              Get.to(() => AddBulkReturn());
+            },
+          ),
         ],
       ),
 

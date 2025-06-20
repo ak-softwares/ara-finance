@@ -345,7 +345,7 @@ class PurchaseListController extends GetxController {
       }
 
       // Fetch fresh product details for all unique product IDs
-      final freshProducts = await mongoProductRepo.fetchProductsByIds(productIds.toList());
+      final freshProducts = await mongoProductRepo.fetchProductsByIds(productIds: productIds.toList());
 
       // Now process orders with fresh product data
       for (var order in orders) {
@@ -374,7 +374,7 @@ class PurchaseListController extends GetxController {
               totalQuantity: lineItem.quantity,
               isOlderThanTwoDays: isOlderThanTwoDays,
               stock: freshProduct.stockQuantity,
-              vendor: freshProduct.vendor?.companyName,
+              vendor: freshProduct.vendor?.title,
             );
           }
         }

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../../../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../../../common/layout_models/product_grid_layout.dart';
@@ -11,14 +9,13 @@ import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../../utils/formatters/formatters.dart';
 import '../../../../../settings/app_settings.dart';
-import '../../../../controller/transaction/add_sale_controller.dart';
+import '../../../../controller/transaction/sale/add_sale_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../../models/product_model.dart';
 import '../../../../models/transaction_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
 import '../../../search/search_and_select/search_products.dart';
 import '../purchase/widget/product_tile.dart';
-
 
 class AddSale extends StatelessWidget {
   const AddSale({super.key, this.sale});
@@ -28,7 +25,7 @@ class AddSale extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const double saleProductTileHeight = AppSizes.purchaseProductTileHeight;
-    final AddSaleTransactionController controller = Get.put(AddSaleTransactionController());
+    final AddSaleController controller = Get.put(AddSaleController());
 
     if (sale != null) {
       controller.resetValue(sale!);

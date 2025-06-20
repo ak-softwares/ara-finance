@@ -49,9 +49,9 @@ class AppSettings {
   static const Color accent = Color(0xFFB0C7FF);
 
   // Support
-  static const String supportWhatsApp   =  '+919368994493';
-  static const String supportMobile     =  '+919368994493';
-  static const String supportEmail      =  'support@aramarket.in';
+  static const String supportWhatsApp   =  '+918265849298';
+  static const String supportMobile     =  '+918265849298';
+  static const String supportEmail      =  'si.akash001@gmail.com';
 
   // Policy Urls
   static const String privacyPrivacy        = 'https://aramarket.in/privacy-policy/';

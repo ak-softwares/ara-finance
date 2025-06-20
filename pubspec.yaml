@@ -6,7 +6,7 @@ description: Smart accounting app for eCommerce WooCommerce, Shopify & more.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # where 2.0.0 is app version and +5 is Version code 2 update every time when update on play store
-version: 1.6.0+16
+version: 1.6.1+17
 
 environment:
   sdk: '>=3.1.4 <4.0.0'
@@ -48,6 +48,7 @@ dependencies:
   mobile_scanner: ^6.0.7
   flutter_secure_storage: ^9.2.4
   flutter_slidable: ^4.0.0
+  url_launcher: ^6.3.1
 
   # UI
   flutter_native_splash: ^2.3.5

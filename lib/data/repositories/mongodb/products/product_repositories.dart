@@ -24,13 +24,13 @@ class MongoProductRepo extends GetxController {
   Future<List<ProductModel>> fetchProductsBySearchQuery({required String query, int page = 1}) async {
     try {
       // Fetch products from MongoDB with search and pagination
-      final List<Map<String, dynamic>> productData =
-          await _mongoFetch.fetchDocumentsBySearchQuery(
-              collectionName: collectionName,
-              query: query,
-              itemsPerPage: itemsPerPage,
-              page: page
-          );
+      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProductsWithStockBySearch(
+          productCollectionName: collectionName,
+          transactionCollectionName: DbCollections.transactions,
+          searchQuery: query,
+          itemsPerPage: itemsPerPage,
+          page: page
+      );
 
       // Convert data to a list of ProductModel
       final List<ProductModel> products = productData.map((data) => ProductModel.fromJson(data)).toList();
@@ -63,8 +63,8 @@ class MongoProductRepo extends GetxController {
   Future<double> fetchTotalStockValue({required String userId}) async {
     try {
       // Fetch products from MongoDB with pagination
-      final double totalStockValue = await _mongoFetch.fetchTotalStockValue(
-          collectionName: collectionName,
+      final double totalStockValue = await _mongoFetch.calculateTotalStockValue(
+          transactionCollectionName: DbCollections.transactions,
           filter: { ProductFieldName.userId: userId },
       );
       return totalStockValue;
@@ -101,7 +101,7 @@ class MongoProductRepo extends GetxController {
   }
 
   // Fetch Products by IDs from MongoDB
-  Future<List<ProductModel>> fetchProductsByIds(List<int> productIds) async {
+  Future<List<ProductModel>> fetchProductsByIds({required List<int> productIds}) async {
     try {
       if (productIds.isEmpty) return []; // Return empty list if no IDs provided
 
@@ -147,12 +147,9 @@ class MongoProductRepo extends GetxController {
   // Get the total count of products in the collection
   Future<int> fetchProductsActiveCount({required String userId}) async {
     try {
-      int count = await _mongoFetch.fetchCollectionCount(
-        collectionName: collectionName,
-        filter: {
-          ProductFieldName.userId: userId,
-          ProductFieldName.stockQuantity: {'\$gt': 0}
-        },
+      int count = await _mongoFetch.calculateActiveStockCount(
+        transactionCollectionName: DbCollections.transactions,
+        filter: { ProductFieldName.userId: userId },
       );
       return count;
     } catch (e) {
@@ -176,6 +173,13 @@ class MongoProductRepo extends GetxController {
     }
   }
 
+  Future<void> updateVendorAndPurchasePriceById({required List<CartModel> cartItems}) async {
+    try {
+      await _mongoUpdate.updateVendorAndPurchasePriceById(collectionName: collectionName, cartItems: cartItems);
+    } catch (e) {
+      rethrow;
+    }
+  }
   Future<ProductModel> fetchProductById({required String id}) async {
     try {
       // Fetch a single document by ID
@@ -245,6 +249,38 @@ class MongoProductRepo extends GetxController {
       );
     } catch (e) {
       throw 'Failed to update products: $e';
+    }
+  }
+
+  Future<int> fetchProductTotalById({required String id}) async {
+    try {
+      final int total = await _mongoFetch.calculateProductStockTotal(
+          collectionName: DbCollections.transactions,
+          id: id
+      );
+      return total;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Fetch All Products from MongoDB
+  Future<List<ProductModel>> fetchProductsWithStock({int page = 1, required String userId}) async {
+    try {
+
+      // Fetch products from MongoDB with pagination
+      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProductsWithStock(
+        productCollectionName: collectionName,
+        transactionCollectionName: DbCollections.transactions,
+        filter: { ProductFieldName.userId: userId },
+        page: page
+      );
+      // Convert data to a list of ProductModel
+      final List<ProductModel> products = productData.map((data) => ProductModel.fromJson(data)).toList();
+
+      return products;
+    } catch (e) {
+      rethrow;
     }
   }
 

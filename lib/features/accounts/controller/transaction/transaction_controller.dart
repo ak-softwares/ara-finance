@@ -4,9 +4,12 @@ import 'package:get/get.dart';
 import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
+import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../models/cart_item_model.dart';
 import '../../models/transaction_model.dart';
+import '../product/product_controller.dart';
 import 'add_payment_controller.dart';
 
 class TransactionController extends GetxController {
@@ -17,11 +20,30 @@ class TransactionController extends GetxController {
   RxBool isLoadingMore = false.obs;
 
   RxList<TransactionModel> transactions = <TransactionModel>[].obs;
-  RxList<TransactionModel> transactionsByEntity = <TransactionModel>[].obs;
 
   final mongoTransactionRepo = Get.put(MongoTransactionRepo());
+  final productController = Get.put(ProductController());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
+
+  Future<List<TransactionModel>> getTransactionsByDate({
+    required DateTime startDate,
+    required DateTime endDate,
+    AccountVoucherType? voucherType,
+  }) async {
+    try {
+      final fetchedTransactions = await mongoTransactionRepo.fetchTransactionsByDate(
+        userId: userId,
+        startDate: startDate,
+        endDate: endDate,
+        voucherType: voucherType,
+        page: currentPage.value
+      );
+      return fetchedTransactions;
+    }catch(e) {
+      rethrow;
+    }
+  }
 
   // Fetch all transactions
   Future<void> getAllTransactions() async {
@@ -46,51 +68,6 @@ class TransactionController extends GetxController {
     }
   }
 
-  // Get All products
-  Future<void> getTransactionByEntity({required String voucherId}) async {
-    try {
-      final fetchedTransactions = await mongoTransactionRepo.fetchTransactionByEntity(
-          voucherId: voucherId,
-          page: currentPage.value
-      );
-      transactionsByEntity.addAll(fetchedTransactions);
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
-    }
-  }
-
-  // Get All products
-  Future<TransactionModel> getTransactionByPurchaseId({required int purchaseId}) async {
-    try {
-      final fetchedTransactions = await mongoTransactionRepo.findTransactionByPurchaseId(purchaseId: purchaseId);
-      return fetchedTransactions;
-    } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in purchase transactions', message: e.toString());
-      return TransactionModel();
-    }
-  }
-
-  Future<void> refreshTransactionByEntityId({required String voucherId}) async {
-    try {
-      isLoading(true);
-      currentPage.value = 1; // Reset page number
-      transactionsByEntity.clear(); // Clear existing orders
-      await getTransactionByEntity(voucherId: voucherId);
-    } catch (e) {
-      AppMassages.warningSnackBar(title: 'Errors', message: e.toString());
-    } finally {
-      isLoading(false);
-    }
-  }
-
-  Future<TransactionModel> refreshTransactionBySale({required int orderNumber}) async {
-    try {
-      return await mongoTransactionRepo.fetchTransactionBySale(orderNumber: orderNumber);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   // Get transaction by ID
   Future<TransactionModel> getTransactionByID({required String id}) async {
     try {
@@ -101,21 +78,84 @@ class TransactionController extends GetxController {
     }
   }
 
-  Future<void> processTransaction({required TransactionModel transaction}) async {
+  // Get transaction Id
+  Future<TransactionModel> getTransactionByTransactionId({required int transactionId, required AccountVoucherType voucherType}) async {
     try {
-      // Fetch next transaction ID and check for conflicts
-      final fetchedTransactionId = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: transaction.transactionType!);
-      transaction.transactionId ??= fetchedTransactionId;
-      await mongoTransactionRepo.pushTransaction(transaction: transaction);
+      return await mongoTransactionRepo.fetchTransactionWithFilter(filter: {
+        TransactionFieldName.userId: userId,
+        TransactionFieldName.transactionId: transactionId,
+        TransactionFieldName.transactionType: voucherType.name
+      });
+    } catch (e) {
+      return TransactionModel();
+    }
+  }
+
+  // Get transaction Id
+  Future<TransactionModel> getTransactionByOrderId({required int orderId, required AccountVoucherType voucherType}) async {
+    try {
+      return await mongoTransactionRepo.fetchTransactionWithFilter(
+          filter: {
+            TransactionFieldName.userId: userId,
+            TransactionFieldName.orderIds: orderId,
+            TransactionFieldName.transactionType: voucherType.name
+          }
+      );
+    } catch (e) {
+      return TransactionModel();
+    }
+  }
+
+  Future<List<TransactionModel>> getTransactionByOrderIds({
+    required List<int> orderIds,
+    required AccountVoucherType voucherType,
+  }) async {
+    try {
+      final List<TransactionModel> transactions =
+      await mongoTransactionRepo.fetchTransactionsWithFilter(
+        filter: {
+          TransactionFieldName.userId: userId,
+          TransactionFieldName.transactionType: voucherType.name,
+          TransactionFieldName.orderIds: {r'$in': orderIds},
+        },
+      );
+      return transactions;
+    } catch (e) {
+      return [];
+    }
+  }
+
+
+  Future<void> processTransactions({required List<TransactionModel> transactions}) async {
+    try {
+      await mongoTransactionRepo.pushTransactions(transactions: transactions);
     } catch(e) {
+      rethrow;
+    } finally {
+      if(transactions.first.transactionType == AccountVoucherType.purchase) {
+        await updatePriceVendorAndDate(transactions: transactions);
+      }
+    }
+  }
+
+  Future<void> updatePriceVendorAndDate({required List<TransactionModel> transactions}) async {
+    try {
+      final List<CartModel> products = transactions.expand((transaction) => transaction.products!).toList();
+      if(products.isNotEmpty) {
+          for (var product in products) {
+            product.vendor = transactions.first.fromAccountVoucher;
+          }
+          await productController.updateVendorAndPurchasePriceById(cartItems: products);
+      }
+    }catch(e){
       rethrow;
     }
   }
 
   // Delete a transaction
-  Future<void> deleteTransaction({required String id}) async {
+  Future<void> deleteTransaction({required TransactionModel transaction}) async {
     try {
-      await mongoTransactionRepo.deleteTransaction(id: id);
+      await mongoTransactionRepo.deleteTransaction(id: transaction.id ?? '');
     } catch (e) {
       throw 'Failed to delete transaction: $e';
     }
@@ -129,14 +169,14 @@ class TransactionController extends GetxController {
     }
   }
 
-  Future<void> deleteTransactionByDialog({required String id, required BuildContext context}) async {
+  Future<void> deleteTransactionByDialog({required TransactionModel transaction, required BuildContext context}) async {
     try {
         DialogHelper.showDialog(
           context: context,
           title: 'Delete Transaction',
           message: 'Are you sure you want to delete this transaction?',
           onSubmit: () async {
-            await deleteTransaction(id: id);
+            await deleteTransaction(transaction: transaction);
             await refreshTransactions();
             Navigator.pop(context);
           },
@@ -148,11 +188,13 @@ class TransactionController extends GetxController {
     }
   }
 
-  Future<void> deleteTransactionByPurchaseId({required int purchaseId}) async {
-    try {
-      final fetchedTransactions = await mongoTransactionRepo.findTransactionByPurchaseId(purchaseId: purchaseId);
-      // await processTransaction(transaction: fetchedTransactions, isDelete: true);
-    } catch (e) {
+  Future<void> updateTransactions({required List<String> ids, required Map<String, dynamic> updatedData}) async {
+    try{
+      await mongoTransactionRepo.updateTransactions(
+          ids: ids,
+          updatedData: updatedData
+      );
+    }catch(e){
       rethrow;
     }
   }

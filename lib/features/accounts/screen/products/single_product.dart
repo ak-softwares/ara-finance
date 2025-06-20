@@ -13,7 +13,7 @@ import '../../../settings/app_settings.dart';
 import '../../controller/product/product_controller.dart';
 import '../../models/order_model.dart';
 import '../../models/product_model.dart';
-import '../sales/widget/sale_tile.dart';
+import '../transaction/widget/transactions_by_product_id.dart';
 import 'add_product.dart';
 
 class SingleProduct extends StatefulWidget {
@@ -38,9 +38,10 @@ class _SingleProductState extends State<SingleProduct> {
     _getRelatedSaleAndPurchase();
   }
 
+
   Future<void> _getRelatedSaleAndPurchase() async {
-    final getOrders = await mongoOrderRepo.fetchOrdersByProductId(productId: product.productId ?? 0, userId: userId);
-    orders.addAll(getOrders);
+    // final getOrders = await mongoOrderRepo.fetchOrdersByProductId(productId: product.productId ?? 0, userId: userId);
+    // orders.addAll(getOrders);
   }
 
   Future<void> _refreshProduct() async {
@@ -97,8 +98,8 @@ class _SingleProductState extends State<SingleProduct> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Supplier: '),
-                      Text(product.vendor?.companyName ?? ''),
+                      Text('Vendor: '),
+                      Text(product.vendor?.title ?? ''),
                     ],
                   ),
                   Row(
@@ -120,27 +121,9 @@ class _SingleProductState extends State<SingleProduct> {
             ),
 
             SizedBox(height: AppSizes.spaceBtwSection),
-            Center(
-              child: TextButton(
-                onPressed: () => controller.deleteProduct(context: context, id: product.id ?? ''),
-                child: Text('Delete', style: TextStyle(color: Colors.red)),
-              ),
-            ),
-            SizedBox(height: AppSizes.spaceBtwSection),
-            Text('Sale & Purchase', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: AppSizes.spaceBtwSection),
-            Obx(() => GridLayout(
-                  itemCount: orders.length,
-                  mainAxisExtent: AppSizes.saleTileHeight,
-                  itemBuilder: (context, index) {
-                    if(orders[index].orderType == OrderType.sale){
-                      return SaleTile(sale: orders[index]);
-                    }else {
-                      return SizedBox();
-                      // return PurchaseTile(purchase: orders[index]);
-                    }
-                  }
-              ),
+            ProductTransactionList(
+              productId: product.productId ?? 0,
+              initialStock: product.stockQuantity ?? 0,
             ),
           ],
         ),

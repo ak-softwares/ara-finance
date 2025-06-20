@@ -53,7 +53,7 @@ class FinancialTile extends StatelessWidget {
               ),
             ),
           if (isParent) const SizedBox(width: 10),
-          Text(title, style: TextStyle(fontSize: isParent ? 14 : 13)),
+          Expanded(child: Text(title, style: TextStyle(fontSize: isParent ? 14 : 13), overflow: TextOverflow.ellipsis, maxLines: 1)),
         ],
       ),
       trailing: Row(

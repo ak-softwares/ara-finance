@@ -5,6 +5,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
 import '../../personalization/models/user_model.dart';
+import 'account_voucher_model.dart';
 import 'brand_model.dart';
 import 'category_model.dart';
 import 'product_attribute_model.dart';
@@ -66,7 +67,7 @@ class ProductModel {
   int? menuOrder;
   List<int>? relatedIds;
   String? stockStatus;
-  UserModel? vendor;
+  AccountVoucherModel? vendor;
   bool? isCODBlocked;
 
   ProductModel({
@@ -271,8 +272,8 @@ class ProductModel {
       stockStatus: json[ProductFieldName.stockStatus] ?? '',
       isCODBlocked: (json[ProductFieldName.metaData] as List?)?.any((meta) => meta['key'] == ProductFieldName.isCODBlocked && meta['value'] == "1") ?? false,
       vendor: json[ProductFieldName.vendor] != null
-          ? UserModel.fromJson(json[ProductFieldName.vendor])
-          : UserModel(),
+          ? AccountVoucherModel.fromJson(json[ProductFieldName.vendor])
+          : AccountVoucherModel(),
     );
   }
 
@@ -474,7 +475,7 @@ class ProductModel {
     String? type,
     List<int>? variations,
     String? stockStatus,
-    UserModel? vendor,
+    AccountVoucherModel? vendor,
   }) {
     return ProductModel(
       productId: id ?? this.productId,

@@ -32,30 +32,25 @@ class AccountVoucherController extends GetxController {
 
   Future<void> getAccountVouchers({required AccountVoucherType voucherType}) async {
     try {
-      final List<AccountVoucherModel> fetchedAccountVouchers =
-      await mongoAccountVoucherRepo.fetchAllVouchers(
+      final List<AccountVoucherModel> fetchedAccountVouchers = await mongoAccountVoucherRepo.fetchAllVouchers(
           userId: userId,
           voucherType: voucherType,
           page: currentPage.value
       );
+      accountVouchers.addAll(fetchedAccountVouchers);
+    } catch (e) {
+      rethrow;
+    }
+  }
 
-      // Fetch all balances at once if possible, or use parallel requests
-      await Future.wait(
-          fetchedAccountVouchers.map((accountVoucher) async {
-            if (accountVoucher.id != null) {
-              final double currentBalance = await mongoAccountVoucherRepo.fetchVoucherBalance(
-                  voucherId: accountVoucher.id!
-              );
-              accountVoucher.currentBalance = currentBalance;
-            }
-          })
+  // Upload a new voucher
+  Future<double> getAllVoucherBalance({required AccountVoucherType voucherType}) async {
+    try {
+      final double total = await mongoAccountVoucherRepo.fetchAllVoucherBalance(
+          userId: userId,
+          voucherType: voucherType
       );
-
-      // Prevent duplicates if needed
-      final newVouchers = fetchedAccountVouchers.where((newVoucher) =>
-      !accountVouchers.any((existing) => existing.id == newVoucher.id));
-
-      accountVouchers.addAll(newVouchers);
+      return total;
     } catch (e) {
       rethrow;
     }
@@ -86,14 +81,14 @@ class AccountVoucherController extends GetxController {
   }
 
   // Get total of all accountVoucher values (if needed)
-  Future<double> getTotalAccountVoucherAmount({required String voucherId}) async {
-    try {
-      final total = await mongoAccountVoucherRepo.fetchVoucherBalance(voucherId: voucherId);
-      return total;
-    } catch (e) {
-      rethrow;
-    }
-  }
+  // Future<double> getTotalAccountVoucherAmount({required String voucherId}) async {
+  //   try {
+  //     final total = await mongoAccountVoucherRepo.fetchVoucherBalance(voucherId: voucherId);
+  //     return total;
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
 
   // Delete an accountVoucher
   Future<void> deleteAccountVoucher({required String id, required BuildContext context}) async {

@@ -215,37 +215,6 @@ class WooOrdersRepository extends GetxController {
     }
   }
 
-  // Create order
-  Future<OrderModel> createOrderByCustomerId(OrderModel orderData) async {
-    try {
-      final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath,
-      );
-      final http.Response response = await http.post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': APIConstant.authorization,
-        },
-        body: jsonEncode(orderData.toJsonForWoo()),
-      );
-
-      // Check if the request was successful
-      if (response.statusCode == 201) {
-        final Map<String, dynamic> orderJson = json.decode(response.body);
-        final OrderModel order = OrderModel.fromJson(orderJson);
-        return order;
-      } else {
-        final Map<String, dynamic> errorJson = json.decode(response.body);
-        final errorMessage = errorJson['message'];
-        throw errorMessage ?? 'Failed to create Order';
-      }
-    } catch (error) {
-      rethrow;
-    }
-  }
-
   // Cancel order
   Future<OrderModel> updateStatusByOrderId(String orderId, String status) async {
     try {
@@ -305,6 +274,7 @@ class WooOrdersRepository extends GetxController {
         throw errorMessage ?? 'Failed to fetch Order #$orderId';
       }
     } catch (error) {
+      print('--------------------$error');
       rethrow;
     }
   }

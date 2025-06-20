@@ -176,6 +176,12 @@ class OrderModel {
   }
 
   factory OrderModel.fromJsonWoo(Map<String, dynamic> json) {
+    final List<OrderMedaDataModel>? metaData = json[OrderFieldName.metaData] != null
+        ? List<OrderMedaDataModel>.from(
+            json[OrderFieldName.metaData].map((item) => OrderMedaDataModel.fromJson(item)),
+          )
+        : null;
+
     return OrderModel(
       orderId: json[OrderFieldName.wooId],
       status: OrderStatusExtension.fromString(json[OrderFieldName.status] ?? ''),
@@ -189,20 +195,16 @@ class OrderModel {
           ? DateTime.parse(json[OrderFieldName.dateModified])
           : null,
 
-      dateShipped: json[OrderFieldName.dateCompleted] != null && json[OrderFieldName.dateCompleted] != ''
-          ? DateTime.parse(json[OrderFieldName.dateCompleted])
-          : null,
-
       datePaid: json[OrderFieldName.datePaid] != null && json[OrderFieldName.datePaid] != ''
           ? DateTime.parse(json[OrderFieldName.datePaid])
           : null,
 
-      discountTotal: json[OrderFieldName.discountTotal] ?? '',
-      discountTax: json[OrderFieldName.discountTax] ?? '',
-      shippingTotal: json[OrderFieldName.shippingTotal] ?? '',
-      shippingTax: json[OrderFieldName.shippingTax] ?? '',
-      cartTax: json[OrderFieldName.cartTax] ?? '',
-      totalTax: json[OrderFieldName.totalTax] ?? '',
+      discountTotal: json[OrderFieldName.discountTotal]?.toString() ?? '',
+      discountTax: json[OrderFieldName.discountTax]?.toString() ?? '',
+      shippingTotal: json[OrderFieldName.shippingTotal]?.toString() ?? '',
+      shippingTax: json[OrderFieldName.shippingTax]?.toString() ?? '',
+      cartTax: json[OrderFieldName.cartTax]?.toString() ?? '',
+      totalTax: json[OrderFieldName.totalTax]?.toString() ?? '',
       total: double.tryParse(json[OrderFieldName.total]?.toString() ?? '0') ?? 0.0,
       customerId: json[OrderFieldName.customerId] ?? 0,
       billing: json[OrderFieldName.billing] != null
@@ -226,12 +228,10 @@ class OrderModel {
           ? List<CouponModel>.from(
               json[OrderFieldName.couponLines].map((item) => CouponModel.fromJson(item)),
             )
-          : [],
-      metaData: json[OrderFieldName.metaData] != null
-          ? List<OrderMedaDataModel>.from(
-              json[OrderFieldName.metaData].map((item) => OrderMedaDataModel.fromJson(item)),
-            )
-          : [],
+          : null,
+      metaData: metaData,
+      orderAttribute: OrderAttributeModel.fromMetaData(metaData),
+
     );
   }
 
@@ -280,29 +280,6 @@ class OrderModel {
     };
   }
 
-  Map<String, dynamic> toJsonForWoo() {
-    final Map<String, dynamic> json = {
-      OrderFieldName.userId: customerId ?? 0,
-      OrderFieldName.status: status ?? '',
-      OrderFieldName.paymentMethod: paymentMethod ?? '',
-      OrderFieldName.paymentMethodTitle: paymentMethodTitle ?? '',
-      OrderFieldName.transactionId: transactionId ?? '',
-      OrderFieldName.setPaid: setPaid ?? false,
-      OrderFieldName.billing: billing?.toJsonForWoo(),
-      OrderFieldName.shipping: shipping?.toJsonForWoo(),
-      OrderFieldName.lineItems: lineItems?.map((item) => item.toJsonForWoo()).toList(),
-      OrderFieldName.metaData: metaData?.map((item) => item.toJsonForWoo()).toList(),
-    };
-
-    if (couponLines != null && couponLines!.isNotEmpty) {
-      final List<Map<String, dynamic>> couponJsonList = couponLines!
-          .where((coupon) => !coupon.areAllPropertiesNull())
-          .map((coupon) => coupon.toJsonForWoo())
-          .toList();
-      json[OrderFieldName.couponLines] = couponJsonList;
-    }
-    return json;
-  }
 
   final List<Map<String, dynamic>> shippingLines = [
     {
@@ -468,7 +445,11 @@ class OrderAttributeModel {
     );
   }
 
-  factory OrderAttributeModel.fromMetaData(List<OrderMedaDataModel> metaData) {
+  factory OrderAttributeModel.fromMetaData(List<OrderMedaDataModel>? metaData) {
+    if (metaData == null) {
+      return OrderAttributeModel(); // or use default values
+    }
+
     String? getValue(String key) => metaData.firstWhere(
           (m) => m.key == key,
       orElse: () => OrderMedaDataModel(key: key, value: null),

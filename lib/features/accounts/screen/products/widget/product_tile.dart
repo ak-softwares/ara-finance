@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 import '../../../../../common/widgets/custom_shape/image/circular_image.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../settings/app_settings.dart';
+import '../../../controller/product/product_controller.dart';
 import '../../../models/product_model.dart';
+import '../add_product.dart';
 import '../single_product.dart';
 import 'product_title.dart';
 
@@ -28,11 +32,12 @@ class ProductTile extends StatelessWidget {
     const double productVoucherImageHeight = AppSizes.productVoucherImageHeight;
     const double productVoucherImageWidth = AppSizes.productVoucherImageWidth;
 
-    return GestureDetector(
+    return InkWell(
         onTap: onTap ?? () {
           // Default navigation when onTap is not provided
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleProduct(product: product)));
         },
+        onLongPress: () => showMenuBottomSheet(context: context),
         child: Container(
           width: productVoucherTileWidth,
           padding: const EdgeInsets.all(AppSizes.xs),
@@ -65,7 +70,7 @@ class ProductTile extends StatelessWidget {
 
                       // Supplier
                       if(product.vendor != null)
-                        Text('Supplier: ${product.vendor?.companyName ?? ''}'),
+                        Text('Vendor: ${product.vendor?.title ?? ''}'),
 
                       // Price and Stock
                       Row(
@@ -83,8 +88,9 @@ class ProductTile extends StatelessWidget {
                                   : Colors.green,
                             ),
                           ),
+
                           // Price
-                          Text('Price ${AppSettings.currencySymbol + product.purchasePrice.toString()}'),
+                          Text('Purchase Price ${AppSettings.currencySymbol + product.purchasePrice.toString()}'),
                         ],
                       )
                     ],
@@ -94,6 +100,106 @@ class ProductTile extends StatelessWidget {
             ],
           ),
         )
+    );
+  }
+  void showMenuBottomSheet({required BuildContext context}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.grey.shade900
+          : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              _buildMenuItem(
+                context,
+                icon: Icons.edit,
+                title: "Edit",
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.to(() => AddProducts(product: product));
+                },
+              ),
+              _buildMenuItem(
+                context,
+                icon: Icons.delete,
+                title: "Delete",
+                isDestructive: true,
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.put(ProductController()).deleteProduct(context: context, id: product.id ?? '');
+                },
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMenuItem(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        bool isDestructive = false,
+        required VoidCallback onTap,
+      }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isDestructive
+                  ? colorScheme.error
+                  : colorScheme.onSurface.withOpacity(0.8),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: isDestructive
+                    ? colorScheme.error
+                    : colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

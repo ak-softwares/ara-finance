@@ -12,12 +12,13 @@ class SearchVoucher extends SearchDelegate {
   RxList<String> suggestionList = RxList<String>(); // Observable for suggestion list
 
   final localStorage = GetStorage();
-  final AccountVoucherType searchType; // Enum to differentiate search types
+  final SearchType searchType;
+  final AccountVoucherType? voucherType;
 
   @override
   String? get searchFieldLabel => 'Search ${_getSearchLabel()}..';
 
-  SearchVoucher({required this.searchType}) {
+  SearchVoucher({required this.searchType, required this.voucherType}) {
     recentlySearches.value = _getRecentSearches(); // Initialize searches
   }
 
@@ -100,8 +101,8 @@ class SearchVoucher extends SearchDelegate {
       return SearchScreen(
         title: 'Search result for ${query.isEmpty ? '' : '"$query"'}',
         searchQuery: query,
-        voucherType: searchType,
-        orientation: OrientationType.horizontal,
+        searchType: searchType,
+        voucherType: voucherType,
       );
   }
 
@@ -141,7 +142,7 @@ class SearchVoucher extends SearchDelegate {
     } else {
       // Fetch suggestions based on search type
       List<String> searchResults;
-      switch (searchType) {
+      switch (voucherType) {
         case AccountVoucherType.product:
           searchResults = _fetchProductSuggestions(query);
           break;
@@ -174,7 +175,7 @@ class SearchVoucher extends SearchDelegate {
   }
 
   String _getSearchLabel() {
-    switch (searchType) {
+    switch (voucherType) {
       case AccountVoucherType.product:
         return 'Product';
       case AccountVoucherType.customer:

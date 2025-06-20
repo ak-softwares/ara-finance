@@ -1,43 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/layout_models/sales_grid_layout.dart';
+import '../../../../common/layout_models/account_voucher_layout.dart';
 import '../../../../common/layout_models/product_grid_layout.dart';
+import '../../../../common/layout_models/transaction_layout.dart';
 import '../../../../common/styles/spacing_style.dart';
 import '../../../../common/text/section_heading.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../controller/search_controller/search_controller.dart';
 import '../../models/product_model.dart';
+import '../account_voucher/single_account_voucher.dart';
 import '../products/single_product.dart';
+import '../transaction/single_transaction.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({
     super.key,
     required this.title,
     required this.searchQuery,
-    this.orientation = OrientationType.horizontal,
-    required this.voucherType,
+    required this.searchType,
+    this.voucherType,
     this.onProductTap,
   });
 
-  final OrientationType orientation;
   final String title;
   final String searchQuery;
-  final AccountVoucherType voucherType;
+  final SearchType searchType;
+  final AccountVoucherType? voucherType;
   final ValueChanged<ProductModel>? onProductTap;
 
   @override
   Widget build(BuildContext context) {
 
     final ScrollController scrollController = ScrollController();
-    final searchVoucherController = Get.put(SearchVoucherController());
+    final searchVoucherController = Get.put(SearchController1());
     final Set<ProductModel> selectedProducts = {}; // Track selected products
 
     // Schedule the search refresh to occur after the current frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!searchVoucherController.isLoading.value) {
-        searchVoucherController.refreshSearch(query: searchQuery, voucherType: voucherType);
+        searchVoucherController.refreshSearch(query: searchQuery, searchType: searchType, voucherType: voucherType);
       }
     });
 
@@ -52,7 +55,7 @@ class SearchScreen extends StatelessWidget {
           }
           searchVoucherController.isLoadingMore(true);
           searchVoucherController.currentPage++; // Increment current page
-          await searchVoucherController.getItemsBySearchQuery(query: searchQuery, voucherType: voucherType, page: searchVoucherController.currentPage.value);
+          await searchVoucherController.getItemsBySearchQuery(query: searchQuery, searchType: searchType, voucherType: voucherType, page: searchVoucherController.currentPage.value);
           searchVoucherController.isLoadingMore(false);
         }
       }
@@ -62,19 +65,28 @@ class SearchScreen extends StatelessWidget {
 
       body: RefreshIndicator(
         color: AppColors.refreshIndicator,
-        onRefresh: () async => searchVoucherController.refreshSearch(query: searchQuery, voucherType: voucherType),
+        onRefresh: () async => searchVoucherController.refreshSearch(query: searchQuery, searchType: searchType, voucherType: voucherType),
         child: ListView(
           controller: scrollController,
           padding: AppSpacingStyle.defaultPagePadding,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             SectionHeading(title: title),
-            switch (voucherType) {
-              AccountVoucherType.product => ProductGridLayout(
+            switch (searchType) {
+              SearchType.product => ProductGridLayout(
                 controller: searchVoucherController,
                 onTap: (product) => Get.to(() => SingleProduct(product: product)),
               ),
-              _ => throw UnimplementedError(),
+              SearchType.accountVoucher => AccountVoucherGridLayout(
+                voucherType: voucherType!,
+                controller: searchVoucherController,
+                onTap: (accountVoucher) => Get.to(() => SingleAccountVoucher(accountVoucher: accountVoucher, voucherType: voucherType!)),
+              ),
+              SearchType.transaction => TransactionGridLayout(
+                controller: searchVoucherController,
+                onTap: (transaction) => Get.to(() => SingleTransaction(transaction: transaction)),
+              ),
+              // _ => throw UnimplementedError(),
             }
           ],
         ),

@@ -26,22 +26,25 @@ class ProductController extends GetxController{
   final mongoProductRepo = Get.put(MongoProductRepo());
   final auth = Get.put(AuthenticationController());
 
-  // Get All products
+  String get userId => AuthenticationController.instance.admin.value.id!;
+
   Future<void> getAllProducts() async {
     try {
-      final String uid = await auth.getUserId();
-      final fetchedProducts = await mongoProductRepo.fetchProducts(userId: uid, page: currentPage.value);
+      final List<ProductModel> fetchedProducts = await mongoProductRepo.fetchProductsWithStock(userId: userId, page: currentPage.value);
       products.addAll(fetchedProducts);
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Products Fetching', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     }
   }
+
 
   Future<void> refreshProducts() async {
     try {
       isLoading(true);
       currentPage.value = 1; // Reset page number
+
       totalProducts.value = 0;
+      totalActiveProducts.value = 0;
       totalStockValue.value = 0;
       products.clear(); // Clear existing orders
       await getAllProducts();
@@ -55,10 +58,9 @@ class ProductController extends GetxController{
 
   Future<void> getTotalProductsCount() async {
     try {
-      final String uid = await auth.getUserId();
-      totalProducts.value = await mongoProductRepo.fetchProductsCount(userId: uid);
-      totalActiveProducts.value = await mongoProductRepo.fetchProductsActiveCount(userId: uid);
-      totalStockValue.value = (await mongoProductRepo.fetchTotalStockValue(userId: uid)).toInt();
+      totalProducts.value = await mongoProductRepo.fetchProductsCount(userId: userId);
+      totalActiveProducts.value = await mongoProductRepo.fetchProductsActiveCount(userId: userId);
+      totalStockValue.value = (await mongoProductRepo.fetchTotalStockValue(userId: userId)).toInt();
       update(); // Notify listeners that counts changed
     } catch (e) {
       AppMassages.warningSnackBar(title: 'Errors', message: 'Failed to fetch product counts: ${e.toString()}');
@@ -71,8 +73,19 @@ class ProductController extends GetxController{
       final fetchedProduct = await mongoProductRepo.fetchProductById(id: id);
       return fetchedProduct;
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in getting product', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
       return ProductModel.empty(); // Return an empty product model in case of failure
+    }
+  }
+
+  // Get Product by ID
+  Future<List<ProductModel>> getProductsByProductIds({required List<int> productIds}) async {
+    try {
+      final List<ProductModel> fetchedProduct = await mongoProductRepo.fetchProductsByIds(productIds: productIds);
+      return fetchedProduct;
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+      return []; // Return an empty product model in case of failure
     }
   }
 
@@ -95,42 +108,6 @@ class ProductController extends GetxController{
     }
   }
 
-  Future<void> updateProductQuantity({
-    required List<CartModel> cartItems,
-    List<CartModel>? previousCartItems,
-    bool? isUpdate,
-    bool isAddition = false,
-    bool isPurchase = false
-  }) async {
-    try {
-      if((isUpdate ?? false) && (previousCartItems != null)) {
-        if (cartItems.isEmpty && previousCartItems.isEmpty) {
-          throw Exception("Product list is empty. Cannot update quantity.");
-        }
-        final List<CartModel> updatedProducts = (cartItems).map((currentProduct) {
-          final previousProduct = previousCartItems.firstWhere(
-                (item) => item.productId == currentProduct.productId,
-            orElse: () => CartModel(productId: currentProduct.productId, quantity: 0),
-          );
-
-          int previousQty = int.tryParse(previousProduct.quantity.toString()) ?? 0;
-          int currentQty = int.tryParse(currentProduct.quantity.toString()) ?? 0;
-
-          return currentProduct.copyWith(quantity: currentQty - previousQty);
-        }).toList();
-        await mongoProductRepo.updateQuantities(cartItems: updatedProducts, isAddition: isAddition, isPurchase: isPurchase);
-
-      } else{
-        if (cartItems.isEmpty) {
-          throw Exception("Product list is empty. Cannot update quantity.");
-        }
-        // Convert CartModel list to PurchaseHistory list
-        await mongoProductRepo.updateQuantities(cartItems: cartItems, isAddition: isAddition, isPurchase: isPurchase);
-      }
-    } catch (e) {
-      rethrow; // Preserve original exception
-    }
-  }
 
   Future<void> updateProductQuantityById({required List<CartModel> cartItems, bool isAddition = false, bool isPurchase = false}) async {
     try {
@@ -140,6 +117,23 @@ class ProductController extends GetxController{
         await mongoProductRepo.updateQuantitiesById(cartItems: cartItems, isAddition: isAddition, isPurchase: isPurchase);
     } catch (e) {
       rethrow; // Preserve original exception
+    }
+  }
+
+  Future<void> updateVendorAndPurchasePriceById({required List<CartModel> cartItems}) async {
+    try {
+      await mongoProductRepo.updateVendorAndPurchasePriceById(cartItems: cartItems);
+    } catch (e) {
+      rethrow; // Preserve original exception
+    }
+  }
+
+  Future<int> getProductTotalById({required String id}) async {
+    try {
+      final int total = await mongoProductRepo.fetchProductTotalById(id: id);
+      return total;
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -163,12 +157,10 @@ class ProductController extends GetxController{
   }
 
   // This function converts a productModel to a cartItemModel
-  CartModel convertProductToCart({
-    required ProductModel product, required int quantity, int variationId = 0, double? purchasePrice}) {
+  CartModel convertProductToCart({required ProductModel product, required int quantity, int variationId = 0}) {
     return CartModel(
-      id: 1,
+      id: product.id,
       name: product.title,
-      product_id: product.id,
       productId: product.productId ?? 0,
       variationId: variationId,
       quantity: quantity,
@@ -179,10 +171,8 @@ class ProductController extends GetxController{
       totalTax: '0',
       sku: product.sku,
       price: product.getPrice().toInt(),
-      purchasePrice: purchasePrice ?? product.purchasePrice,
+      purchasePrice: product.purchasePrice,
       image: product.mainImage,
-      parentName: '0',
-      isCODBlocked: product.isCODBlocked,
     );
   }
 

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../features/accounts/screen/account_voucher/account_vouchers.dart';
 import '../../features/accounts/screen/financials/financials.dart';
 import '../../features/accounts/screen/products/products.dart';
-import '../../features/accounts/screen/sales/sales.dart';
+import '../../features/accounts/screen/transaction/transactions.dart';
 import '../../features/personalization/screens/user_menu/user_menu_screen.dart';
 
 import '../../utils/constants/enums.dart';
@@ -27,8 +27,8 @@ class _BottomNavigationState extends State<BottomNavigation> {
   DateTime? _lastBackPressedTime; // Variable to track the time of the last back button press
   final screens = [
     const Financials(),
-    const Sales(),
-    const AccountVouchers(voucherType: AccountVoucherType.purchase),
+    const AccountVouchers(voucherType: AccountVoucherType.sale),
+    const Transactions(),
     const Products(),
     const UserMenuScreen(),
   ];
@@ -110,8 +110,8 @@ class _BottomNavigationState extends State<BottomNavigation> {
                   icon: Icon(AppIcons.sales),
                 ),
                 BottomNavigationBarItem(
-                  label: 'Purchase',
-                  icon: Icon(AppIcons.purchase),
+                  label: 'Transaction',
+                  icon: Icon(Icons.receipt),
                 ),
                 BottomNavigationBarItem(
                   label: 'Product',

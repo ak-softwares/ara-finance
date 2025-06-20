@@ -19,21 +19,31 @@ class MongoTransactionRepo extends GetxController {
   final int itemsPerPage = int.tryParse(APIConstant.itemsPerPage) ?? 10;
 
   // Fetch transactions by search query & pagination
-  Future<List<TransactionModel>> fetchTransactionsBySearchQuery({required String query, int page = 1}) async {
+  Future<List<TransactionModel>> fetchTransactionsBySearchQuery({
+    required String query,
+    int page = 1,
+    AccountVoucherType? voucherType,
+    required String userId
+  }) async {
     try {
+      final Map<String, String> filter = {
+        TransactionFieldName.userId: userId,
+        if (voucherType != null) TransactionFieldName.transactionType: voucherType.name,
+      };
       // Fetch transactions from MongoDB with search and pagination
-      final List<Map<String, dynamic>> transactionsData =
-      await _mongoFetch.fetchDocumentsBySearchQuery(
+      final List<Map<String, dynamic>> transactionsData = await _mongoFetch.fetchDocumentsBySearchQuery(
           collectionName: collectionName,
           query: query,
+          filter: filter,
           itemsPerPage: itemsPerPage,
           page: page
       );
       // Convert data to a list of TransactionModel
       final List<TransactionModel> transactions = transactionsData.map((data) => TransactionModel.fromJson(data)).toList();
+
       return transactions;
     } catch (e) {
-      throw 'Failed to fetch Transactions: $e';
+      rethrow;
     }
   }
 
@@ -51,7 +61,29 @@ class MongoTransactionRepo extends GetxController {
       final List<TransactionModel> transactions = transactionData.map((data) => TransactionModel.fromJson(data)).toList();
       return transactions;
     } catch (e) {
-      throw 'Failed: $e';
+      rethrow;
+    }
+  }
+
+  Future<List<TransactionModel>> fetchTransactionsByDate({
+    required String userId,
+    required DateTime startDate,
+    required DateTime endDate,
+    AccountVoucherType? voucherType,
+    int page = 1,
+  }) async {
+    try {
+      final List<Map<String, dynamic>> transactionData = await _mongoFetch.fetchDocumentsDate(
+        collectionName: collectionName,
+        filter: {TransactionFieldName.userId: userId, TransactionFieldName.transactionType: voucherType?.name},
+        startDate: startDate,
+        endDate: endDate
+      );
+
+      final List<TransactionModel> transactions = transactionData.map((data) => TransactionModel.fromJson(data)).toList();
+      return transactions;
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -63,6 +95,16 @@ class MongoTransactionRepo extends GetxController {
       return transactionId;
     } catch (e) {
       throw 'Failed to upload transaction: $e';
+    }
+  }
+
+  // Upload multiple orders
+  Future<void> pushTransactions({required List<TransactionModel> transactions}) async {
+    try {
+      List<Map<String, dynamic>> ordersMaps = transactions.map((order) => order.toMap()).toList();
+      await _mongoInsert.insertDocuments(collectionName, ordersMaps); // Use batch insert function
+    } catch (e) {
+      throw 'Failed to upload orders: $e';
     }
   }
 
@@ -85,16 +127,6 @@ class MongoTransactionRepo extends GetxController {
     }
   }
 
-  // Update a transaction
-  Future<void> updateTransactionById({required String id, required TransactionModel transaction}) async {
-    try {
-      Map<String, dynamic> transactionMap = transaction.toJson();
-         await _mongoUpdate.updateDocumentById(id: id, collectionName: collectionName, updatedData: transactionMap);
-    } catch (e) {
-      throw 'Failed to update transaction: $e';
-    }
-  }
-
   // Delete a transaction
   Future<void> deleteTransaction({required String id}) async {
     try {
@@ -103,53 +135,6 @@ class MongoTransactionRepo extends GetxController {
       rethrow;
     }
   }
-
-  Future<void> deleteTransactionByPurchaseId({required int purchaseId}) async {
-    try {
-      // Fetch the transaction linked to the given purchase ID
-      final transaction = await _mongoFetch.findOne(
-        collectionName: collectionName,
-        filter: {TransactionFieldName.transactionId: purchaseId},
-      );
-
-      if (transaction == null) {
-        throw 'No transaction found for the given purchase ID';
-      }
-
-      // Convert ObjectId to String before deletion
-      final String transactionId = (transaction['_id'] as ObjectId).toHexString();
-
-      // Delete the transaction
-      await _mongoDelete.deleteDocumentById(
-        id: transactionId,
-        collectionName: collectionName,
-      );
-    } catch (e) {
-      throw 'Failed to delete transaction: $e';
-    }
-  }
-
-  Future<TransactionModel> findTransactionByPurchaseId({required int purchaseId}) async {
-    try {
-      // Fetch the transaction linked to the given purchase ID
-      final transactionData = await _mongoFetch.findOne(
-        collectionName: collectionName,
-        filter: {TransactionFieldName.transactionId: purchaseId},
-      );
-
-      if (transactionData == null) {
-        throw 'No transaction found!';
-      }
-
-      // Convert JSON to TransactionModel and return
-      return TransactionModel.fromJson(transactionData);
-    } catch (e) {
-      throw 'Failed to find transaction: $e';
-    }
-  }
-
-
-
 
   // Get the next id
   Future<int> fetchTransactionGetNextId({required String userId, required AccountVoucherType voucherType}) async {
@@ -165,23 +150,8 @@ class MongoTransactionRepo extends GetxController {
     }
   }
 
-  // Update Balance
-  Future<void> updateBalanceById({required String collectionName, required String entityId, required double amount, required bool isAddition}) async {
-    try {
-      await _mongoUpdate.updateBalance(
-          collectionName: collectionName,
-          entityId: entityId,
-          amount: amount,
-          isAddition: isAddition,
-      );
-    } catch (e) {
-      throw 'Failed to update balance: $e';
-    }
-  }
-
   Future<List<TransactionModel>> fetchTransactionByEntity({required String voucherId, int page = 1}) async {
     try {
-
       // Fetch transactions matching the given entity type and ID
       final List<Map<String, dynamic>> transactionData =
             await _mongoFetch.fetchTransactionByEntity(
@@ -196,24 +166,82 @@ class MongoTransactionRepo extends GetxController {
 
       return transactions;
     } catch (e) {
-      throw Exception('Failed to fetch transactions: $e');
+      rethrow;
     }
   }
 
-  Future<TransactionModel> fetchTransactionBySale({required int orderNumber}) async {
+  Future<List<TransactionModel>> fetchTransactionByProductId({required int productId, int page = 1}) async {
     try {
-      final Map<String, dynamic>? transactionData = await _mongoFetch.fetchTransactionBySale(
-        collectionName: collectionName,
-        orderNumber: orderNumber,
+      // Fetch transactions matching the given entity type and ID
+      final List<Map<String, dynamic>> transactionData =
+      await _mongoFetch.fetchTransactionByProductId(
+          collectionName: collectionName,
+          productId: productId,
+          page: page
       );
-      if(transactionData == null){
+
+      // Convert data to a list of TransactionModel
+      final List<TransactionModel> transactions =
+      transactionData.map((data) => TransactionModel.fromJson(data)).toList();
+
+      return transactions;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<TransactionModel> fetchTransactionWithFilter({required Map<String, dynamic> filter}) async {
+    try {
+      // Fetch transactions matching the given entity type and ID
+      final Map<String, dynamic>? transactionData =
+          await _mongoFetch.findOne(collectionName: collectionName, filter: filter);
+
+      // Convert data to a list of TransactionModel
+      if(transactionData != null){
+        final TransactionModel transaction = TransactionModel.fromJson(transactionData);
+        return transaction;
+      }else{
         return TransactionModel();
       }
-      return TransactionModel.fromJson(transactionData);
     } catch (e) {
-      throw Exception('Failed to fetch transaction: $e');
+      rethrow;
     }
   }
 
+  Future<List<TransactionModel>> fetchTransactionsWithFilter({
+    required Map<String, dynamic> filter,
+  }) async {
+    try {
+      final List<Map<String, dynamic>> transactionDataList =
+      await _mongoFetch.findMany(collectionName: collectionName, filter: filter);
 
+      return transactionDataList
+          .map((data) => TransactionModel.fromJson(data))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Update a transaction
+  Future<void> updateTransactionById({required String id, required TransactionModel transaction}) async {
+    try {
+      Map<String, dynamic> transactionMap = transaction.toJson();
+      await _mongoUpdate.updateDocumentById(id: id, collectionName: collectionName, updatedData: transactionMap);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateTransactions({required List<String> ids, required Map<String, dynamic> updatedData}) async {
+    try{
+      await _mongoUpdate.updateManyDocumentsById(
+        collectionName: collectionName,
+        ids: ids,
+        updatedData: updatedData
+      );
+    }catch(e){
+      rethrow;
+    }
+  }
 }

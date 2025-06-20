@@ -29,32 +29,47 @@ class MongoAccountVoucherRepo extends GetxController {
     required String userId
   }) async {
     try {
-      final List<Map<String, dynamic>> voucherData =
-      await _mongoFetch.fetchDocumentsBySearchQuery(
-        collectionName: collectionName,
-        query: query,
+      final List<Map<String, dynamic>> voucherData = await _mongoFetch.fetchAccountVoucherSearchWithTotal(
+        voucherCollectionName: collectionName,
+        transactionCollectionName: DbCollections.transactions,
+        searchQuery: query,
         itemsPerPage: itemsPerPage,
         filter: {AccountVoucherFieldName.voucherType: voucherType.name, AccountVoucherFieldName.userId: userId},
         page: page,
       );
       return voucherData.map((data) => AccountVoucherModel.fromJson(data)).toList();
     } catch (e) {
-      throw 'Failed to fetch account vouchers: $e';
+      rethrow;
     }
   }
 
   // Fetch all vouchers from MongoDB
   Future<List<AccountVoucherModel>> fetchAllVouchers({required String userId, required AccountVoucherType voucherType, int page = 1}) async {
     try {
-      final List<Map<String, dynamic>> voucherData =
-      await _mongoFetch.fetchDocuments(
-        collectionName: collectionName,
+      final List<Map<String, dynamic>> voucherData = await _mongoFetch.fetchAccountsWithBalance(
+        accountCollectionName: collectionName,
+        transactionCollectionName: DbCollections.transactions,
         filter: {AccountVoucherFieldName.userId: userId, AccountVoucherFieldName.voucherType: voucherType.name},
         page: page,
       );
+
       return voucherData.map((data) => AccountVoucherModel.fromJson(data)).toList();
     } catch (e) {
-      throw 'Failed to fetch account vouchers: $e';
+      rethrow;
+    }
+  }
+
+  // Upload a new voucher
+  Future<double> fetchAllVoucherBalance({required String userId, required AccountVoucherType voucherType}) async {
+    try {
+      final double total = await _mongoFetch.getTotalAccountPayable(
+          transactionCollectionName: DbCollections.transactions,
+          filter: { TransactionFieldName.userId: userId},
+          voucherType: voucherType
+      );
+      return total;
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -64,18 +79,24 @@ class MongoAccountVoucherRepo extends GetxController {
       Map<String, dynamic> voucherMap = voucher.toMap();
       await _mongoInsert.insertDocument(collectionName, voucherMap);
     } catch (e) {
-      throw 'Failed to upload account voucher: $e';
+      rethrow;
     }
   }
 
   // Fetch voucher by ID
   Future<AccountVoucherModel> fetchVoucherById({required String id}) async {
     try {
-      final Map<String, dynamic> voucherData =
-      await _mongoFetch.fetchDocumentById(collectionName: collectionName, id: id);
+      final Map<String, dynamic>? voucherData = await _mongoFetch.fetchVoucherById(
+        accountCollectionName: collectionName,
+        transactionCollectionName: DbCollections.transactions,
+        voucherId: id
+      );
+      if (voucherData == null) {
+        return AccountVoucherModel();
+      }
       return AccountVoucherModel.fromJson(voucherData);
     } catch (e) {
-      throw 'Failed to fetch account voucher: $e';
+      rethrow;
     }
   }
 

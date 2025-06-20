@@ -1,3 +1,4 @@
+import 'package:ara_finance/features/accounts/screen/account_voucher/widget/account_voucher_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -5,8 +6,8 @@ import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../../../personalization/models/user_model.dart';
 import '../../controller/product/add_product_controller.dart';
+import '../../models/account_voucher_model.dart';
 import '../../models/product_model.dart';
 import '../search/search_and_select/search_products.dart';
 
@@ -77,16 +78,16 @@ class AddProducts extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Vendor'),
+                        Text('Select vendor'),
                         InkWell(
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
-                            final UserModel getSelectedVendor = await showSearch(context: context,
+                            final AccountVoucherModel getSelectedVendor = await showSearch(context: context,
                               delegate: SearchVoucher1(voucherType: AccountVoucherType.vendor),
                             );
                             // If products are selected, update the state
                             if (getSelectedVendor.id != null) {
-                              controller.addSupplier(getSelectedVendor);
+                              controller.addVendor(getSelectedVendor);
                             }
                           },
                           child: Row(
@@ -98,25 +99,25 @@ class AddProducts extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // Obx(() => controller.selectedVendor.value.id != null
-                    //     ? Dismissible(
-                    //           key: Key(controller.selectedVendor.value.id ?? ''), // Unique key for each item
-                    //           direction: DismissDirection.endToStart, // Swipe left to remove
-                    //           onDismissed: (direction) {
-                    //             controller.selectedVendor.value = UserModel();
-                    //             ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    //             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
-                    //           },
-                    //           background: Container(
-                    //             color: Colors.red,
-                    //             alignment: Alignment.centerRight,
-                    //             padding: const EdgeInsets.symmetric(horizontal: 20),
-                    //             child: const Icon(Icons.delete, color: Colors.white),
-                    //           ),
-                    //           child: SizedBox(width: double.infinity, child: VendorTile(vendor: controller.selectedVendor.value))
-                    //       )
-                    //     : SizedBox.shrink(),
-                    // ),
+                    Obx(() => controller.selectedVendor.value.id != null
+                        ? Dismissible(
+                              key: Key(controller.selectedVendor.value.id ?? ''), // Unique key for each item
+                              direction: DismissDirection.endToStart, // Swipe left to remove
+                              onDismissed: (direction) {
+                                controller.selectedVendor.value = AccountVoucherModel();
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
+                              },
+                              background: Container(
+                                color: Colors.red,
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: const Icon(Icons.delete, color: Colors.white),
+                              ),
+                              child: SizedBox(width: double.infinity, child: AccountVoucherTile(accountVoucher: controller.selectedVendor.value, voucherType: AccountVoucherType.vendor))
+                          )
+                        : SizedBox.shrink(),
+                    ),
                   ],
                 ),
               ],

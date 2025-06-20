@@ -53,53 +53,6 @@ class MongoUpdate extends MongoDatabase {
     }
   }
 
-
-
-
-  Future<void> updateManyDocuments({
-    required String collectionName,
-    required List<Map<String, dynamic>> updates,
-  }) async {
-    try {
-      await _ensureConnected();
-      final collection = db!.collection(collectionName);
-
-      for (var update in updates) {
-        final id = update['id'];
-        if (id != null) {
-          final updateData = Map<String, dynamic>.from(update)..remove('id');
-          await collection.updateOne(
-            where.eq('id', id),
-            {'\$set': updateData},
-            upsert: false,
-          );
-        }
-      }
-
-      print('Documents updated successfully');
-    } catch (e) {
-      throw Exception('Failed to update documents: $e');
-    }
-  }
-
-  Future<void> updateDocuments({
-    required String collectionName,
-    required Map<String, dynamic> filter,
-    required Map<String, dynamic> updatedData,
-  }) async {
-    await _ensureConnected();
-    try {
-      final collection = db!.collection(collectionName);
-      await collection.updateMany(
-        filter,
-        {'\$set': updatedData},
-        upsert: true,
-      );
-    } catch (e) {
-      throw Exception('Failed to update documents: $e');
-    }
-  }
-
   Future<void> updateDocument({
     required String collectionName,
     required Map<String, dynamic> filter,
@@ -117,41 +70,38 @@ class MongoUpdate extends MongoDatabase {
     }
   }
 
-  Future<void> updateManyDocumentsById({
-    required String collectionName,
-    required List<String> ids,
-    required Map<String, dynamic> updatedData,
-  }) async {
+  Future<void> updateVendorAndPurchasePriceById({required String collectionName, required List<CartModel> cartItems}) async {
     await _ensureConnected();
-
     try {
-      if (ids.isEmpty) {
-        throw ArgumentError('IDs list cannot be empty');
-      }
+      final collection = db!.collection(collectionName);
+      final bulkOps = cartItems.map((cartItem) {
+        // 1. Create the filter with properly formatted ID
+        final filter = {
+          '_id': ObjectId.fromHexString(cartItem.id ?? '')
+        };
 
-      final objectIds = ids.map((id) {
-        try {
-          return ObjectId.fromHexString(id);
-        } catch (e) {
-          throw FormatException('Invalid ObjectId format for ID: $id');
-        }
+        // 2. Build the update operations in a SINGLE map
+        final update = {
+          r'$set': {
+            ProductFieldName.dateModified: DateTime.now(),
+            ProductFieldName.purchasePrice: cartItem.purchasePrice!,
+            ProductFieldName.vendor: cartItem.vendor?.toMap(),
+          },
+        };
+
+
+        // 3. Return the properly formatted operation
+        return {
+          'updateOne': {
+            'filter': filter,
+            'update': update,
+            'upsert': true,
+          }
+        };
       }).toList();
-
-      final writeResult = await db!.collection(collectionName).updateMany(
-        {OrderFieldName.id: {'\$in': objectIds}},
-        {'\$set': updatedData},
-        upsert: true,
-      );
-
-      if (writeResult.nModified == 0) {
-        throw Exception('⚠️ No orders were updated - check if IDs exist');
-      }
-    } on FormatException catch (e) {
-      throw Exception('ID format error: ${e.message}');
-    } on MongoDartError catch (e) {
-      throw Exception('Database operation failed: ${e.message}');
+      await collection.bulkWrite(bulkOps);
     } catch (e) {
-      throw Exception('Failed to update documents: ${e.toString()}');
+      throw Exception(e);
     }
   }
 
@@ -167,7 +117,7 @@ class MongoUpdate extends MongoDatabase {
       final bulkOps = cartItems.map((cartItem) {
         // 1. Create the filter with properly formatted ID
         final filter = {
-          '_id': ObjectId.fromHexString(cartItem.product_id ?? '')
+          '_id': ObjectId.fromHexString(cartItem.id ?? '')
         };
 
         // 2. Build the update operations in a SINGLE map
@@ -281,5 +231,83 @@ class MongoUpdate extends MongoDatabase {
     }
   }
 
+  Future<void> updateDocuments({
+    required String collectionName,
+    required Map<String, dynamic> filter,
+    required Map<String, dynamic> updatedData,
+  }) async {
+    await _ensureConnected();
+    try {
+      final collection = db!.collection(collectionName);
+      await collection.updateMany(
+        filter,
+        {'\$set': updatedData},
+        upsert: true,
+      );
+    } catch (e) {
+      throw Exception('Failed to update documents: $e');
+    }
+  }
 
+  Future<void> updateManyDocuments({
+    required String collectionName,
+    required List<Map<String, dynamic>> updates,
+  }) async {
+    try {
+      await _ensureConnected();
+      final collection = db!.collection(collectionName);
+
+      for (var update in updates) {
+        final id = update['id'];
+        if (id != null) {
+          final updateData = Map<String, dynamic>.from(update)..remove('id');
+          await collection.updateOne(
+            where.eq('id', id),
+            {'\$set': updateData},
+            upsert: false,
+          );
+        }
+      }
+    } catch (e) {
+      throw Exception('Failed to update documents: $e');
+    }
+  }
+
+  Future<void> updateManyDocumentsById({
+    required String collectionName,
+    required List<String> ids,
+    required Map<String, dynamic> updatedData,
+  }) async {
+    await _ensureConnected();
+
+    try {
+      if (ids.isEmpty) {
+        throw ArgumentError('IDs list cannot be empty');
+      }
+
+      final objectIds = ids.map((id) {
+        try {
+          return ObjectId.fromHexString(id);
+        } catch (e) {
+          throw FormatException('Invalid ObjectId format for ID: $id');
+        }
+      }).toList();
+
+      final writeResult = await db!.collection(collectionName).updateMany(
+        {OrderFieldName.id: {'\$in': objectIds}},
+        {'\$set': updatedData},
+        upsert: true,
+      );
+
+      if (writeResult.nModified == 0) {
+        throw Exception('⚠️ No orders were updated - check if IDs exist');
+      }
+    } on FormatException catch (e) {
+      throw Exception('ID format error: ${e.message}');
+    } on MongoDartError catch (e) {
+      throw Exception('Database operation failed: ${e.message}');
+    } catch (e) {
+      throw Exception('Failed to update documents: ${e.toString()}');
+    }
+  }
 }

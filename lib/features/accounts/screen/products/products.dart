@@ -55,7 +55,8 @@ class Products extends StatelessWidget {
     return Scaffold(
         appBar: AppAppBar(
             title: 'Products',
-            voucherType: AccountVoucherType.product,
+            showSearchIcon: true,
+            searchType: SearchType.product,
             widgetInActions: IconButton(
                 onPressed: () => Get.to(() => SyncProductScreen()),
                 icon: Text('Sync Products', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.linkColor),)

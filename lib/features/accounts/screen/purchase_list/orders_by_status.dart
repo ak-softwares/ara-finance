@@ -6,8 +6,7 @@ import '../../../../common/styles/spacing_style.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../models/order_model.dart';
-import '../orders/widgets/order_tile.dart';
-import '../sales/widget/sale_tile.dart';
+import 'widget/sale_tile.dart';
 
 class OrdersByStatus extends StatelessWidget {
   const OrdersByStatus({super.key, required this.orders, required this.orderStatus});

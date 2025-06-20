@@ -12,10 +12,10 @@ import '../../../../utils/constants/sizes.dart';
 import '../../../../utils/formatters/formatters.dart';
 import '../../controller/purchase_list_controller/purchase_list_controller.dart';
 import '../../models/purchase_item_model.dart';
-import '../sales/widget/sale_tile.dart';
 import 'orders_by_status.dart';
 import 'widget/purchase_list_item.dart';
 import 'widget/purchase_list_shimmer.dart';
+import 'widget/sale_tile.dart';
 
 class PurchaseList extends StatelessWidget {
   const PurchaseList({super.key});

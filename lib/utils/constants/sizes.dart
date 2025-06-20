@@ -167,7 +167,7 @@ class AppSizes {
   static const double accountImageWidth = 30.0;
 
   // Transaction Tile
-  static const double transactionTileHeight = 145;
+  static const double transactionTileHeight = 150;
   static const double transactionTileWidth = 100.0;
   static const double transactionTileRadius = 5.0;
   static const double transactionImageHeight = 30.0;

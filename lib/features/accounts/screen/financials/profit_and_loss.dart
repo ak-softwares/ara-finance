@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../common/layout_models/product_grid_layout.dart';
 import '../../controller/financial/financial_controller.dart';
+import '../../controller/financial/profit_and_loss_controller.dart';
 import 'widgets/financial_tile.dart';
 
 class ProfitAndLossTab extends StatelessWidget {
@@ -12,6 +13,7 @@ class ProfitAndLossTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FinancialController controller = Get.put(FinancialController());
+    // final ProfitAndLossController controller = Get.put(ProfitAndLossController());
 
     return Obx(() => Column(
       children: [
@@ -78,7 +80,7 @@ class ProfitAndLossTab extends StatelessWidget {
             children: [
               FinancialTile(
                 title: 'COGS',
-                value: controller.expensesCogs.value,
+                value: controller.expensesCogs,
                 percent: controller.expensesCogsPercent,
                 isCurrency: true,
                 index: 1,

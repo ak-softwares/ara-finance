@@ -42,6 +42,7 @@ class AccountVoucherModel {
       openingBalance: json[AccountVoucherFieldName.openingBalance] != null
           ? double.tryParse(json[AccountVoucherFieldName.openingBalance].toString())
           : null,
+      currentBalance: json[AccountVoucherFieldName.currentBalance],
       dateCreated: json[AccountVoucherFieldName.dateCreated],
       voucherType: json[AccountVoucherFieldName.voucherType] != null
           ? AccountVoucherType.values.firstWhere((type) => type.name == json[AccountVoucherFieldName.voucherType])

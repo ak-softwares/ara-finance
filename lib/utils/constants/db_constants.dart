@@ -269,7 +269,6 @@ class CartFieldName {
   static const String id = 'id';
   static const String name = 'name';
   static const String userId = 'user_id';
-  static const String product_id = 'productId';
   static const String productId = 'product_id';
   static const String variationId = 'variation_id';
   static const String quantity = 'quantity';
@@ -379,6 +378,7 @@ class AccountVoucherFieldName {
   static const String voucherId = 'voucher_id';
   static const String title = 'title';
   static const String openingBalance = 'opening_balance';
+  static const String currentBalance = 'current_balance';
   static const String dateCreated = 'date_created';
   static const String voucherType = 'voucher_type';
 }
@@ -388,11 +388,19 @@ class TransactionFieldName {
   static const String userId = 'user_id';
   static const String transactionId = 'transaction_id';
   static const String date = 'date';
+  static const String dateShipped = 'date_shipped';
+  static const String datePaid = 'date_paid';
+  static const String dateReturned = 'date_returned';
   static const String amount = 'amount';
-  static const String formAccountVoucher = 'form_account_voucher';
+  static const String fromAccountVoucher = 'form_account_voucher';
   static const String toAccountVoucher = 'to_account_voucher';
   static const String transactionType = 'transaction_type';
   static const String products = 'products';
+  static const String status = 'status';
+  static const String orderIds = 'order_ids';
+  static const String couponLines = 'coupon_lines';
+  static const String orderAttribute = 'order_attribute';
+  static const String paymentMethod = 'payment_method';
 }
 
 class PaymentMethodName {

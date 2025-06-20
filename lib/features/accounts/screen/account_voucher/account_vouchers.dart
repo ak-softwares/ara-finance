@@ -55,6 +55,9 @@ class AccountVouchers extends StatelessWidget {
     return Scaffold(
       appBar: AppAppBar(
         title: voucherType.name.capitalizeFirst ?? 'Account voucher',
+        showSearchIcon: true,
+        searchType: SearchType.accountVoucher,
+        voucherType: voucherType,
         widgetInActions: voucherType == AccountVoucherType.customer
             ? IconButton(
                 onPressed: () => Get.to(() => SyncCustomerScreen()),
@@ -70,6 +73,7 @@ class AccountVouchers extends StatelessWidget {
             : SizedBox(), // or null if your widget allows it
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'voucher_$voucherType',
         shape: const CircleBorder(),
         backgroundColor: Colors.blue,
         onPressed: () => Get.to(() => AddAccountVoucher(voucherType: voucherType)),

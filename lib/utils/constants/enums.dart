@@ -4,6 +4,8 @@ enum TextSizes { small, medium, large }
 
 enum UserType { customer, vendor, admin, }
 
+enum SearchType { accountVoucher, transaction, product }
+
 enum OrderType { purchase, sale, }
 
 enum OrientationType {horizontal, vertical}

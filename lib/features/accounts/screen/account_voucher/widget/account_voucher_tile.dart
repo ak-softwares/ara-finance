@@ -80,7 +80,7 @@ class AccountVoucherTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Closing Balance Balance'),
+                const Text('Closing Balance'),
                 ColoredAmount(amount: accountVoucher.closingBalance),
               ],
             ),

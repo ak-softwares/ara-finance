@@ -96,7 +96,7 @@ class AddReceipt extends StatelessWidget {
                             final AccountVoucherModel getSelectedCustomer = await showSearch(context: context,
                               delegate: SearchVoucher1(
                                   voucherType: AccountVoucherType.customer,
-                                  selectedItems: controller.selectedSender.value
+                                  selectedItems: controller.selectedCustomer.value
                               ),
                             );
                             // If products are selected, update the state
@@ -113,12 +113,12 @@ class AddReceipt extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Obx(() => controller.selectedSender.value.id != '' && controller.selectedSender.value.id != null
+                    Obx(() => controller.selectedCustomer.value.id != '' && controller.selectedCustomer.value.id != null
                         ? Dismissible(
-                        key: Key(controller.selectedSender.value.id ?? ''), // Unique key for each item
+                        key: Key(controller.selectedCustomer.value.id ?? ''), // Unique key for each item
                         direction: DismissDirection.endToStart, // Swipe left to remove
                         onDismissed: (direction) {
-                          controller.selectedSender.value = AccountVoucherModel();
+                          controller.selectedCustomer.value = AccountVoucherModel();
                           AppMassages.showSnackBar(massage: 'Customer removed');
                         },
                         background: Container(
@@ -127,7 +127,7 @@ class AddReceipt extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        child: SizedBox(width: double.infinity, child: AccountVoucherTile(accountVoucher: controller.selectedSender.value, voucherType: AccountVoucherType.customer))
+                        child: SizedBox(width: double.infinity, child: AccountVoucherTile(accountVoucher: controller.selectedCustomer.value, voucherType: AccountVoucherType.customer))
                     )
                         : SizedBox.shrink(),
                     ),

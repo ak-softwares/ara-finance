@@ -19,25 +19,27 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget{
     this.title = '',
     this.isShowLogo = false,
     this.showBackArrow = false,
-    this.showSearchIcon = false,
     this.seeLogoutButton = false,
     this.seeSettingButton = false,
-    this.voucherType,
     this.widgetInActions,
     this.bottom,
     this.toolbarHeight,
+    this.showSearchIcon = false,
+    this.searchType,
+    this.voucherType,
   });
 
   final String title;
   final bool showBackArrow;
   final bool isShowLogo;
-  final bool showSearchIcon;
   final bool seeLogoutButton;
   final bool seeSettingButton;
-  final AccountVoucherType? voucherType; // Nullable search type
   final Widget? widgetInActions; // Nullable search type
   final PreferredSizeWidget? bottom; // Nullable search type
   final double? toolbarHeight; // Nullable search type
+  final bool showSearchIcon;
+  final SearchType? searchType;
+  final AccountVoucherType? voucherType; // Nullable search type
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +54,13 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget{
           ? Image(image: AssetImage(isDark ? AppSettings.darkAppLogo : AppSettings.lightAppLogo), height: 34)
           : Text(title),
       actions: [
-        voucherType != null ? IconButton( icon: Icon(AppIcons.search), onPressed: () => showSearch(context: context, delegate: SearchVoucher(searchType: voucherType ?? AccountVoucherType.product))) : const SizedBox.shrink(),
+        if(showSearchIcon)
+        IconButton(
+            icon: Icon(AppIcons.search),
+            onPressed: () => showSearch(context: context,
+                delegate: SearchVoucher(searchType: searchType!, voucherType: voucherType)
+            )
+        ),
         if(seeLogoutButton) ...[
           Obx(() => AuthenticationController.instance.isAdminLogin.value
               ? InkWell(

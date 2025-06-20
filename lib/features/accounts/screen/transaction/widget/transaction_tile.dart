@@ -1,4 +1,6 @@
+import 'package:ara_finance/common/widgets/common/colored_amount.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../../utils/constants/enums.dart';
@@ -35,7 +37,27 @@ class TransactionTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Transaction Id', style: TextStyle(fontSize: 14)),
-                Text('#${transaction.transactionId.toString()}', style: const TextStyle(fontSize: 14)),
+                Row(
+                  children: [
+                    Text('#${transaction.transactionId.toString()}', style: const TextStyle(fontSize: 14)),
+                    if(transaction.transactionType == AccountVoucherType.sale)
+                    Row(
+                      spacing: AppSizes.spaceBtwItems,
+                      children: [
+                        Text('/${transaction.orderIds?.first.toString()}', style: const TextStyle(fontSize: 14)),
+                        InkWell(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: (transaction.orderIds?.first).toString()));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Order Id copied')),
+                            );
+                          },
+                          child: const Icon(Icons.copy, size: 17),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
             Row(
@@ -47,19 +69,19 @@ class TransactionTile extends StatelessWidget {
             ),
             if(transaction.transactionType == AccountVoucherType.sale)
               Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Sale ID', style: TextStyle(fontSize: 14)),
-              ],
-            )
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Status', style: TextStyle(fontSize: 14)),
+                  ColoredStatusText(status: transaction.status),                ],
+              )
             else
               Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('From Entity', style: TextStyle(fontSize: 14)),
-                Text(transaction.formAccountVoucher?.title ?? '', style: const TextStyle(fontSize: 14)),
-              ],
-            ),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('From Entity', style: TextStyle(fontSize: 14)),
+                  Text(transaction.fromAccountVoucher?.title ?? '', style: const TextStyle(fontSize: 14)),
+                ],
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

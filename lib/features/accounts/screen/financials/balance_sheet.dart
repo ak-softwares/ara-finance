@@ -36,7 +36,7 @@ class BalanceSheetTab extends StatelessWidget {
               ),
               FinancialTile(
                 title: 'Inventory In-Transit',
-                value: controller.expensesCogsInTransit.value,
+                value: controller.expensesCogsInTransit,
                 percent: controller.expensesCogsInTransitPercent,
                 isCurrency: true,
                 index: 0,
