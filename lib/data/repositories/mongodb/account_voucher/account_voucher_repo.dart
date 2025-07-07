@@ -29,7 +29,7 @@ class MongoAccountVoucherRepo extends GetxController {
     required String userId
   }) async {
     try {
-      final List<Map<String, dynamic>> voucherData = await _mongoFetch.fetchAccountVoucherSearchWithTotal(
+      final List<Map<String, dynamic>> voucherData = await _mongoFetch.searchAccountVoucherWithBalance(
         voucherCollectionName: collectionName,
         transactionCollectionName: DbCollections.transactions,
         searchQuery: query,
@@ -62,16 +62,21 @@ class MongoAccountVoucherRepo extends GetxController {
   // Upload a new voucher
   Future<double> fetchAllVoucherBalance({required String userId, required AccountVoucherType voucherType}) async {
     try {
-      final double total = await _mongoFetch.getTotalAccountPayable(
-          transactionCollectionName: DbCollections.transactions,
-          filter: { TransactionFieldName.userId: userId},
-          voucherType: voucherType
+      final List<Map<String, dynamic>> voucherData = await _mongoFetch.fetchAccountsWithBalance(
+        accountCollectionName: collectionName,
+        transactionCollectionName: DbCollections.transactions,
+        filter: {AccountVoucherFieldName.userId: userId, AccountVoucherFieldName.voucherType: voucherType.name},
       );
-      return total;
+
+      final List<AccountVoucherModel> fetchAllVoucher = voucherData.map((data) => AccountVoucherModel.fromJson(data)).toList();
+      final int total = fetchAllVoucher.fold(0, (sum, e) => sum + (e.closingBalance.toInt()));
+
+      return total.toDouble();
     } catch (e) {
       rethrow;
     }
   }
+
 
   // Upload a new voucher
   Future<void> pushVoucher({required AccountVoucherModel voucher}) async {

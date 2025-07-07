@@ -49,6 +49,8 @@ class AddProducts extends StatelessWidget {
                     Text('Product ID'),
                   ],
                 ),
+
+                // Name
                 TextFormField(
                   controller: controller.productTitleController,
                   decoration: InputDecoration(
@@ -57,6 +59,7 @@ class AddProducts extends StatelessWidget {
                   ),
                 ),
 
+                // Purchase Price
                 TextFormField(
                   controller: controller.purchasePriceController,
                   decoration: InputDecoration(
@@ -64,6 +67,8 @@ class AddProducts extends StatelessWidget {
                     border: OutlineInputBorder(),
                   ),
                 ),
+
+                // Stock
                 TextFormField(
                   controller: controller.stockController,
                   decoration: InputDecoration(
@@ -71,6 +76,7 @@ class AddProducts extends StatelessWidget {
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 // Vendor
                 Column(
                   spacing: AppSizes.spaceBtwItems,
@@ -101,25 +107,26 @@ class AddProducts extends StatelessWidget {
                     ),
                     Obx(() => controller.selectedVendor.value.id != null
                         ? Dismissible(
-                              key: Key(controller.selectedVendor.value.id ?? ''), // Unique key for each item
-                              direction: DismissDirection.endToStart, // Swipe left to remove
-                              onDismissed: (direction) {
-                                controller.selectedVendor.value = AccountVoucherModel();
-                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
-                              },
-                              background: Container(
-                                color: Colors.red,
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                child: const Icon(Icons.delete, color: Colors.white),
-                              ),
-                              child: SizedBox(width: double.infinity, child: AccountVoucherTile(accountVoucher: controller.selectedVendor.value, voucherType: AccountVoucherType.vendor))
-                          )
+                        key: Key(controller.selectedVendor.value.id ?? ''), // Unique key for each item
+                        direction: DismissDirection.endToStart, // Swipe left to remove
+                        onDismissed: (direction) {
+                          controller.selectedVendor.value = AccountVoucherModel();
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Vendor removed")),);
+                        },
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        child: SizedBox(width: double.infinity, child: AccountVoucherTile(accountVoucher: controller.selectedVendor.value, voucherType: AccountVoucherType.vendor))
+                    )
                         : SizedBox.shrink(),
                     ),
                   ],
                 ),
+
               ],
             ),
           ),

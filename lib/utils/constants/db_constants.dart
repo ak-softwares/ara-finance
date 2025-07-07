@@ -391,6 +391,8 @@ class TransactionFieldName {
   static const String dateShipped = 'date_shipped';
   static const String datePaid = 'date_paid';
   static const String dateReturned = 'date_returned';
+  static const String discount = 'discount';
+  static const String shipping = 'shipping';
   static const String amount = 'amount';
   static const String fromAccountVoucher = 'form_account_voucher';
   static const String toAccountVoucher = 'to_account_voucher';
@@ -401,6 +403,7 @@ class TransactionFieldName {
   static const String couponLines = 'coupon_lines';
   static const String orderAttribute = 'order_attribute';
   static const String paymentMethod = 'payment_method';
+  static const String address = 'address';
 }
 
 class PaymentMethodName {

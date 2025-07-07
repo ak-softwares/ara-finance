@@ -22,9 +22,9 @@ class OrderModel {
   DateTime? dateShipped;
   DateTime? datePaid;
   DateTime? dateReturned;
-  String? discountTotal;
+  double? discountTotal;
   String? discountTax;
-  String? shippingTotal;
+  double? shippingTotal;
   String? shippingTax;
   String? cartTax;
   double? total;
@@ -98,13 +98,6 @@ class OrderModel {
     return now.difference(dateCreated ?? DateTime.now()).inDays;
   }
 
-  int calculateTotalSum() {
-    return lineItems?.fold<int>(
-      0,
-          (previousValue, currentItem) => previousValue + (int.tryParse(currentItem.subtotal ?? '') ?? 0),
-    ) ?? 0;
-  }
-
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     final OrderType orderType = OrderType.values.firstWhere(
           (e) => e.name == json[OrderFieldName.orderType],
@@ -129,9 +122,9 @@ class OrderModel {
       dateShipped: json[OrderFieldName.dateCompleted],
       datePaid: json[OrderFieldName.datePaid],
       dateReturned: json[OrderFieldName.dateReturned],
-      discountTotal: json[OrderFieldName.discountTotal] ?? '',
+      discountTotal: json[OrderFieldName.discountTotal] ?? 0,
       discountTax: json[OrderFieldName.discountTax] ?? '',
-      shippingTotal: json[OrderFieldName.shippingTotal] ?? '',
+      shippingTotal: json[OrderFieldName.shippingTotal] ?? 0,
       shippingTax: json[OrderFieldName.shippingTax] ?? '',
       cartTax: json[OrderFieldName.cartTax] ?? '',
       totalTax: json[OrderFieldName.totalTax] ?? '',
@@ -198,10 +191,9 @@ class OrderModel {
       datePaid: json[OrderFieldName.datePaid] != null && json[OrderFieldName.datePaid] != ''
           ? DateTime.parse(json[OrderFieldName.datePaid])
           : null,
-
-      discountTotal: json[OrderFieldName.discountTotal]?.toString() ?? '',
+      discountTotal: double.tryParse(json[OrderFieldName.discountTotal]?.toString() ?? '0') ?? 0.0,
       discountTax: json[OrderFieldName.discountTax]?.toString() ?? '',
-      shippingTotal: json[OrderFieldName.shippingTotal]?.toString() ?? '',
+      shippingTotal: double.tryParse(json[OrderFieldName.shippingTotal]?.toString() ?? '0') ?? 0.0,
       shippingTax: json[OrderFieldName.shippingTax]?.toString() ?? '',
       cartTax: json[OrderFieldName.cartTax]?.toString() ?? '',
       totalTax: json[OrderFieldName.totalTax]?.toString() ?? '',
@@ -289,83 +281,6 @@ class OrderModel {
     }
   ];
 
-  OrderModel copyWith({
-    String? id,
-    int? orderId,
-    int? invoiceNumber,
-    OrderStatus? status,
-    String? currency,
-    bool? pricesIncludeTax,
-    DateTime? dateCreated,
-    DateTime? dateModified,
-    DateTime? dateCompleted,
-    DateTime? datePaid,
-    DateTime? dateReturned,
-    String? discountTotal,
-    String? discountTax,
-    String? shippingTotal,
-    String? shippingTax,
-    String? cartTax,
-    double? total,
-    String? totalTax,
-    int? userId,
-    UserModel? user,
-    AddressModel? billing,
-    AddressModel? shipping,
-    String? paymentMethod,
-    String? paymentMethodTitle,
-    String? transactionId,
-    String? customerIpAddress,
-    String? customerUserAgent,
-    String? customerNote,
-    List<OrderMedaDataModel>? metaData,
-    List<CartModel>? lineItems,
-    List<CouponModel>? couponLines,
-    String? paymentUrl,
-    String? currencySymbol,
-    bool? setPaid,
-    List<ImageModel>? purchaseInvoiceImages,
-    OrderType? orderType,
-  }) {
-    return OrderModel(
-      id: id ?? this.id,
-      orderId: orderId ?? this.orderId,
-      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
-      status: status ?? this.status,
-      currency: currency ?? this.currency,
-      pricesIncludeTax: pricesIncludeTax ?? this.pricesIncludeTax,
-      dateCreated: dateCreated ?? this.dateCreated,
-      dateModified: dateModified ?? this.dateModified,
-      dateShipped: dateCompleted ?? this.dateShipped,
-      datePaid: datePaid ?? this.datePaid,
-      dateReturned: dateReturned ?? this.dateReturned,
-      discountTotal: discountTotal ?? this.discountTotal,
-      discountTax: discountTax ?? this.discountTax,
-      shippingTotal: shippingTotal ?? this.shippingTotal,
-      shippingTax: shippingTax ?? this.shippingTax,
-      cartTax: cartTax ?? this.cartTax,
-      total: total ?? this.total,
-      totalTax: totalTax ?? this.totalTax,
-      customerId: userId ?? this.customerId,
-      user: user ?? this.user,
-      billing: billing ?? this.billing,
-      shipping: shipping ?? this.shipping,
-      paymentMethod: paymentMethod ?? this.paymentMethod,
-      paymentMethodTitle: paymentMethodTitle ?? this.paymentMethodTitle,
-      transactionId: transactionId ?? this.transactionId,
-      customerIpAddress: customerIpAddress ?? this.customerIpAddress,
-      customerUserAgent: customerUserAgent ?? this.customerUserAgent,
-      customerNote: customerNote ?? this.customerNote,
-      metaData: metaData ?? this.metaData,
-      lineItems: lineItems ?? this.lineItems,
-      couponLines: couponLines ?? this.couponLines,
-      paymentUrl: paymentUrl ?? this.paymentUrl,
-      currencySymbol: currencySymbol ?? this.currencySymbol,
-      setPaid: setPaid ?? this.setPaid,
-      purchaseInvoiceImages: purchaseInvoiceImages ?? this.purchaseInvoiceImages,
-      orderType: orderType ?? this.orderType,
-    );
-  }
 }
 
 class OrderMedaDataModel {

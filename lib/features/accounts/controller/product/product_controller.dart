@@ -70,7 +70,7 @@ class ProductController extends GetxController{
   // Get Product by ID
   Future<ProductModel> getProductByID({required String id}) async {
     try {
-      final fetchedProduct = await mongoProductRepo.fetchProductById(id: id);
+      final fetchedProduct = await mongoProductRepo.fetchProductByIdWithStock(id: id);
       return fetchedProduct;
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
@@ -81,7 +81,7 @@ class ProductController extends GetxController{
   // Get Product by ID
   Future<List<ProductModel>> getProductsByProductIds({required List<int> productIds}) async {
     try {
-      final List<ProductModel> fetchedProduct = await mongoProductRepo.fetchProductsByIds(productIds: productIds);
+      final List<ProductModel> fetchedProduct = await mongoProductRepo.fetchProductsByProductIds(productIds: productIds);
       return fetchedProduct;
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error', message: e.toString());
@@ -93,15 +93,6 @@ class ProductController extends GetxController{
     try {
       final String uid = await auth.getUserId();
       final double totalStockValue = await mongoProductRepo.fetchTotalStockValue(userId: uid);
-      return totalStockValue;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> getCogsDetailsByProductIds({required List<int> productIds}) async {
-    try {
-      final List<Map<String, dynamic>> totalStockValue = await mongoProductRepo.fetchCogsDetailsByProductIds(productIds: productIds);
       return totalStockValue;
     } catch (e) {
       rethrow;

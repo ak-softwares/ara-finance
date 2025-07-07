@@ -9,15 +9,11 @@ import 'package:csv/csv.dart';
 
 import '../../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
 import '../../../../../utils/constants/db_constants.dart';
 import '../../../../../utils/constants/enums.dart';
 import '../../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../../../personalization/models/user_model.dart';
 import '../../../models/account_voucher_model.dart';
-import '../../../models/order_model.dart';
-import '../add_payment_controller.dart';
 import '../transaction_controller.dart';
 
 class AddBulkReceiptController extends GetxController {
@@ -35,7 +31,6 @@ class AddBulkReceiptController extends GetxController {
   Rx<AccountVoucherModel> selectedBankAccount = AccountVoucherModel().obs;
   Rx<AccountVoucherModel> selectedCustomer = AccountVoucherModel().obs;
 
-  final mongoOrderRepo = Get.put(MongoOrderRepo());
   final transactionController = Get.put(TransactionController());
   final mongoTransactionRepo = Get.put(MongoTransactionRepo());
 
@@ -204,12 +199,12 @@ class AddBulkReceiptController extends GetxController {
         orderIds: salesIds,
         fromAccountVoucher: selectedCustomer.value,
         toAccountVoucher: selectedBankAccount.value,
-        transactionType: AccountVoucherType.receipt,
+        transactionType: voucherType,
       );
       await transactionController.processTransactions(transactions: [transaction]);
 
-
       final List<String> ids = pendingSales.map((e) => e.id).whereType<String>().toList();
+
       final Map<String, dynamic> updatedData = {
         TransactionFieldName.status: OrderStatus.completed.name,
         TransactionFieldName.datePaid: DateTime.now(),

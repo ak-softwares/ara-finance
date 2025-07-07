@@ -24,10 +24,14 @@ class AddSaleController extends GetxController {
 
   final AccountVoucherType voucherType = AccountVoucherType.sale;
   RxInt transactionId = 0.obs;
+  OrderStatus selectedStatus = OrderStatus.inTransit;
 
   Rx<AccountVoucherModel> selectedCustomer = AccountVoucherModel().obs;
   Rx<AccountVoucherModel> selectedSaleVoucher = AccountVoucherModel().obs;
   RxList<CartModel> selectedProducts = <CartModel>[].obs;
+
+  TextEditingController discountController = TextEditingController();
+  TextEditingController shippingController = TextEditingController();
 
   RxDouble saleTotal = 0.0.obs;
   RxInt productCount = 0.obs;
@@ -44,6 +48,10 @@ class AddSaleController extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
+    // Listen to both controllers
+    discountController.addListener(updateSaleTotal);
+    shippingController.addListener(updateSaleTotal);
+
     date.text = DateTime.now().toIso8601String();
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
   }
@@ -106,12 +114,13 @@ class AddSaleController extends GetxController {
   void updateSaleTotal() {
     double calculateTotalPrice = 0.0;
     int calculatedNoOfItems = 0;
-
+    final discount = double.tryParse(discountController.text) ?? 0.0;
+    final shipping = double.tryParse(shippingController.text) ?? 0.0;
     for (var item in selectedProducts) {
       calculateTotalPrice += (item.price ?? 0) * item.quantity;
       calculatedNoOfItems += item.quantity;
     }
-    saleTotal.value = calculateTotalPrice;
+    saleTotal.value = calculateTotalPrice - discount + shipping;
     productCount.value = calculatedNoOfItems;
     selectedProducts.refresh();
   }
@@ -138,12 +147,15 @@ class AddSaleController extends GetxController {
     TransactionModel transaction = TransactionModel(
       userId: userId,
       transactionId: transactionId.value,
+      discount: double.tryParse(discountController.text) ?? 0.0,
+      shipping: double.tryParse(shippingController.text) ?? 0.0,
       amount: saleTotal.value,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
       fromAccountVoucher: selectedSaleVoucher.value,
       toAccountVoucher: selectedCustomer.value,
       products: selectedProducts,
       transactionType: AccountVoucherType.sale,
+      status: selectedStatus,
     );
 
     addSaleTransaction(transaction: transaction);
@@ -181,16 +193,22 @@ class AddSaleController extends GetxController {
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
     selectedSaleVoucher.value = AccountVoucherModel();
     selectedCustomer.value = AccountVoucherModel();
+    selectedProducts.value = [];
+    discountController.text = '';
+    shippingController.text = '';
     date.text = DateTime.now().toIso8601String();
   }
 
   void resetValue(TransactionModel transaction) {
     transactionId.value = transaction.transactionId ?? 0;
+    discountController.text = transaction.discount?.toString() ?? '';
+    shippingController.text = transaction.shipping?.toString() ?? '';
     saleTotal.value = 0.0;
     date.text = transaction.date?.toIso8601String() ?? '';
     selectedSaleVoucher.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
     selectedCustomer.value = transaction.toAccountVoucher ?? AccountVoucherModel();
     selectedProducts.value = transaction.products ?? [];
+    selectedStatus = transaction.status ?? OrderStatus.inTransit;
     updateSaleTotal();
   }
 
@@ -198,11 +216,15 @@ class AddSaleController extends GetxController {
     TransactionModel newSaleTransaction = TransactionModel(
       id: oldSaleTransaction.id,
       transactionId: oldSaleTransaction.transactionId,
+      discount: double.tryParse(discountController.text) ?? oldSaleTransaction.discount,
+      shipping: double.tryParse(shippingController.text) ?? oldSaleTransaction.shipping,
       amount: saleTotal.value,
       date: DateTime.tryParse(date.text) ?? oldSaleTransaction.date,
       fromAccountVoucher: selectedSaleVoucher.value,
       toAccountVoucher: selectedCustomer.value,
       transactionType: oldSaleTransaction.transactionType,
+      products: selectedProducts,
+      status: selectedStatus,
     );
 
     updateTransaction(transaction: newSaleTransaction);

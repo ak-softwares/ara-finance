@@ -6,7 +6,6 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
 import '../../../../../data/repositories/woocommerce/orders/woo_orders_repository.dart';
 import '../../../../../utils/constants/enums.dart';
@@ -40,7 +39,6 @@ class AddBulkSaleController extends GetxController {
   final wooOrdersRepository = Get.put(WooOrdersRepository());
   final transactionController = Get.put(TransactionController());
   final productController = Get.put(ProductController());
-  final mongoOrderRepo = Get.put(MongoOrderRepo());
 
   UserModel get admin => AuthenticationController.instance.admin.value;
   String get userId => AuthenticationController.instance.admin.value.id!;
@@ -106,7 +104,7 @@ class AddBulkSaleController extends GetxController {
       final int manualOrderNumber = int.tryParse(orderNumber) ?? 0;
 
       // 1. Check if order already exists in local list
-      final bool exists = newSales.any((order) => order.transactionId == manualOrderNumber);
+      final bool exists = newSales.any((order) => order.orderIds?.first == manualOrderNumber);
       if (exists) throw 'This order number already exists.';
 
       HapticFeedback.mediumImpact();
@@ -145,6 +143,8 @@ class AddBulkSaleController extends GetxController {
       final TransactionModel transaction = TransactionModel(
         transactionId: getTransactionId,
         orderIds: [sale.orderId ?? 0],
+        discount: sale.discountTotal,
+        shipping: sale.shippingTotal,
         amount: sale.total,
         date: sale.dateCreated ?? DateTime.now(),
         products: enrichedItems,
@@ -152,6 +152,7 @@ class AddBulkSaleController extends GetxController {
         orderAttribute: sale.orderAttribute,
         paymentMethod: sale.paymentMethod,
         transactionType: AccountVoucherType.sale,
+        address: sale.billing
       );
 
       newSales.insert(0, transaction);

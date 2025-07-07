@@ -12,6 +12,8 @@ import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../personalization/models/user_model.dart';
 import '../../../../../settings/app_settings.dart';
 import '../../../../controller/transaction/sale/sale_bulk_return_controller.dart';
+import '../../../../models/account_voucher_model.dart';
+import '../../../account_voucher/widget/account_voucher_tile.dart';
 import '../../../search/search_and_select/search_products.dart';
 import 'widget/barcode_sale_tile.dart';
 
@@ -42,6 +44,7 @@ class AddBulkReturn extends StatelessWidget {
           : SizedBox.shrink()),
       body: ListView(
         children: [
+
           // Barcode Scan
           SizedBox(
             height: 200,
@@ -98,6 +101,115 @@ class AddBulkReturn extends StatelessWidget {
               onPressed: () async {
                 await controller.addManualReturn();
               },
+            ),
+          ),
+
+          // Customer
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              spacing: AppSizes.spaceBtwItems,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Select customer'),
+                    InkWell(
+                      onTap: () async {
+                        // Navigate to the search screen and wait for the result
+                        final AccountVoucherModel getSelectedCustomer = await showSearch(context: context,
+                          delegate: SearchVoucher1(
+                              voucherType: AccountVoucherType.customer,
+                              selectedItems: controller.selectedCustomer.value
+                          ),
+                        );
+                        // If products are selected, update the state
+                        if (getSelectedCustomer.id != null) {
+                          controller.selectedCustomer(getSelectedCustomer);
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.add, color: AppColors.linkColor),
+                          Text('Add', style:  TextStyle(color: AppColors.linkColor),)
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Obx(() => controller.selectedCustomer.value.id != '' && controller.selectedCustomer.value.id != null
+                    ? Dismissible(
+                    key: Key(controller.selectedCustomer.value.id ?? ''), // Unique key for each item
+                    direction: DismissDirection.endToStart, // Swipe left to remove
+                    onDismissed: (direction) {
+                      controller.selectedCustomer.value = AccountVoucherModel();
+                      AppMassages.showSnackBar(massage: 'Customer removed');
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: SizedBox(width: double.infinity, child: AccountVoucherTile(accountVoucher: controller.selectedCustomer.value, voucherType: AccountVoucherType.customer))
+                )
+                    : SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+
+          // Select Sale Account
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              spacing: AppSizes.spaceBtwItems,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Select Sale Voucher'),
+                    InkWell(
+                      onTap: () async {
+                        final AccountVoucherModel getSelectedSaleVoucher = await showSearch(
+                          context: context,
+                          delegate: SearchVoucher1(voucherType: AccountVoucherType.sale),
+                        );
+                        if (getSelectedSaleVoucher.id != null) {
+                          controller.selectedSaleVoucher(getSelectedSaleVoucher);
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.add, color: AppColors.linkColor),
+                          Text('Add', style: TextStyle(color: AppColors.linkColor)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Obx(() => controller.selectedSaleVoucher.value.id != null
+                    ? Dismissible(
+                    key: Key(controller.selectedSaleVoucher.value.id ?? ''),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (direction) {
+                      controller.selectedSaleVoucher.value = AccountVoucherModel();
+                      AppMassages.showSnackBar(massage: 'Sale Voucher removed');
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: SizedBox(
+                        width: double.infinity,
+                        child: AccountVoucherTile(accountVoucher: controller.selectedSaleVoucher.value, voucherType: AccountVoucherType.sale)
+                    )
+                )
+                    : SizedBox.shrink(),
+                ),
+              ],
             ),
           ),
 

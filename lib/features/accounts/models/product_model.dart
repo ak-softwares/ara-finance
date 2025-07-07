@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../../../utils/constants/db_constants.dart';
+import '../../../utils/constants/enums.dart';
 import '../../personalization/models/user_model.dart';
 import 'account_voucher_model.dart';
 import 'brand_model.dart';
@@ -459,38 +460,6 @@ class ProductModel {
     }
 
     return map;
-  }
-
-
-  // Add the copyWith method
-  ProductModel copyWith({
-    int? id,
-    String? name,
-    String? mainImage,
-    List<Map<String, dynamic>>? images,
-    double? regularPrice,
-    double? salePrice,
-    String? description,
-    List<ProductAttributeModel>? defaultAttributes,
-    String? type,
-    List<int>? variations,
-    String? stockStatus,
-    AccountVoucherModel? vendor,
-  }) {
-    return ProductModel(
-      productId: id ?? this.productId,
-      title: name ?? this.title,
-      mainImage: mainImage ?? this.mainImage,
-      images: images ?? this.images,
-      regularPrice: regularPrice ?? this.regularPrice,
-      salePrice: salePrice ?? this.salePrice,
-      description: description ?? this.description,
-      defaultAttributes: defaultAttributes ?? this.defaultAttributes,
-      type: type ?? this.type,
-      variations: variations ?? this.variations,
-      stockStatus: stockStatus ?? this.stockStatus,
-      vendor: vendor ?? this.vendor,
-    );
   }
 
 }

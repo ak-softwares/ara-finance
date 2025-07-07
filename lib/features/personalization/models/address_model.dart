@@ -4,7 +4,6 @@ import '../../../utils/formatters/formatters.dart';
 import '../../../utils/validators/validation.dart';
 
 class AddressModel {
-  String? id;
   String? firstName;
   String? lastName;
   String? phone ;
@@ -20,7 +19,6 @@ class AddressModel {
   DateTime? dateModified;
 
   AddressModel({
-    this.id,
     this.firstName,
     this.lastName,
     this.phone,
@@ -38,8 +36,6 @@ class AddressModel {
 
   String get formattedPhoneNo => AppFormatter.formatPhoneNumber(phone ?? '0');
   String get name => '$firstName $lastName';
-
-  static AddressModel empty() => AddressModel(id: '');
 
   // Method to check which fields are missing or empty
   List<String> validateFields() {
@@ -66,24 +62,20 @@ class AddressModel {
     return missingFields;
   }
 
-
-
-  Map<String, dynamic> toJson() {
-    return {
-      AddressFieldName.id: id,
-      AddressFieldName.firstName: firstName,
-      AddressFieldName.lastName: lastName,
-      AddressFieldName.phone: phone,
-      AddressFieldName.email: email,
-      AddressFieldName.address1: address1,
-      AddressFieldName.address2: address2,
-      AddressFieldName.city: city,
-      AddressFieldName.state: state,
-      AddressFieldName.pincode: pincode,
-      AddressFieldName.country: country,
-      AddressFieldName.dateCreated: dateCreated,
-      AddressFieldName.dateModified: dateModified,
-    };
+  factory AddressModel.fromJson(Map<String, dynamic> data) {
+    return AddressModel(
+      firstName: data[AddressFieldName.firstName],
+      lastName: data[AddressFieldName.lastName],
+      phone: data[AddressFieldName.phone],
+      email: data[AddressFieldName.email],
+      address1: data[AddressFieldName.address1],
+      address2: data[AddressFieldName.address2],
+      company: data[AddressFieldName.company],
+      city: data[AddressFieldName.city],
+      pincode: data[AddressFieldName.pincode],
+      state: data[AddressFieldName.state],
+      country: data[AddressFieldName.country],
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -93,7 +85,6 @@ class AddressModel {
       if (value != null) map[key] = value;
     }
 
-    addIfNotNull(AddressFieldName.id, id);
     addIfNotNull(AddressFieldName.firstName, firstName);
     addIfNotNull(AddressFieldName.lastName, lastName);
     addIfNotNull(AddressFieldName.phone, phone);
@@ -108,37 +99,6 @@ class AddressModel {
     addIfNotNull(AddressFieldName.dateModified, dateModified);
 
     return map;
-  }
-
-  Map<String, dynamic> toJsonForWoo() {
-    return {
-      AddressFieldName.firstName: firstName ?? '',
-      AddressFieldName.lastName: lastName ?? '',
-      AddressFieldName.phone: phone ?? '',
-      AddressFieldName.email: email ?? 'example@gmail.com',
-      AddressFieldName.address1: address1 ?? '',
-      AddressFieldName.address2: address2 ?? '',
-      AddressFieldName.city: city ?? '',
-      AddressFieldName.state: state ?? '',
-      AddressFieldName.pincode: pincode ?? '',
-      AddressFieldName.country: country ?? '',
-    };
-  }
-  factory AddressModel.fromJson(Map<String, dynamic> data) {
-    return AddressModel(
-      id: data[AddressFieldName.id] ?? '',
-      firstName: data[AddressFieldName.firstName]?? '',
-      lastName: data[AddressFieldName.lastName] ?? '',
-      phone: data[AddressFieldName.phone] ?? '',
-      email: data[AddressFieldName.email] ?? '',
-      address1: data[AddressFieldName.address1] ?? '',
-      address2: data[AddressFieldName.address2] ?? '',
-      company: data[AddressFieldName.company] ?? '',
-      city: data[AddressFieldName.city] ?? '',
-      pincode: data[AddressFieldName.pincode] ?? '',
-      state: StateData.getStateFromISOCode(data[AddressFieldName.state] ?? ''),
-      country: CountryData.getCountryFromISOCode(data[AddressFieldName.country] ?? 'IN'),
-    );
   }
 
   @override

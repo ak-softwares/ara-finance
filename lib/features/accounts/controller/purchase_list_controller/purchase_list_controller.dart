@@ -209,7 +209,7 @@ class PurchaseListController extends GetxController {
       orders.clear(); // Clear existing orders
       products.clear(); // Clear existing orders
       await getAllOrders();
-      getAggregatedProducts();
+      await getAggregatedProducts();
     } catch (error) {
       AppMassages.warningSnackBar(title: 'Errors', message: error.toString());
     } finally {
@@ -345,7 +345,7 @@ class PurchaseListController extends GetxController {
       }
 
       // Fetch fresh product details for all unique product IDs
-      final freshProducts = await mongoProductRepo.fetchProductsByIds(productIds: productIds.toList());
+      final freshProducts = await mongoProductRepo.fetchProductsByProductIds(productIds: productIds.toList());
 
       // Now process orders with fresh product data
       for (var order in orders) {

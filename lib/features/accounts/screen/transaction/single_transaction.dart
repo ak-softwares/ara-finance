@@ -9,9 +9,10 @@ import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/transaction/transaction_controller.dart';
 import '../../models/transaction_model.dart';
-import 'add_transactions/add_expenses.dart';
-import 'add_transactions/add_payment.dart';
-import 'add_transactions/add_receipt.dart';
+import 'add_transactions/contra_voucher/contra_voucher.dart';
+import 'add_transactions/expenses/add_expenses.dart';
+import 'add_transactions/payment/add_payment.dart';
+import 'add_transactions/receipt/add_receipt.dart';
 import 'add_transactions/purchase/add_purchase.dart';
 import 'add_transactions/sale/add_sale.dart';
 import 'widget/transaction_tile.dart';
@@ -63,6 +64,8 @@ class _SingleTransactionState extends State<SingleTransaction> {
               Get.to(() => AddPurchase(purchase: transaction));
             } else if(transaction.transactionType == AccountVoucherType.sale) {
               Get.to(() => AddSale(sale: transaction));
+            } else if(transaction.transactionType == AccountVoucherType.contra) {
+              Get.to(() => ContraVoucher(contra: transaction));
             }
           },
           child: Text('Edit', style: TextStyle(color: AppColors.linkColor)),
@@ -76,7 +79,31 @@ class _SingleTransactionState extends State<SingleTransaction> {
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             TransactionTile(transaction: transaction),
-
+            SizedBox(height: AppSizes.defaultSpace),
+            if(transaction.orderIds != null)
+              Container(
+                padding: const EdgeInsets.all(AppSizes.defaultSpace),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(transactionTileRadius),
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+                child: Row(
+                  spacing: AppSizes.defaultSpace,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Order Ids:', style: TextStyle(fontSize: 14)),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SelectableText(
+                          transaction.orderIds.toString(),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // Delete Button
             Center(
               child: TextButton(

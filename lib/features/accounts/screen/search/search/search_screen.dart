@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/layout_models/account_voucher_layout.dart';
-import '../../../../common/layout_models/product_grid_layout.dart';
-import '../../../../common/layout_models/transaction_layout.dart';
-import '../../../../common/styles/spacing_style.dart';
-import '../../../../common/text/section_heading.dart';
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../controller/search_controller/search_controller.dart';
-import '../../models/product_model.dart';
-import '../account_voucher/single_account_voucher.dart';
-import '../products/single_product.dart';
-import '../transaction/single_transaction.dart';
+import '../../../../../common/layout_models/account_voucher_layout.dart';
+import '../../../../../common/layout_models/product_grid_layout.dart';
+import '../../../../../common/layout_models/transaction_layout.dart';
+import '../../../../../common/styles/spacing_style.dart';
+import '../../../../../common/text/section_heading.dart';
+import '../../../../../utils/constants/colors.dart';
+import '../../../../../utils/constants/enums.dart';
+import '../../../controller/search_controller/search_controller.dart';
+import '../../../models/product_model.dart';
+import '../../account_voucher/single_account_voucher.dart';
+import '../../products/single_product.dart';
+import '../../transaction/single_transaction.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({

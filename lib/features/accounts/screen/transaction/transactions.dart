@@ -12,10 +12,11 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/transaction/transaction_controller.dart';
-import 'add_transactions/add_expenses.dart';
-import 'add_transactions/add_payment.dart';
+import 'add_transactions/contra_voucher/contra_voucher.dart';
+import 'add_transactions/expenses/add_expenses.dart';
+import 'add_transactions/payment/add_payment.dart';
 import 'add_transactions/purchase/add_purchase.dart';
-import 'add_transactions/add_receipt.dart';
+import 'add_transactions/receipt/add_receipt.dart';
 import 'add_transactions/sale/add_bulk_receipt.dart';
 import 'add_transactions/sale/add_bulk_return.dart';
 import 'add_transactions/sale/add_bulk_sale.dart';
@@ -120,6 +121,14 @@ class Transactions extends StatelessWidget {
             label: 'Add Bulk Return',
             onTap: () {
               Get.to(() => AddBulkReturn());
+            },
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.add_shopping_cart, color: Colors.white),
+            backgroundColor: Colors.red,
+            label: 'Contra Voucher',
+            onTap: () {
+              Get.to(() => ContraVoucher());
             },
           ),
         ],

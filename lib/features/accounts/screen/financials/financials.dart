@@ -100,10 +100,10 @@ class Financials extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSizes.sm, left: AppSizes.defaultSpace),
       child: ListLayout(
           height: 50,
-          itemCount: controller.short.length,
+          itemCount: controller.dateOptions.length,
           itemBuilder: (context, index) {
             return Obx(() {
-              final option = controller.short[index];
+              final option = controller.dateOptions[index];
               final isSelected = option == controller.selectedOption.value;
               return InkWell(
                 onTap: () async {

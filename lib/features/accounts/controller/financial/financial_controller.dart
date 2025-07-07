@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/user/user_repositories.dart';
-import '../../../../utils/constants/db_constants.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/coupon_model.dart';
@@ -16,29 +16,32 @@ import '../transaction/transaction_controller.dart';
 
 class FinancialController extends GetxController {
 
-  List<String> short = [
-    'Today',
-    'Yesterday',
-    'This Month',
-    'Last 7 Days',
-    'Last 30 Days',
-    'Last 90 Days',
-    'Last Month',
-    'Last Year',
+  final List<String> dateOptions = [
     'Custom',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+    'January',
+    'February',
+    'March',
   ];
 
   RxBool isLoading = false.obs;
-  RxString selectedOption = 'This Month'.obs;
+  RxString selectedOption = DateFormat.MMMM().format(DateTime.now()).obs;
   Rx<DateTime> startDate = Rx<DateTime>(DateTime.now());
   Rx<DateTime> endDate = Rx<DateTime>(DateTime.now());
   RxInt userCount = 0.obs;
 
   RxList<TransactionModel> sales = <TransactionModel>[].obs;
   RxList<TransactionModel> purchases = <TransactionModel>[].obs;
-  RxList<ExpenseModel> expenses = <ExpenseModel>[].obs;
+  RxList<TransactionModel> expenses = <TransactionModel>[].obs;
 
-  RxList<Map<String, dynamic>> productPrice = <Map<String, dynamic>>[].obs;
 
   // Profit & Loss
   final RxBool isRevenueExpanded = false.obs;
@@ -86,6 +89,8 @@ class FinancialController extends GetxController {
     await calculateCash();
     await calculateAccountsPayable();
     await totalUserCount();
+    await getAllInTransitSales();
+    // await refreshFinancials();
   }
 
   Future<void> refreshFinancials() async {
@@ -95,7 +100,7 @@ class FinancialController extends GetxController {
       expenses.clear();
       await initFunctions(isRefresh : true);
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error in Payment Methods getting', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Refresh: ', message: e.toString());
     }
   }
 
@@ -103,7 +108,7 @@ class FinancialController extends GetxController {
     final now = DateTime.now();
 
     if (selectedOption.value == 'Custom') {
-      if(!isRefresh){
+      if (!isRefresh) {
         final picked = await showDateRangePicker(
           context: Get.context!,
           firstDate: DateTime(now.year - 5),
@@ -115,54 +120,47 @@ class FinancialController extends GetxController {
           endDate.value = picked.end;
           await getSalesByShortcut();
         }
-      }else {
-        startDate.value = DateTime.now();
-        endDate.value = DateTime.now();
+      } else {
+        startDate.value = now;
+        endDate.value = now;
         await getSalesByShortcut();
       }
-
       return;
     }
 
-    switch (selectedOption.value) {
-      case 'Today':
-        startDate.value = DateTime(now.year, now.month, now.day);
-        endDate.value = now;
-        break;
-      case 'Yesterday':
-        final yesterday = now.subtract(Duration(days: 1));
-        startDate.value = DateTime(yesterday.year, yesterday.month, yesterday.day);
-        endDate.value = DateTime(now.year, now.month, now.day).subtract(Duration(seconds: 1));
-        break;
-      case 'This Month':
-        startDate.value = DateTime(now.year, now.month, 1); // Start of current month
-        endDate.value = now; // Current time
-        break;
-      case 'Last 7 Days':
-        startDate.value = now.subtract(Duration(days: 6));
-        endDate.value = now;
-        break;
-      case 'Last 30 Days':
-        startDate.value = now.subtract(Duration(days: 29));
-        endDate.value = now;
-        break;
-      case 'Last 90 Days':
-        startDate.value = now.subtract(Duration(days: 89));
-        endDate.value = now;
-        break;
-      case 'Last Month':
-        final firstDay = DateTime(now.year, now.month - 1, 1);
-        final lastDay = DateTime(now.year, now.month, 1).subtract(Duration(seconds: 1));
-        startDate.value = firstDay;
-        endDate.value = lastDay;
-        break;
-      case 'Last Year':
-        startDate.value = DateTime(now.year - 1, 1, 1);
-        endDate.value = DateTime(now.year - 1, 12, 31, 23, 59, 59);
-        break;
-      default:
-        return;
+    final selectedMonth = selectedOption.value;
+    final allMonths = {
+      'January': 1,
+      'February': 2,
+      'March': 3,
+      'April': 4,
+      'May': 5,
+      'June': 6,
+      'July': 7,
+      'August': 8,
+      'September': 9,
+      'October': 10,
+      'November': 11,
+      'December': 12,
+    };
+
+    if (allMonths.containsKey(selectedMonth)) {
+      int monthNumber = allMonths[selectedMonth]!;
+      int year = now.year;
+
+      // If selected month is Jan/Feb/Mar and current month is before April, subtract 1 year (financial year logic)
+      if (monthNumber >= 1 && monthNumber <= 3 && now.month < 4) {
+        year -= 1;
+      }
+
+      startDate.value = DateTime(year, monthNumber, 1);
+      endDate.value = DateTime(
+        year,
+        monthNumber + 1,
+        1,
+      ).subtract(const Duration(seconds: 1));
     }
+
     await getSalesByShortcut();
   }
 
@@ -171,8 +169,10 @@ class FinancialController extends GetxController {
         isLoading(true);
         final fetchedSales = await transactionController.getTransactionsByDate(startDate: startDate.value, endDate: endDate.value, voucherType: AccountVoucherType.sale);
         final fetchedPurchases = await transactionController.getTransactionsByDate(startDate: startDate.value, endDate: endDate.value, voucherType: AccountVoucherType.purchase);
+        final fetchedExpenses = await transactionController.getTransactionsByDate(startDate: startDate.value, endDate: endDate.value, voucherType: AccountVoucherType.expense);
         sales.assignAll(fetchedSales);
         purchases.assignAll(fetchedPurchases);
+        expenses.assignAll(fetchedExpenses);
     } catch(e){
         AppMassages.errorSnackBar(title: 'Error', message: e.toString());
     } finally {
@@ -208,26 +208,38 @@ class FinancialController extends GetxController {
 
   int get expensesCogsPercent => revenue == 0 ? 0 : ((expensesCogs / revenue) * 100).round();
 
-  int get expensesCogsInTransit => sales.where((o) => o.status == inTransitStatus).fold(0, (totalCogs, sale) {
-    return totalCogs + sale.products!.fold(0, (saleCogs, product) {
-      return saleCogs + (product.purchasePrice! * product.quantity).toInt();
-    });
-  });
+  RxInt expensesCogsInTransit = 0.obs;
+  RxInt countSalesInTransit = 0.obs;
+  int get expensesCogsInTransitPercent => assets == 0 ? 0 : ((expensesCogsInTransit.value / assets) * 100).round();
 
-  int get expensesCogsInTransitPercent => assets == 0 ? 0 : ((expensesCogsInTransit / assets) * 100).round();
+  Future<void> getAllInTransitSales() async {
+    try {
+      final List<TransactionModel> totalInTransitSale = await transactionController.getTransactionByStatus(status: OrderStatus.inTransit);
+      expensesCogsInTransit.value = totalInTransitSale.where((o) => o.status == inTransitStatus).fold(0, (totalCogs, sale) {
+        return totalCogs + sale.products!.fold(0, (saleCogs, product) {
+          return saleCogs + (product.purchasePrice! * product.quantity).toInt();
+        });
+      });
+      countSalesInTransit.value = totalInTransitSale.length;
+    } catch (e) {
+      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+    }
+  }
 
   // Total of all expenses
-  int get expensesTotal => expenses.fold(0, (sum, e) => sum + ((e.openingBalance ?? 0).round()));
+  // int get expensesTotal => expenses.fold(0, (sum, e) => sum + ((e.amount ?? 0).round()));
+  int get expensesTotal => 0;
 
   // Total per expenseType as a Map
   List<ExpenseSummary> get expenseSummaries {
-    final total = expensesTotal; // assuming this is already calculated
+    final total = expenses.fold<int>(0, (sum, e) => sum + (e.amount?.toInt() ?? 0));
     final Map<String, int> grouped = {};
 
-    for (var e in expenses) {
-      // final type = e.expenseType?.name ?? 'Unknown';
-      // final amount = (e.openingBalance ?? 0).toInt();
-      // grouped[type] = (grouped[type] ?? 0) + amount;
+    for (var expense in expenses) {
+      // Use to_account_voucher.title as the category type
+      final type = expense.toAccountVoucher?.title ?? 'Unknown';
+      final amount = (expense.amount ?? 0).toInt();
+      grouped[type] = (grouped[type] ?? 0) + amount;
     }
 
     return grouped.entries.map((entry) {
@@ -239,13 +251,6 @@ class FinancialController extends GetxController {
       );
     }).toList();
   }
-
-  RxInt expensesShipping = 0.obs;
-  RxInt expensesAds = 0.obs;
-  RxInt expensesRent = 0.obs;
-  RxInt expensesSalary = 0.obs;
-  RxInt expensesTransport = 0.obs;
-  RxInt expensesOthers = 0.obs;
 
   int get expensesTotalOperatingCost => expensesCogs + expensesTotal;
   int get expensesTotalOperatingCostPercent => revenue == 0 ? 0 : ((expensesTotalOperatingCost / revenue) * 100).round();
@@ -268,30 +273,31 @@ class FinancialController extends GetxController {
 
   // Assets
   RxInt stock = 0.obs;
-  RxInt cash = 0.obs;
+  RxInt cashTotal = 0.obs;
   RxInt accountReceivables = 0.obs;
 
-  int get assets => stock.value + expensesCogsInTransit + cash.value + accountReceivables.value;
+  int get assets => stock.value + expensesCogsInTransit.value + cashTotal.value + accountReceivables.value;
 
   int get stockPercent => assets == 0 ? 0 : ((stock.value / assets) * 100).round();
 
-  int get cashPercent => assets == 0 ? 0 : ((cash.value / assets) * 100).round();
+  int get cashPercent => assets == 0 ? 0 : ((cashTotal.value / assets) * 100).round();
 
   Future<void> calculateStock() async {
     try {
       final double totalStockValue = await productController.getTotalStockValue();
       stock.value = totalStockValue.toInt();
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Stock: ', message: e.toString());
     }
   }
 
   Future<void> calculateCash() async {
     try {
-      // final double totalStockValue = await bankAccountController.getTotalBalance();
-      // cash.value = totalStockValue.toInt();
+
+      final double totalStockValue = await accountVoucherController.getAllVoucherBalance(voucherType: AccountVoucherType.bankAccount);
+      cashTotal.value = totalStockValue.toInt();
     } catch (e) {
-      AppMassages.errorSnackBar(title: 'Error', message: e.toString());
+      AppMassages.errorSnackBar(title: 'Cash: ', message: e.toString());
     }
   }
 
@@ -350,7 +356,7 @@ class FinancialController extends GetxController {
   // Unit Matrix
   double get averageOrderValue => revenueTotal == 0 ? 0 : revenueTotal / orderTotal;
 
-  double get unitCogs => orderTotal == 0 ? 0 : expensesCogs / orderTotal;
+  double get unitCogs => orderTotal == 0 ? 0 : totalCogs / orderTotal;
   int get unitCogsPercent => averageOrderValue == 0 ? 0 : ((unitCogs / averageOrderValue) * 100).round();
 
   double get unitShipping => orderTotal == 0 ? 0 : unitShippingExpenseTotal / orderTotal;
@@ -362,24 +368,31 @@ class FinancialController extends GetxController {
   double get unitProfit => averageOrderValue - unitCogs - unitShipping - unitAds;
   int get unitProfitPercent => averageOrderValue == 0 ? 0 : ((unitProfit / averageOrderValue) * 100).round();
 
+  int get totalCogs => sales.fold(0, (tCogs, sale) {
+    return tCogs + sale.products!.fold(0, (saleCogs, product) {
+      return saleCogs + (product.purchasePrice! * product.quantity).toInt();
+    });
+  });
+
   // Total per expenseType as a Map
   double get unitShippingExpenseTotal {
-    // Find the "Shipping" entry in expenseSummaries
     final shippingSummary = expenseSummaries.firstWhere(
-          (summary) => summary.name == ExpenseType.shipping.name,
-      orElse: () => ExpenseSummary(name: ExpenseType.shipping.name, total: 0, percent: 0),
+          (summary) => summary.name.toLowerCase().contains('shipping'),
+      orElse: () => ExpenseSummary(name: 'Shipping', total: 0, percent: 0),
     );
 
-    return shippingSummary.total.toDouble(); // Convert to double if needed
+    return shippingSummary.total.toDouble();
   }
+
 
   // Total for both Facebook Ads and Google Ads
   double get totalAdsExpense {
-    return expenseSummaries
-        .where((summary) =>
-    summary.name == ExpenseType.facebookAds.name ||
-        summary.name == ExpenseType.googleAds.name)
-        .fold(0.0, (sum, summary) => sum + summary.total.toDouble());
+    final adsSummary = expenseSummaries.firstWhere(
+          (summary) => summary.name.toLowerCase().contains('ads'),
+      orElse: () => ExpenseSummary(name: 'Ads', total: 0, percent: 0),
+    );
+
+    return adsSummary.total.toDouble();
   }
 
 

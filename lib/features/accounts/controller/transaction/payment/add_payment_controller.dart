@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/dialog_box_massages/full_screen_loader.dart';
-import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../common/widgets/network_manager/network_manager.dart';
-import '../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../../personalization/models/user_model.dart';
-import '../../models/account_model.dart';
-import '../../models/account_voucher_model.dart';
-import '../../models/transaction_model.dart';
-import 'transaction_controller.dart';
+import '../../../../../common/dialog_box_massages/full_screen_loader.dart';
+import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../../common/widgets/network_manager/network_manager.dart';
+import '../../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
+import '../../../../../utils/constants/enums.dart';
+import '../../../../../utils/constants/image_strings.dart';
+import '../../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../../personalization/models/user_model.dart';
+import '../../../models/account_model.dart';
+import '../../../models/account_voucher_model.dart';
+import '../../../models/transaction_model.dart';
+import '../transaction_controller.dart';
 
-class AddExpenseTransactionController extends GetxController {
-  static AddExpenseTransactionController get instance => Get.find();
+class AddPaymentController extends GetxController {
+  static AddPaymentController get instance => Get.find();
 
-  final AccountVoucherType voucherType = AccountVoucherType.expense;
+  final AccountVoucherType voucherType = AccountVoucherType.payment;
   RxInt transactionId = 0.obs;
 
-  Rx<AccountVoucherModel> selectedExpense = AccountVoucherModel().obs;
   Rx<AccountVoucherModel> selectedBankAccount = AccountVoucherModel().obs;
+  Rx<AccountVoucherModel> selectedVendor = AccountVoucherModel().obs;
 
   final amount = TextEditingController();
   final date = TextEditingController();
-  GlobalKey<FormState> expenseFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> paymentFormKey = GlobalKey<FormState>();
 
   final mongoTransactionRepo = Get.put(MongoTransactionRepo());
   final transactionController = Get.put(TransactionController());
@@ -41,12 +41,12 @@ class AddExpenseTransactionController extends GetxController {
 
   @override
   void onClose() {
-    clearExpenseTransaction();
+    clearPaymentTransaction();
     super.onClose();
   }
 
-  void addExpense(AccountVoucherModel getSelectedExpense) {
-    selectedExpense.value = getSelectedExpense;
+  void addVendor(AccountVoucherModel getSelectedReceiver) {
+    selectedVendor.value = getSelectedReceiver;
   }
 
   void selectDate(BuildContext context) async {
@@ -63,23 +63,23 @@ class AddExpenseTransactionController extends GetxController {
     }
   }
 
-  void saveExpenseTransaction() {
+  void savePaymentTransaction() {
     TransactionModel transaction = TransactionModel(
       userId: userId,
       transactionId: transactionId.value,
       amount: double.tryParse(amount.text) ?? 0.0,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
       fromAccountVoucher: selectedBankAccount.value,
-      toAccountVoucher: selectedExpense.value,
-      transactionType: AccountVoucherType.expense,
+      toAccountVoucher: selectedVendor.value,
+      transactionType: voucherType,
     );
 
-    addExpenseTransaction(transaction: transaction);
+    addPaymentTransaction(transaction: transaction);
   }
 
-  Future<void> addExpenseTransaction({required TransactionModel transaction}) async {
+  Future<void> addPaymentTransaction({required TransactionModel transaction}) async {
     try {
-      FullScreenLoader.openLoadingDialog('Updating your expense transaction...', Images.docerAnimation);
+      FullScreenLoader.openLoadingDialog('Adding your payment transaction...', Images.docerAnimation);
 
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
@@ -87,17 +87,17 @@ class AddExpenseTransactionController extends GetxController {
         throw 'Internet Not connected';
       }
 
-      if (!expenseFormKey.currentState!.validate()) {
+      if (!paymentFormKey.currentState!.validate()) {
         FullScreenLoader.stopLoading();
         throw 'Form is not valid';
       }
 
       await transactionController.processTransactions(transactions: [transaction]);
-      await clearExpenseTransaction();
+      await clearPaymentTransaction();
 
       FullScreenLoader.stopLoading();
       transactionController.refreshTransactions();
-      AppMassages.showToastMessage(message: 'Expense transaction added successfully!');
+      AppMassages.showToastMessage(message: 'Payment transaction added successfully!');
       Navigator.of(Get.context!).pop();
     } catch (e) {
       FullScreenLoader.stopLoading();
@@ -105,11 +105,11 @@ class AddExpenseTransactionController extends GetxController {
     }
   }
 
-  Future<void> clearExpenseTransaction() async {
+  Future<void> clearPaymentTransaction() async {
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
     amount.text = '';
     selectedBankAccount.value = AccountVoucherModel();
-    selectedExpense.value = AccountVoucherModel();
+    selectedVendor.value = AccountVoucherModel();
     date.text = DateTime.now().toIso8601String();
   }
 
@@ -118,26 +118,26 @@ class AddExpenseTransactionController extends GetxController {
     amount.text = transaction.amount.toString();
     date.text = transaction.date?.toIso8601String() ?? '';
     selectedBankAccount.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
-    selectedExpense.value = transaction.toAccountVoucher ?? AccountVoucherModel();
+    selectedVendor.value = transaction.toAccountVoucher ?? AccountVoucherModel();
   }
 
-  void saveUpdatedExpenseTransaction({required TransactionModel oldExpenseTransaction}) {
-    TransactionModel newExpenseTransaction = TransactionModel(
-      id: oldExpenseTransaction.id,
-      transactionId: oldExpenseTransaction.transactionId,
-      amount: double.tryParse(amount.text) ?? oldExpenseTransaction.amount,
-      date: DateTime.tryParse(date.text) ?? oldExpenseTransaction.date,
+  void saveUpdatedPaymentTransaction({required TransactionModel oldPaymentTransaction}) {
+    TransactionModel newPaymentTransaction = TransactionModel(
+      id: oldPaymentTransaction.id,
+      transactionId: oldPaymentTransaction.transactionId,
+      amount: double.tryParse(amount.text) ?? oldPaymentTransaction.amount,
+      date: DateTime.tryParse(date.text) ?? oldPaymentTransaction.date,
       fromAccountVoucher: selectedBankAccount.value,
-      toAccountVoucher: selectedExpense.value,
-      transactionType: oldExpenseTransaction.transactionType,
+      toAccountVoucher: selectedVendor.value,
+      transactionType: oldPaymentTransaction.transactionType,
     );
 
-    updateTransaction(transaction: newExpenseTransaction);
+    updateTransaction(transaction: newPaymentTransaction);
   }
 
   Future<void> updateTransaction({required TransactionModel transaction}) async {
     try {
-      FullScreenLoader.openLoadingDialog('Updating expense transaction...', Images.docerAnimation);
+      FullScreenLoader.openLoadingDialog('Updating payment transaction...', Images.docerAnimation);
 
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
@@ -145,7 +145,7 @@ class AddExpenseTransactionController extends GetxController {
         throw 'Internet Not connected';
       }
 
-      if (!expenseFormKey.currentState!.validate()) {
+      if (!paymentFormKey.currentState!.validate()) {
         FullScreenLoader.stopLoading();
         throw 'Form is not valid';
       }
@@ -154,7 +154,7 @@ class AddExpenseTransactionController extends GetxController {
 
       FullScreenLoader.stopLoading();
       await transactionController.refreshTransactions();
-      AppMassages.showToastMessage(message: 'Expense transaction updated successfully!');
+      AppMassages.showToastMessage(message: 'Payment transaction updated successfully!');
       Get.close(2);
     } catch (e) {
       FullScreenLoader.stopLoading();

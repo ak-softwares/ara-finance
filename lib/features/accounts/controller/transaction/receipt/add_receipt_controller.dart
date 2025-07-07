@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/dialog_box_massages/full_screen_loader.dart';
-import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../common/widgets/network_manager/network_manager.dart';
-import '../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../../personalization/models/user_model.dart';
-import '../../models/account_model.dart';
-import '../../models/account_voucher_model.dart';
-import '../../models/transaction_model.dart';
-import 'transaction_controller.dart';
+import '../../../../../common/dialog_box_massages/full_screen_loader.dart';
+import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../../common/widgets/network_manager/network_manager.dart';
+import '../../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
+import '../../../../../utils/constants/enums.dart';
+import '../../../../../utils/constants/image_strings.dart';
+import '../../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../../personalization/models/user_model.dart';
+import '../../../models/account_model.dart';
+import '../../../models/account_voucher_model.dart';
+import '../../../models/transaction_model.dart';
+import '../transaction_controller.dart';
 
 class AddReceiptController extends GetxController {
   static AddReceiptController get instance => Get.find();

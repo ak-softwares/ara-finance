@@ -13,7 +13,7 @@ import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../../utils/formatters/formatters.dart';
 import '../../../../../settings/app_settings.dart';
-import '../../../../controller/transaction/add_purchase_controller.dart';
+import '../../../../controller/transaction/purchase/add_purchase_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../../models/product_model.dart';
 import '../../../../models/transaction_model.dart';

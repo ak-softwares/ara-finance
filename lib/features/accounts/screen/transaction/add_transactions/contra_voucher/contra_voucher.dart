@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../../common/navigation_bar/appbar.dart';
-import '../../../../../utils/constants/colors.dart';
-import '../../../../../utils/constants/enums.dart';
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/formatters/formatters.dart';
-import '../../../controller/transaction/add_payment_controller.dart';
-import '../../../models/account_voucher_model.dart';
-import '../../../models/transaction_model.dart';
-import '../../account_voucher/widget/account_voucher_tile.dart';
-import '../../search/search_and_select/search_products.dart';
+import '../../../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../../../common/navigation_bar/appbar.dart';
+import '../../../../../../utils/constants/colors.dart';
+import '../../../../../../utils/constants/enums.dart';
+import '../../../../../../utils/constants/sizes.dart';
+import '../../../../../../utils/formatters/formatters.dart';
+import '../../../../controller/transaction/contra_voucher/contra_voucher_controller.dart';
+import '../../../../models/account_voucher_model.dart';
+import '../../../../models/transaction_model.dart';
+import '../../../account_voucher/widget/account_voucher_tile.dart';
+import '../../../search/search_and_select/search_products.dart';
 
-class AddPayment extends StatelessWidget {
-  const AddPayment({super.key, this.payment});
+class ContraVoucher extends StatelessWidget {
+  const ContraVoucher({super.key, this.contra});
 
-  final TransactionModel? payment;
+  final TransactionModel? contra;
 
   @override
   Widget build(BuildContext context) {
-    final AddPaymentController controller = Get.put(AddPaymentController());
+    final ContraVoucherController controller = Get.put(ContraVoucherController());
 
-    if (payment != null) {
-      controller.resetValue(payment!);
+    if (contra != null) {
+      controller.resetValue(contra!);
     }
 
     return Scaffold(
-      appBar: AppAppBar(title: payment != null ? 'Update Payment' : 'Add Payment'),
+      appBar: AppAppBar(title: contra != null ? 'Update Contra Voucher' : 'Add Contra Voucher'),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.md, vertical: AppSizes.sm),
         child: ElevatedButton(
-          onPressed: () => payment != null
-              ? controller.saveUpdatedPaymentTransaction(oldPaymentTransaction: payment!)
+          onPressed: () => contra != null
+              ? controller.saveUpdatedPaymentTransaction(oldPaymentTransaction: contra!)
               : controller.savePaymentTransaction(),
           child: Text(
-            payment != null ? 'Update Payment' : 'Add Payment',
+            contra != null ? 'Update Contra Voucher' : 'Add Contra Voucher',
             style: const TextStyle(fontSize: 16),
           ),
         ),
@@ -57,8 +57,8 @@ class AddPayment extends StatelessWidget {
                     Row(
                       children: [
                         const Text('Transaction ID - '),
-                        payment != null
-                            ? Text('#${payment!.transactionId}', style: const TextStyle(fontSize: 14))
+                        contra != null
+                            ? Text('#${contra!.transactionId}', style: const TextStyle(fontSize: 14))
                             : Obx(() => Text('#${controller.transactionId.value}', style: const TextStyle(fontSize: 14))),
                       ],
                     ),
@@ -81,14 +81,14 @@ class AddPayment extends StatelessWidget {
                   ],
                 ),
 
-                // Select Bank Account
+                // Select From Bank Account
                 Column(
                   spacing: AppSizes.spaceBtwItems,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Select Bank Account'),
+                        const Text('Select From Bank Account'),
                         InkWell(
                           onTap: () async {
                             final AccountVoucherModel getSelectedAccount = await showSearch(
@@ -96,7 +96,7 @@ class AddPayment extends StatelessWidget {
                               delegate: SearchVoucher1(voucherType: AccountVoucherType.bankAccount),
                             );
                             if (getSelectedAccount.id != null) {
-                              controller.selectedBankAccount(getSelectedAccount);
+                              controller.fromBankAccount(getSelectedAccount);
                             }
                           },
                           child: Row(
@@ -108,12 +108,12 @@ class AddPayment extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Obx(() => controller.selectedBankAccount.value.id != null
+                    Obx(() => controller.fromBankAccount.value.id != null
                         ? Dismissible(
-                      key: Key(controller.selectedBankAccount.value.id ?? ''),
+                      key: Key(controller.fromBankAccount.value.id ?? ''),
                       direction: DismissDirection.endToStart,
                       onDismissed: (direction) {
-                        controller.selectedBankAccount.value = AccountVoucherModel();
+                        controller.fromBankAccount.value = AccountVoucherModel();
                         AppMassages.showSnackBar(massage: 'Account removed');
                       },
                       background: Container(
@@ -124,7 +124,7 @@ class AddPayment extends StatelessWidget {
                       ),
                       child: SizedBox(
                           width: double.infinity,
-                          child: AccountVoucherTile(accountVoucher: controller.selectedBankAccount.value, voucherType: AccountVoucherType.bankAccount)
+                          child: AccountVoucherTile(accountVoucher: controller.fromBankAccount.value, voucherType: AccountVoucherType.bankAccount)
                       ),
                     )
                         : const SizedBox.shrink(),
@@ -142,22 +142,22 @@ class AddPayment extends StatelessWidget {
                   keyboardType: TextInputType.number,
                 ),
 
-                // Select vendor
+                // Select to Bank Account
                 Column(
                   spacing: AppSizes.spaceBtwItems,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Select vendor'),
+                        const Text('Select To Bank Account'),
                         InkWell(
                           onTap: () async {
-                            final AccountVoucherModel getSelectedParty = await showSearch(
+                            final AccountVoucherModel getSelectedAccount = await showSearch(
                               context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.vendor),
+                              delegate: SearchVoucher1(voucherType: AccountVoucherType.bankAccount),
                             );
-                            if (getSelectedParty.id != null) {
-                              controller.selectedVendor(getSelectedParty);
+                            if (getSelectedAccount.id != null) {
+                              controller.toBankAccount(getSelectedAccount);
                             }
                           },
                           child: Row(
@@ -169,13 +169,13 @@ class AddPayment extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Obx(() => controller.selectedVendor.value.id != null
+                    Obx(() => controller.toBankAccount.value.id != null
                         ? Dismissible(
-                            key: Key(controller.selectedVendor.value.id ?? ''),
+                            key: Key(controller.toBankAccount.value.id ?? ''),
                             direction: DismissDirection.endToStart,
                             onDismissed: (direction) {
-                              controller.selectedVendor.value = AccountVoucherModel();
-                              AppMassages.showSnackBar(massage: 'Vendor removed');
+                              controller.toBankAccount.value = AccountVoucherModel();
+                              AppMassages.showSnackBar(massage: 'Account removed');
                             },
                             background: Container(
                               color: Colors.red,
@@ -185,7 +185,7 @@ class AddPayment extends StatelessWidget {
                             ),
                             child: SizedBox(
                                 width: double.infinity,
-                                child: AccountVoucherTile(accountVoucher: controller.selectedVendor.value, voucherType: AccountVoucherType.vendor)
+                                child: AccountVoucherTile(accountVoucher: controller.toBankAccount.value, voucherType: AccountVoucherType.bankAccount)
                             ),
                           )
                         : const SizedBox.shrink(),

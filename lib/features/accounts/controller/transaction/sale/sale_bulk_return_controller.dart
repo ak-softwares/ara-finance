@@ -5,13 +5,11 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../../data/repositories/mongodb/orders/orders_repositories.dart';
+import '../../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
 import '../../../../../utils/constants/db_constants.dart';
 import '../../../../../utils/constants/enums.dart';
 import '../../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../../../personalization/models/user_model.dart';
-import '../../../models/cart_item_model.dart';
-import '../../../models/order_model.dart';
+import '../../../models/account_voucher_model.dart';
 import '../../../models/transaction_model.dart';
 import '../../product/product_controller.dart';
 import '../transaction_controller.dart';
@@ -19,16 +17,19 @@ import '../transaction_controller.dart';
 class AddBulkReturnController extends GetxController {
   static AddBulkReturnController get instance => Get.find();
 
+  final AccountVoucherType voucherType = AccountVoucherType.creditNote;
   RxBool isLoading = false.obs;
   RxBool isScanning = false.obs;
 
   RxList<TransactionModel> returns = <TransactionModel>[].obs;
+  Rx<AccountVoucherModel> selectedSaleVoucher = AccountVoucherModel().obs;
+  Rx<AccountVoucherModel> selectedCustomer = AccountVoucherModel().obs;
 
   final returnOrderTextEditingController = TextEditingController();
 
   final productController = Get.put(ProductController());
-  final mongoOrderRepo = Get.put(MongoOrderRepo());
   final transactionController = Get.put(TransactionController());
+  final mongoTransactionRepo = Get.put(MongoTransactionRepo());
 
   String get userId => AuthenticationController.instance.admin.value.id!;
 
@@ -105,15 +106,40 @@ class AddBulkReturnController extends GetxController {
       isLoading(true);
       FullScreenLoader.onlyCircularProgressDialog('Adding Returns...');
 
+      if (selectedSaleVoucher.value.id == null) {
+        throw 'Plz select bank account';
+      }
+      if (selectedCustomer.value.id == null) {
+        throw 'Plz select customer voucher';
+      }
+
       // Collect orderIds for the transaction
       final List<int> salesIds = newReturnSales.expand((sale) => (sale.orderIds ?? []).map((e) => e)).toList();
 
+      // Calculate total amount from pending sales
+      final totalAmount = newReturnSales.fold(0.0, (sum, sale) => sum + (sale.amount ?? 0.0));
+
+      final transactionId = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
+
+      TransactionModel transaction = TransactionModel(
+        userId: userId,
+        transactionId: transactionId,
+        amount: totalAmount,
+        date: DateTime.now(),
+        orderIds: salesIds,
+        fromAccountVoucher: selectedCustomer.value,
+        toAccountVoucher: selectedSaleVoucher.value,
+        transactionType: voucherType,
+      );
+      await transactionController.processTransactions(transactions: [transaction]);
 
       final List<String> ids = newReturnSales.map((e) => e.id).whereType<String>().toList();
+
       final Map<String, dynamic> updatedData = {
         TransactionFieldName.status: OrderStatus.returned.name,
         TransactionFieldName.dateReturned: DateTime.now(),
       };
+
       await transactionController.updateTransactions(ids: ids, updatedData: updatedData);
       newReturnSales.clear();
       Get.back();

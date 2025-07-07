@@ -211,13 +211,27 @@ class TransactionsDataInRowsForProducts extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    transaction.transactionType?.name.capitalizeFirst ?? '',
-                    style: TextStyle(fontSize: fontSize, color: fontColor),
+                  Row(
+                    children: [
+                      Text(
+                        transaction.transactionType?.name.capitalizeFirst ?? '',
+                        style: TextStyle(fontSize: fontSize, color: fontColor),
+                      ),
+                      if(transaction.transactionType == AccountVoucherType.sale && transaction.status == OrderStatus.returned)
+                        const Text('(Returned)', style: TextStyle(fontSize: 12, color: Colors.red)),
+                    ],
                   ),
-                  Text(
-                    transaction.transactionId.toString(),
-                    style: TextStyle(fontSize: subtitleFontSize, color: subtitleFontColor),
+                  Row(
+                    children: [
+                      Text(
+                        transaction.transactionId.toString(),
+                        style: TextStyle(fontSize: subtitleFontSize, color: subtitleFontColor),
+                      ),
+                      if(transaction.transactionType == AccountVoucherType.sale)
+                        Text('/${(transaction.orderIds?.first).toString()}',
+                          style: TextStyle(fontSize: subtitleFontSize, color: subtitleFontColor),
+                        ),
+                    ],
                   ),
                 ],
               ),

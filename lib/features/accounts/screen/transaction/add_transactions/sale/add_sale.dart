@@ -86,6 +86,25 @@ class AddSale extends StatelessWidget {
                   ],
                 ),
 
+                // Select Status
+                DropdownButtonFormField<OrderStatus>(
+                  value: controller.selectedStatus,
+                  decoration: InputDecoration(
+                    labelText: "Select Order Status",
+                    border: OutlineInputBorder(),
+                  ),
+                  items: OrderStatus.values.map((OrderStatus status) {
+                    return DropdownMenuItem<OrderStatus>(
+                      value: status,
+                      child: Text(status.name.capitalize!),
+                    );
+                  }).toList(),
+                  onChanged: (OrderStatus? newValue) {
+                    controller.selectedStatus = newValue ?? OrderStatus.inTransit;
+                    // If you're using setState(), update here
+                  },
+                ),
+
                 // Select Customer
                 Column(
                   spacing: AppSizes.spaceBtwItems,
@@ -246,18 +265,42 @@ class AddSale extends StatelessWidget {
                           );
                         }
                     )),
-                    Obx(() => Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Product Count - ${(controller.selectedProducts.length).toStringAsFixed(0)}'),
-                        Text('Total - ${AppSettings.currencySymbol + (controller.saleTotal.value).toStringAsFixed(0)}'),
-                      ],
-                    ))
                   ],
                 ),
 
-                // Upload Invoice
-                // This part can be reused as-is unless you want to change the heading text
+                // Discount and shipping
+                Row(
+                  spacing: AppSizes.spaceBtwItems,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: controller.discountController,
+                        decoration: InputDecoration(
+                          labelText: 'Discount',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: controller.shippingController,
+                        decoration: InputDecoration(
+                          labelText: 'Shipping',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Total
+                Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Product Count - ${(controller.selectedProducts.length).toStringAsFixed(0)}'),
+                    Text('Total - ${AppSettings.currencySymbol + (controller.saleTotal.value).toStringAsFixed(0)}'),
+                  ],
+                ))
               ],
             ),
           ),

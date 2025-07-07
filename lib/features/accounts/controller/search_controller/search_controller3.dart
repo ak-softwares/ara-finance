@@ -4,14 +4,11 @@ import 'package:get/get.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/account_voucher/account_voucher_repo.dart';
 import '../../../../data/repositories/mongodb/accounts/mongo_account_repo.dart';
-import '../../../../data/repositories/mongodb/orders/orders_repositories.dart';
 import '../../../../data/repositories/mongodb/products/product_repositories.dart';
 import '../../../../data/repositories/mongodb/user/user_repositories.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../../personalization/models/user_model.dart';
 import '../../models/account_voucher_model.dart';
-import '../../models/order_model.dart';
 import '../../models/product_model.dart';
 
 class SearchController3 extends GetxController {
@@ -31,7 +28,6 @@ class SearchController3 extends GetxController {
 
   final mongoProductRepo = Get.put(MongoProductRepo());
   final mongoUserRepository = Get.put(MongoUserRepository());
-  final mongoOrderRepo = Get.put(MongoOrderRepo());
   final mongoPaymentMethodsRepo = Get.put(MongoAccountsRepo());
   final mongoAccountVoucherRepo = Get.put(MongoAccountVoucherRepo());
 

@@ -558,21 +558,6 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchDocumentsByFieldName({
-    required String collectionName,
-    required String fieldName,
-    required List<int> documentIds,
-  }) async {
-    await _ensureConnected();
-    try {
-      return await db!
-          .collection(collectionName)
-          .find(where.oneFrom(fieldName, documentIds))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to fetch documents by IDs: $e');
-    }
-  }
 
   Future<List<Map<String, dynamic>>> fetchTransactionByEntity({
     required String collectionName,
@@ -800,6 +785,385 @@ class MongoFetch extends MongoDatabase {
 
 
   // Products
+  Future<Map<String, dynamic>?> fetchProductByIdWithStock({
+    required String productCollectionName,
+    required String transactionCollectionName,
+    required String id,
+  }) async {
+    await _ensureConnected();
+
+    try {
+      // Step 1: Fetch product by ID
+      final product = await db!
+          .collection(productCollectionName)
+          .findOne(where.id(ObjectId.parse(id)));
+
+      if (product == null) return null;
+
+      // Step 2: Build stock calculation pipeline
+      final pipeline = [
+        {
+          r'$match': {
+            'products.id': id,
+            r'$or': [
+              {'transaction_type': 'purchase'},
+              {
+                'transaction_type': 'sale',
+                'status': {r'$ne': 'returned'}
+              }
+            ]
+          }
+        },
+        {
+          r'$unwind': r'$products'
+        },
+        {
+          r'$match': {
+            'products.id': id
+          }
+        },
+        {
+          r'$project': {
+            'quantity': r'$products.quantity',
+            'transaction_type': 1
+          }
+        },
+        {
+          r'$project': {
+            'adjustedQuantity': {
+              r'$cond': [
+                {r'$eq': [r'$transaction_type', 'purchase']},
+                r'$quantity',
+                {r'$multiply': [r'$quantity', -1]}
+              ]
+            }
+          }
+        },
+        {
+          r'$group': {
+            '_id': null,
+            'totalStock': {r'$sum': r'$adjustedQuantity'}
+          }
+        }
+      ];
+
+      // Step 3: Execute aggregation
+      final stockResult = await db!
+          .collection(transactionCollectionName)
+          .aggregateToStream(pipeline)
+          .toList();
+
+      final totalStock = (stockResult.isNotEmpty && stockResult[0]['totalStock'] != null)
+          ? (stockResult[0]['totalStock'] as num).toInt()
+          : 0;
+
+      // Step 4: Return product with stock info
+      return {
+        ...product,
+        ProductFieldName.stockQuantity: totalStock,
+      };
+    } catch (e) {
+      throw Exception('Failed to fetch product by ID with stock: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchProductsWithStock({
+    required String productCollectionName,
+    required String transactionCollectionName,
+    Map<String, dynamic>? filter,
+    int page = 1,
+    int itemsPerPage = 10,
+  }) async {
+    await _ensureConnected();
+    int skip = (page - 1) * itemsPerPage;
+
+    try {
+      // Step 1: Prepare query with filter and sorting
+      var query = where;
+      filter?.forEach((key, value) {
+        query = query.eq(key, value);
+      });
+
+
+      query = query
+        ..sortBy(ProductFieldName.dateModified, descending: true)
+        ..sortBy('_id', descending: true) // add stable sort
+        ..skip(skip)
+        ..limit(itemsPerPage);
+
+      // Step 2: Fetch products
+      final List<Map<String, dynamic>> products = await db!
+          .collection(productCollectionName)
+          .find(query)
+          .toList();
+
+      // Step 3: For each product, calculate total stock from transactions
+      List<Map<String, dynamic>> result = [];
+      for (var product in products) {
+        String productId = product['_id'].toHexString(); // or product['_id'] depending on your schema
+
+        final pipeline = [
+          {
+            r'$match': {
+              'products.id': productId,
+              r'$or': [
+                {'transaction_type': 'purchase'},
+                {
+                  'transaction_type': 'sale',
+                  'status': {r'$ne': 'returned'}
+                }
+              ]
+            }
+          },
+          {
+            r'$unwind': r'$products'
+          },
+          {
+            r'$match': {
+              'products.id': productId
+            }
+          },
+          {
+            r'$project': {
+              'quantity': r'$products.quantity',
+              'transaction_type': 1
+            }
+          },
+          {
+            r'$project': {
+              'adjustedQuantity': {
+                r'$cond': [
+                  {r'$eq': [r'$transaction_type', 'purchase']},
+                  r'$quantity',
+                  {r'$multiply': [r'$quantity', -1]}
+                ]
+              }
+            }
+          },
+          {
+            r'$group': {
+              '_id': null,
+              'totalStock': {r'$sum': r'$adjustedQuantity'}
+            }
+          }
+        ];
+
+        final stockResult = await db!
+            .collection(transactionCollectionName)
+            .aggregateToStream(pipeline)
+            .toList();
+
+        final totalStock = (stockResult.isNotEmpty && stockResult[0]['totalStock'] != null)
+            ? (stockResult[0]['totalStock'] as num).toInt()
+            : 0;
+
+        // Add stock info to product
+        result.add({
+          ...product,
+          ProductFieldName.stockQuantity: totalStock,
+        });
+      }
+
+      return result;
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> searchProductsWithStock({
+    required String productCollectionName,
+    required String transactionCollectionName,
+    required String searchQuery,
+    int page = 1,
+    int itemsPerPage = 10,
+    Map<String, dynamic>? filter,
+  }) async {
+    await _ensureConnected();
+    int skip = (page - 1) * itemsPerPage;
+
+    try {
+      final searchPipeline = [
+        {
+          r'$search': {
+            'index': 'default',
+            'text': {
+              'query': searchQuery,
+              'path': {'wildcard': '*'},
+            }
+          }
+        },
+        if (filter != null && filter.isNotEmpty) {r'$match': filter},
+        {r'$skip': skip},
+        {r'$limit': itemsPerPage}
+      ];
+
+      // Step 1: Search and filter products
+      final products = await db!
+          .collection(productCollectionName)
+          .aggregateToStream(searchPipeline)
+          .toList();
+
+      // Step 2: Append stock info
+      List<Map<String, dynamic>> result = [];
+      for (var product in products) {
+        String productId = product['_id'].toHexString();
+
+        final stockPipeline = [
+          {
+            r'$match': {
+              'products.id': productId,
+              r'$or': [
+                {'transaction_type': 'purchase'},
+                {
+                  'transaction_type': 'sale',
+                  'status': {r'$ne': 'returned'}
+                }
+              ]
+            }
+          },
+          {r'$unwind': r'$products'},
+          {
+            r'$match': {
+              'products.id': productId
+            }
+          },
+          {
+            r'$project': {
+              'quantity': r'$products.quantity',
+              'transaction_type': 1
+            }
+          },
+          {
+            r'$project': {
+              'adjustedQuantity': {
+                r'$cond': [
+                  {r'$eq': [r'$transaction_type', 'purchase']},
+                  r'$quantity',
+                  {r'$multiply': [r'$quantity', -1]}
+                ]
+              }
+            }
+          },
+          {
+            r'$group': {
+              '_id': null,
+              'totalStock': {r'$sum': r'$adjustedQuantity'}
+            }
+          }
+        ];
+
+        final stockResult = await db!
+            .collection(transactionCollectionName)
+            .aggregateToStream(stockPipeline)
+            .toList();
+
+        final totalStock = (stockResult.isNotEmpty && stockResult[0]['totalStock'] != null)
+            ? (stockResult[0]['totalStock'] as num).toInt()
+            : 0;
+
+        result.add({
+          ...product,
+          ProductFieldName.stockQuantity: totalStock,
+        });
+      }
+
+      return result;
+    } catch (e) {
+      throw Exception('Error searching products with stock: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchProductsByProductIdsWithStock({
+    required String productCollectionName,
+    required String transactionCollectionName,
+    required String fieldName,
+    required List<int> documentIds,
+  }) async {
+    await _ensureConnected();
+
+    try {
+      // Step 1: Fetch products by IDs
+      final products = await db!
+          .collection(productCollectionName)
+          .find(where.oneFrom(fieldName, documentIds))
+          .toList();
+
+      List<Map<String, dynamic>> result = [];
+
+      for (final product in products) {
+        final id = product['_id'].toHexString();
+
+        // Step 2: Build pipeline for each product
+        final pipeline = [
+          {
+            r'$match': {
+              'products.id': id,
+              r'$or': [
+                {'transaction_type': 'purchase'},
+                {
+                  'transaction_type': 'sale',
+                  'status': {r'$ne': 'returned'}
+                }
+              ]
+            }
+          },
+          {
+            r'$unwind': r'$products'
+          },
+          {
+            r'$match': {
+              'products.id': id
+            }
+          },
+          {
+            r'$project': {
+              'quantity': r'$products.quantity',
+              'transaction_type': 1
+            }
+          },
+          {
+            r'$project': {
+              'adjustedQuantity': {
+                r'$cond': [
+                  {r'$eq': [r'$transaction_type', 'purchase']},
+                  r'$quantity',
+                  {r'$multiply': [r'$quantity', -1]}
+                ]
+              }
+            }
+          },
+          {
+            r'$group': {
+              '_id': null,
+              'totalStock': {r'$sum': r'$adjustedQuantity'}
+            }
+          }
+        ];
+
+        // Step 3: Aggregate stock
+        final stockResult = await db!
+            .collection(transactionCollectionName)
+            .aggregateToStream(pipeline)
+            .toList();
+
+        final totalStock = (stockResult.isNotEmpty && stockResult[0]['totalStock'] != null)
+            ? (stockResult[0]['totalStock'] as num).toInt()
+            : 0;
+
+        // Step 4: Add stock info to product
+        result.add({
+          ...product,
+          ProductFieldName.stockQuantity: totalStock,
+        });
+      }
+
+      return result;
+    } catch (e) {
+      throw Exception('Failed to fetch products with stock: $e');
+    }
+  }
+
+
   Future<int> calculateActiveStockCount({required String transactionCollectionName, Map<String, dynamic>? filter}) async {
     await _ensureConnected();
 
@@ -869,15 +1233,18 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<double> calculateTotalStockValue({
-    required String transactionCollectionName,
-    Map<String, dynamic>? filter,
-  }) async {
+  Future<double> calculateTotalStockValue({required String transactionCollectionName, Map<String, dynamic>? filter,}) async {
     await _ensureConnected();
 
     try {
       final Map<String, dynamic> matchStage = {
-        'transaction_type': {r'$in': ['purchase', 'sale']}
+        r'$or': [
+          {'transaction_type': 'purchase'},
+          {
+            'transaction_type': 'sale',
+            'status': {r'$ne': 'returned'} // Exclude returned transactions
+          }
+        ]
       };
 
       if (filter != null) {
@@ -940,200 +1307,7 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchProductsWithStockBySearch({
-    required String productCollectionName,
-    required String transactionCollectionName,
-    required String searchQuery,
-    int page = 1,
-    int itemsPerPage = 10,
-    Map<String, dynamic>? filter,
-  }) async {
-    await _ensureConnected();
-    int skip = (page - 1) * itemsPerPage;
-
-    try {
-      final searchPipeline = [
-        {
-          r'$search': {
-            'index': 'default',
-            'text': {
-              'query': searchQuery,
-              'path': {'wildcard': '*'},
-            }
-          }
-        },
-        if (filter != null && filter.isNotEmpty) {r'$match': filter},
-        {r'$skip': skip},
-        {r'$limit': itemsPerPage}
-      ];
-
-      // Step 1: Search and filter products
-      final products = await db!
-          .collection(productCollectionName)
-          .aggregateToStream(searchPipeline)
-          .toList();
-
-      // Step 2: Append stock info
-      List<Map<String, dynamic>> result = [];
-      for (var product in products) {
-        String productId = product['_id'].toHexString();
-
-        final stockPipeline = [
-          {
-            r'$match': {
-              'products.id': productId,
-              'transaction_type': {r'$in': ['purchase', 'sale']}
-            }
-          },
-          {r'$unwind': r'$products'},
-          {
-            r'$match': {
-              'products.id': productId
-            }
-          },
-          {
-            r'$project': {
-              'quantity': r'$products.quantity',
-              'transaction_type': 1
-            }
-          },
-          {
-            r'$project': {
-              'adjustedQuantity': {
-                r'$cond': [
-                  {r'$eq': [r'$transaction_type', 'purchase']},
-                  r'$quantity',
-                  {r'$multiply': [r'$quantity', -1]}
-                ]
-              }
-            }
-          },
-          {
-            r'$group': {
-              '_id': null,
-              'totalStock': {r'$sum': r'$adjustedQuantity'}
-            }
-          }
-        ];
-
-        final stockResult = await db!
-            .collection(transactionCollectionName)
-            .aggregateToStream(stockPipeline)
-            .toList();
-
-        final totalStock = (stockResult.isNotEmpty && stockResult[0]['totalStock'] != null)
-            ? (stockResult[0]['totalStock'] as num).toInt()
-            : 0;
-
-        result.add({
-          ...product,
-          ProductFieldName.stockQuantity: totalStock,
-        });
-      }
-
-      return result;
-    } catch (e) {
-      throw Exception('Error searching products with stock: $e');
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> fetchProductsWithStock({
-    required String productCollectionName,
-    required String transactionCollectionName,
-    Map<String, dynamic>? filter,
-    int page = 1,
-    int itemsPerPage = 10,
-  }) async {
-    await _ensureConnected();
-    int skip = (page - 1) * itemsPerPage;
-
-    try {
-      // Step 1: Prepare query with filter and sorting
-      var query = where;
-      filter?.forEach((key, value) {
-        query = query.eq(key, value);
-      });
-
-
-      query = query
-        ..sortBy(ProductFieldName.dateModified, descending: true)
-        ..sortBy('_id', descending: true) // add stable sort
-        ..skip(skip)
-        ..limit(itemsPerPage);
-
-      // Step 2: Fetch products
-      final List<Map<String, dynamic>> products = await db!
-          .collection(productCollectionName)
-          .find(query)
-          .toList();
-
-      // Step 3: For each product, calculate total stock from transactions
-      List<Map<String, dynamic>> result = [];
-      for (var product in products) {
-        String productId = product['_id'].toHexString(); // or product['_id'] depending on your schema
-
-        final pipeline = [
-          {
-            r'$match': {
-              'products.id': productId,
-              'transaction_type': {r'$in': ['purchase', 'sale']}
-            }
-          },
-          {
-            r'$unwind': r'$products'
-          },
-          {
-            r'$match': {
-              'products.id': productId
-            }
-          },
-          {
-            r'$project': {
-              'quantity': r'$products.quantity',
-              'transaction_type': 1
-            }
-          },
-          {
-            r'$project': {
-              'adjustedQuantity': {
-                r'$cond': [
-                  {r'$eq': [r'$transaction_type', 'purchase']},
-                  r'$quantity',
-                  {r'$multiply': [r'$quantity', -1]}
-                ]
-              }
-            }
-          },
-          {
-            r'$group': {
-              '_id': null,
-              'totalStock': {r'$sum': r'$adjustedQuantity'}
-            }
-          }
-        ];
-
-        final stockResult = await db!
-            .collection(transactionCollectionName)
-            .aggregateToStream(pipeline)
-            .toList();
-
-        final totalStock = (stockResult.isNotEmpty && stockResult[0]['totalStock'] != null)
-            ? (stockResult[0]['totalStock'] as num).toInt()
-            : 0;
-
-        // Add stock info to product
-        result.add({
-          ...product,
-          ProductFieldName.stockQuantity: totalStock,
-        });
-      }
-
-      return result;
-    } catch (e) {
-      throw Exception('Error: $e');
-    }
-  }
-
+  // Account Voucher functions
   Future<Map<String, dynamic>?> fetchVoucherById({
     required String accountCollectionName,
     required String transactionCollectionName,
@@ -1214,7 +1388,6 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  // Account Voucher functions
   Future<List<Map<String, dynamic>>> fetchAccountsWithBalance({
     required String accountCollectionName,
     required String transactionCollectionName,
@@ -1313,7 +1486,101 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchAccountVoucherSearchWithTotal({
+  Future<List<Map<String, dynamic>>> fetchAllAccountsWithBalance({
+    required String accountCollectionName,
+    required String transactionCollectionName,
+    Map<String, dynamic>? filter,
+  }) async {
+    await _ensureConnected();
+
+    try {
+      // Step 1: Prepare query with filter (no pagination)
+      var query = where;
+      if (filter != null) {
+        filter.forEach((key, value) {
+          query = query.eq(key, value);
+        });
+      }
+
+      // Step 2: Fetch accounts
+      final accounts = await db!
+          .collection(accountCollectionName)
+          .find(query)
+          .toList();
+
+      // Step 3: For each account, calculate balance
+      List<Map<String, dynamic>> result = [];
+
+      for (var account in accounts) {
+        String accountId = account['_id'].toHexString();
+
+        final pipeline = [
+          {
+            r'$match': {
+              r'$or': [
+                {'form_account_voucher._id': accountId},
+                {'to_account_voucher._id': accountId},
+              ]
+            }
+          },
+          {
+            r'$project': {
+              'amount': 1,
+              'isForm': {
+                r'$eq': [r'$form_account_voucher._id', accountId]
+              },
+              'isTo': {
+                r'$eq': [r'$to_account_voucher._id', accountId]
+              }
+            }
+          },
+          {
+            r'$project': {
+              'netAmount': {
+                r'$cond': [
+                  {r'$eq': [r'$isForm', true]},
+                  {r'$multiply': [r'$amount', -1]},
+                  {
+                    r'$cond': [
+                      {r'$eq': [r'$isTo', true]},
+                      r'$amount',
+                      0
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            r'$group': {
+              '_id': null,
+              'totalBalance': {r'$sum': r'$netAmount'}
+            }
+          }
+        ];
+
+        final balanceResult = await db!
+            .collection(transactionCollectionName)
+            .aggregateToStream(pipeline)
+            .toList();
+
+        final balance = (balanceResult.isNotEmpty && balanceResult[0]['totalBalance'] != null)
+            ? (balanceResult[0]['totalBalance'] as num).toDouble()
+            : 0.0;
+
+        result.add({
+          ...account,
+          'current_balance': balance,
+        });
+      }
+
+      return result;
+    } catch (e) {
+      throw Exception('Failed to fetch accounts with balance: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> searchAccountVoucherWithBalance({
     required String voucherCollectionName,
     required String transactionCollectionName,
     required String searchQuery,
@@ -1417,82 +1684,6 @@ class MongoFetch extends MongoDatabase {
       throw Exception('Error searching vouchers with total balance: $e');
     }
   }
-
-  Future<double> getTotalAccountPayable({
-    required String transactionCollectionName,
-    required Map<String, dynamic> filter,
-    required AccountVoucherType voucherType,
-  }) async {
-    await _ensureConnected();
-
-    try {
-      final pipeline = [
-        {
-          r'$match': {
-            ...filter,
-            r'$or': [
-              {
-                '${TransactionFieldName.toAccountVoucher}.${AccountVoucherFieldName.voucherType}': voucherType.name
-              },
-              {
-                '${TransactionFieldName.fromAccountVoucher}.${AccountVoucherFieldName.voucherType}': voucherType.name
-              },
-            ]
-          }
-        },
-        {
-          r'$project': {
-            'adjustedAmount': {
-              r'$cond': [
-                {
-                  r'$eq': [
-                    '\$${TransactionFieldName.toAccountVoucher}.${AccountVoucherFieldName.voucherType}',
-                    voucherType.name
-                  ]
-                },
-                r'$amount',
-                {
-                  r'$cond': [
-                    {
-                      r'$eq': [
-                        '\$${TransactionFieldName.fromAccountVoucher}.${AccountVoucherFieldName.voucherType}',
-                        voucherType.name
-                      ]
-                    },
-                    {r'$multiply': [r'$amount', -1]},
-                    0
-                  ]
-                }
-              ]
-            }
-          }
-        },
-        {
-          r'$group': {
-            '_id': null,
-            'totalPayable': {
-              r'$sum': r'$adjustedAmount'
-            }
-          }
-        }
-      ];
-
-      final result = await db!
-          .collection(transactionCollectionName)
-          .aggregateToStream(pipeline)
-          .toList();
-
-      final total = result.isNotEmpty && result[0]['totalPayable'] != null
-          ? (result[0]['totalPayable'] as num).toDouble()
-          : 0.0;
-      return total;
-    } catch (e) {
-      throw Exception('Failed to calculate total account payable: $e');
-    }
-  }
-
-
-
 
 
 }

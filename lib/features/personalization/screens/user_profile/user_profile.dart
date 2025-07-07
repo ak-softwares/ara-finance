@@ -113,11 +113,11 @@ class UserProfileScreen extends StatelessWidget {
                   children: [
                     const SectionHeading(title: 'Address', seeActionButton: false),
                     SingleAddress(
-                      address: controller.admin.value.billing ?? AddressModel.empty(),
+                      address: controller.admin.value.billing ?? AddressModel(),
                       onTap: () => Get.to(() => UpdateAddressScreen(
                           userId: controller.admin.value.id ?? '',
                           userType: UserType.admin,
-                          address: controller.admin.value.billing ?? AddressModel.empty()
+                          address: controller.admin.value.billing ?? AddressModel()
                       )),
                       // onTap: () => controller.selectAddress(addresses[index])
                     ),

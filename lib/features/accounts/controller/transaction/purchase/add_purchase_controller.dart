@@ -3,21 +3,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/dialog_box_massages/full_screen_loader.dart';
-import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../common/widgets/network_manager/network_manager.dart';
-import '../../../../data/repositories/image_kit/image_kit_repo.dart';
-import '../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
-import '../../models/account_voucher_model.dart';
-import '../../models/cart_item_model.dart';
-import '../../models/image_model.dart';
-import '../../models/product_model.dart';
-import '../../models/transaction_model.dart';
-import '../product/product_controller.dart';
-import 'transaction_controller.dart';
+import '../../../../../common/dialog_box_massages/full_screen_loader.dart';
+import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../../common/widgets/network_manager/network_manager.dart';
+import '../../../../../data/repositories/image_kit/image_kit_repo.dart';
+import '../../../../../data/repositories/mongodb/transaction/transaction_repo.dart';
+import '../../../../../utils/constants/enums.dart';
+import '../../../../../utils/constants/image_strings.dart';
+import '../../../../authentication/controllers/authentication_controller/authentication_controller.dart';
+import '../../../models/account_voucher_model.dart';
+import '../../../models/cart_item_model.dart';
+import '../../../models/image_model.dart';
+import '../../../models/product_model.dart';
+import '../../../models/transaction_model.dart';
+import '../../product/product_controller.dart';
+import '../transaction_controller.dart';
 
 class AddPurchaseTransactionController extends GetxController {
   static AddPurchaseTransactionController get instance => Get.find();
@@ -209,16 +209,7 @@ class AddPurchaseTransactionController extends GetxController {
     try {
       FullScreenLoader.openLoadingDialog('Saving your purchase transaction...', Images.docerAnimation);
 
-      final isConnected = await NetworkManager.instance.isConnected();
-      if (!isConnected) {
-        FullScreenLoader.stopLoading();
-        throw 'Internet not connected';
-      }
-
-      if (!purchaseFormKey.currentState!.validate()) {
-        FullScreenLoader.stopLoading();
-        throw 'Form is not valid';
-      }
+      await validatePurchaseFields();
 
       await transactionController.processTransactions(transactions: [transaction]);
       await clearPurchaseTransaction();
@@ -233,8 +224,17 @@ class AddPurchaseTransactionController extends GetxController {
     }
   }
 
-  bool validatePurchaseFields() {
+  Future<bool> validatePurchaseFields() async {
     try {
+      final isConnected = await NetworkManager.instance.isConnected();
+      if (!isConnected) {
+        FullScreenLoader.stopLoading();
+        throw 'Internet not connected';
+      }
+      if (!purchaseFormKey.currentState!.validate()) {
+        FullScreenLoader.stopLoading();
+        throw 'Form is not valid';
+      }
       if (userId.isEmpty) {
         throw Exception('User ID is required.');
       }
@@ -246,6 +246,9 @@ class AddPurchaseTransactionController extends GetxController {
       }
       if (date.text.isEmpty) {
         throw Exception('Please enter a date.');
+      }
+      if (selectedProducts.isEmpty) {
+        throw Exception('Please select at least one product.');
       }
       // Check if any image does not have a URL
       if (purchaseInvoiceImages.any((image) => image.imageUrl == null || image.imageUrl!.isEmpty)) {
@@ -262,6 +265,7 @@ class AddPurchaseTransactionController extends GetxController {
     transactionId.value = await mongoTransactionRepo.fetchTransactionGetNextId(userId: userId, voucherType: voucherType);
     selectedPurchaseVoucher.value = AccountVoucherModel();
     selectedVendor.value = AccountVoucherModel();
+    selectedProducts.value = [];
     date.text = DateTime.now().toIso8601String();
   }
 
@@ -269,8 +273,8 @@ class AddPurchaseTransactionController extends GetxController {
     transactionId.value = transaction.transactionId ?? 0;
     purchaseTotal.value = 0.0;
     date.text = transaction.date?.toIso8601String() ?? '';
-    selectedPurchaseVoucher.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
-    selectedVendor.value = transaction.toAccountVoucher ?? AccountVoucherModel();
+    selectedVendor.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
+    selectedPurchaseVoucher.value = transaction.toAccountVoucher ?? AccountVoucherModel();
     selectedProducts.value = transaction.products ?? [];
     updatePurchaseTotal();
   }
@@ -283,6 +287,7 @@ class AddPurchaseTransactionController extends GetxController {
       date: DateTime.tryParse(date.text) ?? oldPurchaseTransaction.date,
       fromAccountVoucher: selectedVendor.value,
       toAccountVoucher: selectedPurchaseVoucher.value,
+      products: selectedProducts,
       transactionType: oldPurchaseTransaction.transactionType,
     );
 
@@ -293,16 +298,7 @@ class AddPurchaseTransactionController extends GetxController {
     try {
       FullScreenLoader.openLoadingDialog('Updating purchase transaction...', Images.docerAnimation);
 
-      final isConnected = await NetworkManager.instance.isConnected();
-      if (!isConnected) {
-        FullScreenLoader.stopLoading();
-        throw 'Internet not connected';
-      }
-
-      if (!purchaseFormKey.currentState!.validate()) {
-        FullScreenLoader.stopLoading();
-        throw 'Form is not valid';
-      }
+      await validatePurchaseFields();
 
       await transactionController.processUpdateTransaction(transaction: transaction);
 

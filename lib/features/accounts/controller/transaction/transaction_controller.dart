@@ -10,7 +10,7 @@ import '../../../authentication/controllers/authentication_controller/authentica
 import '../../models/cart_item_model.dart';
 import '../../models/transaction_model.dart';
 import '../product/product_controller.dart';
-import 'add_payment_controller.dart';
+import 'payment/add_payment_controller.dart';
 
 class TransactionController extends GetxController {
 
@@ -125,6 +125,20 @@ class TransactionController extends GetxController {
     }
   }
 
+  Future<List<TransactionModel>> getTransactionByStatus({required OrderStatus status}) async {
+    try {
+      final List<TransactionModel> transactions = await mongoTransactionRepo.fetchTransactionsWithFilter(
+        filter: {
+          TransactionFieldName.userId: userId,
+          TransactionFieldName.transactionType: AccountVoucherType.sale.name,
+          TransactionFieldName.status: status.name,
+        },
+      );
+      return transactions;
+    } catch (e) {
+      return [];
+    }
+  }
 
   Future<void> processTransactions({required List<TransactionModel> transactions}) async {
     try {

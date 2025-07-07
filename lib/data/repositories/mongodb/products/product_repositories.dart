@@ -24,7 +24,7 @@ class MongoProductRepo extends GetxController {
   Future<List<ProductModel>> fetchProductsBySearchQuery({required String query, int page = 1}) async {
     try {
       // Fetch products from MongoDB with search and pagination
-      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProductsWithStockBySearch(
+      final List<Map<String, dynamic>> productData = await _mongoFetch.searchProductsWithStock(
           productCollectionName: collectionName,
           transactionCollectionName: DbCollections.transactions,
           searchQuery: query,
@@ -41,12 +41,13 @@ class MongoProductRepo extends GetxController {
   }
 
   // Fetch All Products from MongoDB
-  Future<List<ProductModel>> fetchProducts({int page = 1, required String userId}) async {
+  Future<List<ProductModel>> fetchProductsWithStock({int page = 1, required String userId}) async {
     try {
 
       // Fetch products from MongoDB with pagination
-      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProducts(
-          collectionName:collectionName,
+      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProductsWithStock(
+          productCollectionName: collectionName,
+          transactionCollectionName: DbCollections.transactions,
           filter: { ProductFieldName.userId: userId },
           page: page
       );
@@ -59,13 +60,34 @@ class MongoProductRepo extends GetxController {
     }
   }
 
-  // Fetch All Products from MongoDB
+  Future<ProductModel> fetchProductByIdWithStock({required String id}) async {
+    try {
+      // Fetch a single document by ID
+      final Map<String, dynamic>? productData = await _mongoFetch.fetchProductByIdWithStock(
+        productCollectionName: collectionName,
+        transactionCollectionName: DbCollections.transactions,
+        id: id,
+      );
+
+      // Check if the document exists
+      if (productData == null) {
+        throw Exception('Product not found with ID: $id');
+      }
+
+      // Convert the document to a ProductModel object
+      final ProductModel product = ProductModel.fromJson(productData);
+      return product;
+    } catch (e) {
+      throw 'Failed to fetch product: $e';
+    }
+  }
+
   Future<double> fetchTotalStockValue({required String userId}) async {
     try {
       // Fetch products from MongoDB with pagination
       final double totalStockValue = await _mongoFetch.calculateTotalStockValue(
-          transactionCollectionName: DbCollections.transactions,
-          filter: { ProductFieldName.userId: userId },
+        transactionCollectionName: DbCollections.transactions,
+        filter: { ProductFieldName.userId: userId },
       );
       return totalStockValue;
     } catch (e) {
@@ -73,19 +95,6 @@ class MongoProductRepo extends GetxController {
     }
   }
 
-  // Fetch All Products from MongoDB
-  Future<List<Map<String, dynamic>>> fetchCogsDetailsByProductIds({required List<int> productIds}) async {
-    try {
-      // Fetch products from MongoDB with pagination
-      final List<Map<String, dynamic>> totalStockValue = await _mongoFetch.fetchCogsDetailsByProductIds(
-        collectionName: collectionName,
-        productIds: productIds,
-      );
-      return totalStockValue;
-    } catch (e) {
-      rethrow;
-    }
-  }
 
   // Fetch Product's IDs from MongoDB
   Future<Set<int>> fetchProductIds({required String userId}) async {
@@ -101,13 +110,14 @@ class MongoProductRepo extends GetxController {
   }
 
   // Fetch Products by IDs from MongoDB
-  Future<List<ProductModel>> fetchProductsByIds({required List<int> productIds}) async {
+  Future<List<ProductModel>> fetchProductsByProductIds({required List<int> productIds}) async {
     try {
       if (productIds.isEmpty) return []; // Return empty list if no IDs provided
 
       // Fetch products from MongoDB where the ID matches any in the list
-      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchDocumentsByFieldName(
-          collectionName:  collectionName,
+      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProductsByProductIdsWithStock(
+          productCollectionName: collectionName,
+          transactionCollectionName: DbCollections.transactions,
           fieldName: ProductFieldName.productId,
           documentIds: productIds
       );
@@ -180,26 +190,7 @@ class MongoProductRepo extends GetxController {
       rethrow;
     }
   }
-  Future<ProductModel> fetchProductById({required String id}) async {
-    try {
-      // Fetch a single document by ID
-      final Map<String, dynamic> productData = await _mongoFetch.fetchDocumentById(
-        id: id,
-        collectionName: collectionName,
-      );
 
-      // Check if the document exists
-      if (productData == null) {
-        throw Exception('Product not found with ID: $id');
-      }
-
-      // Convert the document to a ProductModel object
-      final ProductModel product = ProductModel.fromJson(productData);
-      return product;
-    } catch (e) {
-      throw 'Failed to fetch product: $e';
-    }
-  }
 
   Future<void> deleteProduct({required String id}) async {
     try {
@@ -264,24 +255,6 @@ class MongoProductRepo extends GetxController {
     }
   }
 
-  // Fetch All Products from MongoDB
-  Future<List<ProductModel>> fetchProductsWithStock({int page = 1, required String userId}) async {
-    try {
 
-      // Fetch products from MongoDB with pagination
-      final List<Map<String, dynamic>> productData = await _mongoFetch.fetchProductsWithStock(
-        productCollectionName: collectionName,
-        transactionCollectionName: DbCollections.transactions,
-        filter: { ProductFieldName.userId: userId },
-        page: page
-      );
-      // Convert data to a list of ProductModel
-      final List<ProductModel> products = productData.map((data) => ProductModel.fromJson(data)).toList();
-
-      return products;
-    } catch (e) {
-      rethrow;
-    }
-  }
 
 }

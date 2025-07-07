@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../features/accounts/screen/search/search.dart';
+import '../../features/accounts/screen/search/search/search.dart';
 import '../../features/authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../features/settings/app_settings.dart';
 import '../../features/settings/screen/setting_screen.dart';

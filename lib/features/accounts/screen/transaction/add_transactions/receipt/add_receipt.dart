@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../../common/dialog_box_massages/snack_bar_massages.dart';
-import '../../../../../common/navigation_bar/appbar.dart';
-import '../../../../../utils/constants/colors.dart';
-import '../../../../../utils/constants/enums.dart';
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/formatters/formatters.dart';
-import '../../../controller/transaction/add_receipt_controller.dart';
-import '../../../models/account_voucher_model.dart';
-import '../../../models/transaction_model.dart';
-import '../../account_voucher/widget/account_voucher_tile.dart';
-import '../../search/search_and_select/search_products.dart';
+import '../../../../../../common/dialog_box_massages/snack_bar_massages.dart';
+import '../../../../../../common/navigation_bar/appbar.dart';
+import '../../../../../../utils/constants/colors.dart';
+import '../../../../../../utils/constants/enums.dart';
+import '../../../../../../utils/constants/sizes.dart';
+import '../../../../../../utils/formatters/formatters.dart';
+import '../../../../controller/transaction/receipt/add_receipt_controller.dart';
+import '../../../../models/account_voucher_model.dart';
+import '../../../../models/transaction_model.dart';
+import '../../../account_voucher/widget/account_voucher_tile.dart';
+import '../../../search/search_and_select/search_products.dart';
 
 class AddReceipt extends StatelessWidget {
   const AddReceipt({super.key, this.receipt});

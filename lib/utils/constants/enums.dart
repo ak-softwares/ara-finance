@@ -18,7 +18,7 @@ enum SyncType { add, update, check }
 
 enum SyncStatus { idle, fetching, checking, pushing, completed, failed }
 
-enum AccountVoucherType { payment, vendor, refund, transfer, purchase, delete, expense, sale, receipt, creditNote, bankAccount, customer, product}
+enum AccountVoucherType { payment, vendor, refund, transfer, purchase, delete, expense, sale, receipt, creditNote, bankAccount, customer, product, contra}
 
 extension VoucherEntityTypeExtension on AccountVoucherType {
   String get name {
@@ -50,6 +50,8 @@ extension VoucherEntityTypeExtension on AccountVoucherType {
         return 'customer';
       case AccountVoucherType.product:
         return 'product';
+      case AccountVoucherType.contra:
+        return 'contra';
     }
   }
 
