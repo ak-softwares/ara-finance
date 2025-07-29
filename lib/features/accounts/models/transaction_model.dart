@@ -27,6 +27,7 @@ class TransactionModel {
   List<CouponModel>? couponLines;
   OrderAttributeModel? orderAttribute;
   String? paymentMethod;
+  String? description;
   AddressModel? address;
 
   TransactionModel({
@@ -49,6 +50,7 @@ class TransactionModel {
     this.couponLines,
     this.orderAttribute,
     this.paymentMethod,
+    this.description,
     this.address,
   });
 
@@ -95,6 +97,7 @@ class TransactionModel {
       address: json[TransactionFieldName.address] != null
           ? AddressModel.fromJson(json[TransactionFieldName.address])
           : null,
+      description: json[TransactionFieldName.description],
     );
   }
 
@@ -120,6 +123,7 @@ class TransactionModel {
       if (orderAttribute != null) TransactionFieldName.orderAttribute: orderAttribute!.toJson(),
       if (paymentMethod != null) TransactionFieldName.paymentMethod: paymentMethod,
       if (address != null) TransactionFieldName.address: address!.toMap(),
+      if (description != null) TransactionFieldName.description: description,
     };
   }
 

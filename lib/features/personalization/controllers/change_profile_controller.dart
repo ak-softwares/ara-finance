@@ -27,6 +27,7 @@ class ChangeProfileController extends GetxController {
   final phone = TextEditingController();
   final companyName = TextEditingController();
   final gstNumber = TextEditingController();
+  final panNumber = TextEditingController();
 
   GlobalKey<FormState> changeProfileFormKey = GlobalKey<FormState>();
 
@@ -47,6 +48,7 @@ class ChangeProfileController extends GetxController {
     phone.text = Validator.getFormattedTenDigitNumber(auth.admin.value.phone ?? '') ?? '';
     companyName.text = auth.admin.value.companyName ?? '';
     gstNumber.text = auth.admin.value.gstNumber ?? '';
+    panNumber.text = auth.admin.value.panNumber ?? '';
   }
 
   // Mongo update profile details
@@ -73,6 +75,7 @@ class ChangeProfileController extends GetxController {
           phone: phone.text.trim(),
           companyName: companyName.text.trim(),
           gstNumber: gstNumber.text.trim(),
+          panNumber: panNumber.text.trim(),
           userType: UserType.admin,
       );
       await mongoAuthenticationRepository.updateUserById(id: auth.userId, user: updatedUser);

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../../utils/constants/enums.dart';
 import '../../../../../utils/constants/icons.dart';
 import '../../../../accounts/screen/account_voucher/account_vouchers.dart';
+import '../../../../accounts/screen/gst_report/gst_report.dart';
 import '../../../../accounts/screen/products/products.dart';
 import '../../../../accounts/screen/purchase_list/purchase_list.dart';
 import '../../../../accounts/screen/transaction/transactions.dart';
@@ -89,6 +90,13 @@ class Menu extends StatelessWidget {
           leading: Icon(Icons.store, size: 20),
           title: Text('Connect Store'),
           subtitle: Text('List of products'),
+          trailing: Icon(Icons.arrow_forward_ios, size: 20,),
+        ),
+        ListTile(
+          onTap: () => Get.to(() => GstReport()),
+          leading: Icon(Icons.receipt, size: 20),
+          title: Text('GST Report'),
+          subtitle: Text('GST report by month'),
           trailing: Icon(Icons.arrow_forward_ios, size: 20,),
         ),
       ],

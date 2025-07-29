@@ -67,7 +67,7 @@ class ProfitAndLossTab extends StatelessWidget {
         FinancialTile(
           title: 'Expenses',
           value: controller.expensesTotalOperatingCost,
-          percent: controller.expensesCogsPercent,
+          percent: controller.expensesTotalOperatingCostPercent,
           isCurrency: true,
           index: 1,
           isParent: true,

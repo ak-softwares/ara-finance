@@ -13,6 +13,9 @@ import '../../../../utils/constants/sizes.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../../setup/screens/platform_selection_screen.dart';
 import '../../models/address_model.dart';
+import '../../models/bank_account.dart';
+import '../bank_account/bank_account_card.dart';
+import '../bank_account/update_bank_account.dart';
 import '../change_profile/change_user_profile.dart';
 import '../user_address/address_widgets/single_address.dart';
 import '../user_address/update_user_address.dart';
@@ -101,8 +104,13 @@ class UserProfileScreen extends StatelessWidget {
                     ),
                     Divider(color: Colors.grey[200]),
                     TProfileMenu(
-                      title: 'GST',
+                      title: 'GST Number',
                       value: controller.admin.value.gstNumber ?? 'GST',
+                    ),
+                    Divider(color: Colors.grey[200]),
+                    TProfileMenu(
+                      title: 'PAN Number',
+                      value: controller.admin.value.panNumber ?? 'PAN Number',
                     ),
                     const Divider(),
                   ],
@@ -118,6 +126,22 @@ class UserProfileScreen extends StatelessWidget {
                           userId: controller.admin.value.id ?? '',
                           userType: UserType.admin,
                           address: controller.admin.value.billing ?? AddressModel()
+                      )),
+                      // onTap: () => controller.selectAddress(addresses[index])
+                    ),
+                  ],
+                ),
+
+                // Bank Account
+                Column(
+                  children: [
+                    const SectionHeading(title: 'Bank Account', seeActionButton: false),
+                    BankAccountCard(
+                      bankAccount: controller.admin.value.bankAccount ?? BankAccountModel(),
+                      onTap: () => Get.to(() => UpdateBankAccount(
+                          userId: controller.admin.value.id ?? '',
+                          userType: UserType.admin,
+                          bankAccount: controller.admin.value.bankAccount ?? BankAccountModel()
                       )),
                       // onTap: () => controller.selectAddress(addresses[index])
                     ),

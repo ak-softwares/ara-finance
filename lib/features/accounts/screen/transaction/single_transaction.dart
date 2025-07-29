@@ -4,9 +4,14 @@ import 'package:get/get.dart';
 import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/navigation_bar/appbar.dart';
 import '../../../../common/styles/spacing_style.dart';
+import '../../../../common/text/section_heading.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../personalization/models/address_model.dart';
+import '../../../personalization/screens/user_address/address_widgets/single_address.dart';
+import '../../../personalization/screens/user_address/update_sale_address.dart';
+import '../../../personalization/screens/user_address/update_user_address.dart';
 import '../../controller/transaction/transaction_controller.dart';
 import '../../models/transaction_model.dart';
 import 'add_transactions/contra_voucher/contra_voucher.dart';
@@ -28,7 +33,7 @@ class SingleTransaction extends StatefulWidget {
 
 class _SingleTransactionState extends State<SingleTransaction> {
   late TransactionModel transaction;
-  final transactionController = Get.put(TransactionController()); // Updated controller
+  final controller = Get.put(TransactionController()); // Updated controller
 
   @override
   void initState() {
@@ -37,7 +42,7 @@ class _SingleTransactionState extends State<SingleTransaction> {
   }
 
   Future<void> _refreshTransaction() async {
-    final updatedTransaction = await transactionController.getTransactionByID(id: transaction.id ?? '');
+    final updatedTransaction = await controller.getTransactionByID(id: transaction.id ?? '');
     setState(() {
       transaction = updatedTransaction; // Update the transaction data
     });
@@ -52,23 +57,32 @@ class _SingleTransactionState extends State<SingleTransaction> {
     return Scaffold(
       appBar: AppAppBar(
         title: 'Transaction #${transaction.transactionId}', // Updated title
-        widgetInActions: TextButton(
-          onPressed: () {
-            if(transaction.transactionType == AccountVoucherType.expense) {
-              Get.to(() => AddExpenseTransaction(expense: transaction));
-            } else if(transaction.transactionType == AccountVoucherType.payment) {
-              Get.to(() => AddPayment(payment: transaction));
-            } else if(transaction.transactionType == AccountVoucherType.receipt) {
-              Get.to(() => AddReceipt(receipt: transaction));
-            } else if(transaction.transactionType == AccountVoucherType.purchase) {
-              Get.to(() => AddPurchase(purchase: transaction));
-            } else if(transaction.transactionType == AccountVoucherType.sale) {
-              Get.to(() => AddSale(sale: transaction));
-            } else if(transaction.transactionType == AccountVoucherType.contra) {
-              Get.to(() => ContraVoucher(contra: transaction));
-            }
-          },
-          child: Text('Edit', style: TextStyle(color: AppColors.linkColor)),
+        widgetInActions: Row(
+          children: [
+            if(transaction.transactionType == AccountVoucherType.sale)
+              IconButton(
+                  onPressed: () => controller.saveAndOpenPdf(context: context, transaction: transaction),
+                  icon: Icon(Icons.print, color: AppColors.linkColor,)
+              ),
+            TextButton(
+              onPressed: () {
+                if(transaction.transactionType == AccountVoucherType.expense) {
+                  Get.to(() => AddExpenseTransaction(expense: transaction));
+                } else if(transaction.transactionType == AccountVoucherType.payment) {
+                  Get.to(() => AddPayment(payment: transaction));
+                } else if(transaction.transactionType == AccountVoucherType.receipt) {
+                  Get.to(() => AddReceipt(receipt: transaction));
+                } else if(transaction.transactionType == AccountVoucherType.purchase) {
+                  Get.to(() => AddPurchase(purchase: transaction));
+                } else if(transaction.transactionType == AccountVoucherType.sale) {
+                  Get.to(() => AddSale(sale: transaction));
+                } else if(transaction.transactionType == AccountVoucherType.contra) {
+                  Get.to(() => ContraVoucher(contra: transaction));
+                }
+              },
+              child: Text('Edit', style: TextStyle(color: AppColors.linkColor)),
+            ),
+          ],
         ),
       ),
       body: RefreshIndicator(
@@ -80,19 +94,35 @@ class _SingleTransactionState extends State<SingleTransaction> {
           children: [
             TransactionTile(transaction: transaction),
             SizedBox(height: AppSizes.defaultSpace),
+
+            // Order Ids
+            if(transaction.transactionType == AccountVoucherType.sale)
+              // Address
+              Column(
+                children: [
+                  const SectionHeading(title: 'Address', seeActionButton: false),
+                  SingleAddress(
+                    address: transaction.address ?? AddressModel(),
+                    onTap: () => Get.to(() => UpdateTransactionAddress(transaction: transaction)),
+                    // onTap: () {}
+                  ),
+                ],
+              ),
+
+            // Order Ids
             if(transaction.orderIds != null)
-              Container(
-                padding: const EdgeInsets.all(AppSizes.defaultSpace),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(transactionTileRadius),
-                  color: Theme.of(context).colorScheme.surface,
-                ),
-                child: Row(
-                  spacing: AppSizes.defaultSpace,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Order Ids:', style: TextStyle(fontSize: 14)),
-                    Expanded(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Order Ids', style: TextStyle(fontSize: 14)),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSizes.defaultSpace),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(transactionTileRadius),
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+                    child: Expanded(
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SelectableText(
@@ -101,13 +131,33 @@ class _SingleTransactionState extends State<SingleTransaction> {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+
+            // Expense Description
+            if(transaction.transactionType == AccountVoucherType.expense)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Description', style: TextStyle(fontSize: 14)),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSizes.defaultSpace),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(transactionTileRadius),
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+                    child: Text(transaction.description ?? '', style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+
             // Delete Button
             Center(
               child: TextButton(
-                onPressed: () => transactionController.deleteTransactionByDialog(context: context, transaction: transaction),
+                onPressed: () => controller.deleteTransactionByDialog(context: context, transaction: transaction),
                 child: const Text('Delete', style: TextStyle(color: Colors.red)),
               ),
             ),

@@ -13,6 +13,7 @@ import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../../authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../models/order_model.dart';
+import '../../models/product_model.dart';
 import '../../models/purchase_item_model.dart';
 
 class PurchaseListController extends GetxController {
@@ -345,7 +346,7 @@ class PurchaseListController extends GetxController {
       }
 
       // Fetch fresh product details for all unique product IDs
-      final freshProducts = await mongoProductRepo.fetchProductsByProductIds(productIds: productIds.toList());
+      final List<ProductModel> freshProducts = await mongoProductRepo.fetchProductsByProductIds(productIds: productIds.toList());
 
       // Now process orders with fresh product data
       for (var order in orders) {

@@ -8,9 +8,10 @@ class AddressModel {
   String? lastName;
   String? phone ;
   String? email;
+  String? companyName;
+  String? gstNumber;
   String? address1;
   String? address2;
-  String? company;
   String? city;
   String? state;
   String? pincode;
@@ -23,9 +24,10 @@ class AddressModel {
     this.lastName,
     this.phone,
     this.email,
+    this.companyName,
+    this.gstNumber,
     this.address1,
     this.address2,
-    this.company,
     this.city,
     this.state,
     this.pincode,
@@ -68,9 +70,10 @@ class AddressModel {
       lastName: data[AddressFieldName.lastName],
       phone: data[AddressFieldName.phone],
       email: data[AddressFieldName.email],
+      companyName: data[AddressFieldName.company],
+      gstNumber: data[AddressFieldName.gstNumber],
       address1: data[AddressFieldName.address1],
       address2: data[AddressFieldName.address2],
-      company: data[AddressFieldName.company],
       city: data[AddressFieldName.city],
       pincode: data[AddressFieldName.pincode],
       state: data[AddressFieldName.state],
@@ -89,6 +92,8 @@ class AddressModel {
     addIfNotNull(AddressFieldName.lastName, lastName);
     addIfNotNull(AddressFieldName.phone, phone);
     addIfNotNull(AddressFieldName.email, email);
+    addIfNotNull(AddressFieldName.company, companyName);
+    addIfNotNull(AddressFieldName.gstNumber, gstNumber);
     addIfNotNull(AddressFieldName.address1, address1);
     addIfNotNull(AddressFieldName.address2, address2);
     addIfNotNull(AddressFieldName.city, city);

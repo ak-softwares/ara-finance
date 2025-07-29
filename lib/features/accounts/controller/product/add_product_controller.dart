@@ -20,7 +20,9 @@ class AddProductController extends GetxController {
   // Form Key
   TextEditingController productTitleController = TextEditingController();
   TextEditingController purchasePriceController = TextEditingController();
-  TextEditingController stockController = TextEditingController();
+  TextEditingController openingStock = TextEditingController();
+  TextEditingController hsnCode = TextEditingController();
+  TaxRate selectedTaxRate = TaxRate.rate18;
 
   Rx<AccountVoucherModel> selectedVendor = AccountVoucherModel().obs;
   final GlobalKey<FormState> productFormKey = GlobalKey<FormState>();
@@ -40,8 +42,10 @@ class AddProductController extends GetxController {
       userId: userId,
       title: productTitleController.text,
       purchasePrice: double.tryParse(purchasePriceController.text) ?? 0.0,
-      stockQuantity: int.tryParse(stockController.text) ?? 0,
+      openingStock: int.tryParse(openingStock.text) ?? 0,
       dateCreated: DateTime.now(),
+      hsnCode: int.tryParse(hsnCode.text) ?? 0,
+      taxRate: selectedTaxRate,
       vendor: selectedVendor.value,
     );
 
@@ -76,7 +80,8 @@ class AddProductController extends GetxController {
   void clearProductFields() {
     productTitleController.text = '';
     purchasePriceController.text = '';
-    stockController.text = '';
+    openingStock.text = '';
+    hsnCode.text = '';
     selectedVendor.value = AccountVoucherModel();
   }
 
@@ -84,7 +89,9 @@ class AddProductController extends GetxController {
   void resetProductValues(ProductModel product) {
     productTitleController.text = product.title ?? '';
     purchasePriceController.text = product.purchasePrice.toString();
-    stockController.text = product.stockQuantity.toString();
+    openingStock.text = (product.openingStock ?? 0).toString();
+    hsnCode.text = (product.hsnCode ?? 0).toString();
+    selectedTaxRate = product.taxRate ?? TaxRate.rate18;
     selectedVendor.value = product.vendor ?? AccountVoucherModel();
   }
 
@@ -94,7 +101,10 @@ class AddProductController extends GetxController {
       id: previousProduct.id,
       title: productTitleController.text,
       purchasePrice: double.tryParse(purchasePriceController.text) ?? 0.0,
-      stockQuantity: int.tryParse(stockController.text) ?? 0,
+      openingStock: int.tryParse(openingStock.text) ?? 0,
+      dateModified: DateTime.now(),
+      hsnCode: int.tryParse(hsnCode.text) ?? 0,
+      taxRate: selectedTaxRate,
       vendor: selectedVendor.value,
     );
 

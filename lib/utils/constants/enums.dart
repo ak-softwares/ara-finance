@@ -1,5 +1,58 @@
 import 'db_constants.dart';
 
+enum TaxRate {
+  rate0,
+  rate3,
+  rate5,
+  rate12,
+  rate18,
+  rate28,
+}
+
+extension TaxRateExtension on TaxRate {
+  double get value {
+    switch (this) {
+      case TaxRate.rate0: return 0.0;
+      case TaxRate.rate3: return 3.0;
+      case TaxRate.rate5: return 5.0;
+      case TaxRate.rate12: return 12.0;
+      case TaxRate.rate18: return 18.0;
+      case TaxRate.rate28: return 28.0;
+    }
+  }
+
+  String get label => "${value.toStringAsFixed(0)}%";
+
+  String toJson() => value.toString();
+
+  static TaxRate fromJson(dynamic json) {
+    switch (json.toString()) {
+      case '0':
+      case '0.0':
+        return TaxRate.rate0;
+      case '3':
+      case '3.0':
+        return TaxRate.rate3;
+      case '5':
+      case '5.0':
+        return TaxRate.rate5;
+      case '12':
+      case '12.0':
+        return TaxRate.rate12;
+      case '18':
+      case '18.0':
+        return TaxRate.rate18;
+      case '28':
+      case '28.0':
+        return TaxRate.rate28;
+      default:
+        return TaxRate.rate18;
+    }
+  }
+}
+
+
+
 enum TextSizes { small, medium, large }
 
 enum UserType { customer, vendor, admin, }

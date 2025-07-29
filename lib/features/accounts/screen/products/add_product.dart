@@ -68,14 +68,44 @@ class AddProducts extends StatelessWidget {
                   ),
                 ),
 
-                // Stock
+                // openingStock
                 TextFormField(
-                  controller: controller.stockController,
+                  controller: controller.openingStock,
                   decoration: InputDecoration(
-                    labelText: 'Stock',
+                    labelText: 'Opening Stock',
                     border: OutlineInputBorder(),
                   ),
                 ),
+
+                // HSN
+                TextFormField(
+                  controller: controller.hsnCode,
+                  decoration: InputDecoration(
+                    labelText: 'HSN Code',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                // Tax Rate
+                DropdownButtonFormField<TaxRate>(
+                  value: controller.selectedTaxRate, // must be a reactive or state value
+                  onChanged: (TaxRate? newValue) {
+                    if (newValue != null) {
+                      controller.selectedTaxRate = newValue;
+                    }
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Select Tax Rate',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: TaxRate.values.map((rate) {
+                    return DropdownMenuItem(
+                      value: rate,
+                      child: Text(rate.label),
+                    );
+                  }).toList(),
+                ),
+
 
                 // Vendor
                 Column(

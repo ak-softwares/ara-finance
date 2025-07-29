@@ -24,6 +24,7 @@ class AddExpenseTransactionController extends GetxController {
   Rx<AccountVoucherModel> selectedBankAccount = AccountVoucherModel().obs;
 
   final amount = TextEditingController();
+  final description = TextEditingController();
   final date = TextEditingController();
   GlobalKey<FormState> expenseFormKey = GlobalKey<FormState>();
 
@@ -69,6 +70,7 @@ class AddExpenseTransactionController extends GetxController {
       transactionId: transactionId.value,
       amount: double.tryParse(amount.text) ?? 0.0,
       date: DateTime.tryParse(date.text) ?? DateTime.now(),
+      description: description.text,
       fromAccountVoucher: selectedBankAccount.value,
       toAccountVoucher: selectedExpense.value,
       transactionType: AccountVoucherType.expense,
@@ -111,12 +113,14 @@ class AddExpenseTransactionController extends GetxController {
     selectedBankAccount.value = AccountVoucherModel();
     selectedExpense.value = AccountVoucherModel();
     date.text = DateTime.now().toIso8601String();
+    description.text = '';
   }
 
   void resetValue(TransactionModel transaction) {
     transactionId.value = transaction.transactionId ?? 0;
     amount.text = transaction.amount.toString();
     date.text = transaction.date?.toIso8601String() ?? '';
+    description.text = transaction.description ?? '';
     selectedBankAccount.value = transaction.fromAccountVoucher ?? AccountVoucherModel();
     selectedExpense.value = transaction.toAccountVoucher ?? AccountVoucherModel();
   }
@@ -127,6 +131,7 @@ class AddExpenseTransactionController extends GetxController {
       transactionId: oldExpenseTransaction.transactionId,
       amount: double.tryParse(amount.text) ?? oldExpenseTransaction.amount,
       date: DateTime.tryParse(date.text) ?? oldExpenseTransaction.date,
+      description: description.text,
       fromAccountVoucher: selectedBankAccount.value,
       toAccountVoucher: selectedExpense.value,
       transactionType: oldExpenseTransaction.transactionType,

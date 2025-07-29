@@ -227,8 +227,7 @@ class FinancialController extends GetxController {
   }
 
   // Total of all expenses
-  // int get expensesTotal => expenses.fold(0, (sum, e) => sum + ((e.amount ?? 0).round()));
-  int get expensesTotal => 0;
+  int get expensesTotal => expenses.fold(0, (sum, e) => sum + ((e.amount ?? 0).round()));
 
   // Total per expenseType as a Map
   List<ExpenseSummary> get expenseSummaries {

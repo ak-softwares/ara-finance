@@ -16,6 +16,7 @@ class CartModel {
   String? total;
   String? sku;
   int? price;
+  int? hsnCode;
   double? purchasePrice;
   String? image;
   AccountVoucherModel? vendor;
@@ -35,6 +36,7 @@ class CartModel {
     this.total,
     this.sku,
     this.price,
+    this.hsnCode,
     this.purchasePrice,
     this.image,
     this.vendor,
@@ -56,6 +58,7 @@ class CartModel {
       total: json[CartFieldName.total] ?? '',
       sku: json[CartFieldName.sku] ?? '',
       price: json[CartFieldName.price].toInt() ?? 0,
+      hsnCode: json[CartFieldName.hsnCode] ?? 0,
       purchasePrice: json[CartFieldName.purchasePrice] ?? 0,
       image: json[CartFieldName.image] != null && json[CartFieldName.image] is Map
           ? json[CartFieldName.image][CartFieldName.src]
@@ -81,6 +84,7 @@ class CartModel {
       CartFieldName.total: total,
       CartFieldName.sku: sku,
       CartFieldName.price: price,
+      CartFieldName.hsnCode: hsnCode,
       CartFieldName.purchasePrice: purchasePrice,
       CartFieldName.image: image != null && image!.isNotEmpty ? {CartFieldName.src: image} : '',
       CartFieldName.vendor: vendor?.toMap(),
@@ -103,6 +107,7 @@ class CartModel {
     String? total,
     String? sku,
     int? price,
+    int? hsnCode,
     double? purchasePrice,
     String? image,
     String? parentName,
@@ -124,6 +129,7 @@ class CartModel {
       total: total ?? this.total,
       sku: sku ?? this.sku,
       price: price ?? this.price,
+      hsnCode: hsnCode ?? this.hsnCode,
       purchasePrice: purchasePrice ?? this.purchasePrice,
       image: image ?? this.image,
       vendor: vendor ?? this.vendor,

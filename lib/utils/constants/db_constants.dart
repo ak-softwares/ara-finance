@@ -59,6 +59,8 @@ class ProductFieldName {
   static const String description = 'description';
   static const String shortDescription = 'short_description';
   static const String sku = 'sku';
+  static const String hsnCode = 'hsn_code';
+  static const String taxRate = 'tax_rate';
   static const String price = 'price';
   static const String salePrice = 'sale_price';
   static const String regularPrice = 'regular_price';
@@ -74,6 +76,7 @@ class ProductFieldName {
   static const String taxClass = 'tax_class';
   static const String manageStock = 'manage_stock';
   static const String stockQuantity = 'stock_quantity';
+  static const String openingStock = 'opening_stock';
   static const String purchaseHistory = 'purchase_history';
   static const String weight = 'weight';
   static const String dimensions = 'dimensions';
@@ -283,6 +286,7 @@ class CartFieldName {
   static const String purchasePrice = 'purchase_price';
   static const String image = 'image';
   static const String src = 'src';
+  static const String hsnCode = 'hsn_code';
   static const String parentName = 'parent_name';
   static const String isCODBlocked = 'easyapp_cod_blocked';
   static const String pageSource = 'page_source';
@@ -404,6 +408,7 @@ class TransactionFieldName {
   static const String orderAttribute = 'order_attribute';
   static const String paymentMethod = 'payment_method';
   static const String address = 'address';
+  static const String description = 'description';
 }
 
 class PaymentMethodName {
@@ -470,6 +475,8 @@ class UserFieldConstants {
   static const String username = 'username';
   static const String company = 'company';
   static const String gstNumber = 'gst_number';
+  static const String panNumber = 'pan_number';
+  static const String bankAccount = 'bank_account';
   static const String balance = 'balance';
   static const String openingBalance = 'opening_balance';
   static const String userType = 'user_type';
@@ -488,6 +495,7 @@ class AddressFieldName {
   static const String lastName = 'last_name';
   static const String phone = 'phone';
   static const String email = 'email';
+  static const String gstNumber = 'gst_number';
   static const String address1 = 'address_1';
   static const String address2 = 'address_2';
   static const String company = 'company';
@@ -500,6 +508,12 @@ class AddressFieldName {
   static const String selectedAddress = 'selectedAddress';
 }
 
+class BankAccountFieldName {
+  static const String bankName = 'bank_name';
+  static const String accountNumber = 'account_number';
+  static const String ifscCode = 'ifsc_code';
+  static const String swiftCode = 'swift_code';
+}
 
 class VendorFieldName {
   static const String id = '_id';

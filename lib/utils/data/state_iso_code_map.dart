@@ -14,43 +14,67 @@ class StateData{
   static final List<String> indianStates = indianStateISOCodeMap.keys.toList();
 
   static final Map<String, String> indianStateISOCodeMap = {
-  'Andhra Pradesh': 'AP',
-  'Andaman and Nicobar Islands': 'AN',
-  'Arunachal Pradesh': 'AR',
-  'Assam': 'AS',
-  'Bihar': 'BR',
-  'Chandigarh': 'CH',
-  'Chhattisgarh': 'CG',
-  'Daman and Diu': 'DN',
-  'Delhi': 'DL',
-  'Goa': 'GA',
-  'Gujarat': 'GJ',
-  'Haryana': 'HR',
-  'Himachal Pradesh': 'HP',
-  'Jammu and Kashmir': 'JK',
-  'Jharkhand': 'JH',
-  'Karnataka': 'KA',
-  'Kerala': 'KL',
-  'Ladakh': 'LA',
-  'Lakshadweep': 'LD',
-  'Madhya Pradesh': 'MP',
-  'Maharashtra': 'MH',
-  'Manipur': 'MN',
-  'Meghalaya': 'ML',
-  'Mizoram': 'MZ',
-  'Nagaland': 'NL',
-  'Odisha': 'OR',
-  'Puducherry': 'PY',
-  'Punjab': 'PB',
-  'Rajasthan': 'RJ',
-  'Sikkim': 'SK',
-  'Tamil Nadu': 'TN',
-  'Telangana': 'TG',
-  'Tripura': 'TR',
-  'Uttar Pradesh': 'UP',
-  'Uttarakhand': 'UK',
-  'West Bengal': 'WB',
+    'Andhra Pradesh': 'AP',
+    'Andaman and Nicobar Islands': 'AN',
+    'Arunachal Pradesh': 'AR',
+    'Assam': 'AS',
+    'Bihar': 'BR',
+    'Chandigarh': 'CH',
+    'Chhattisgarh': 'CG',
+    'Daman and Diu': 'DN',
+    'Delhi': 'DL',
+    'Goa': 'GA',
+    'Gujarat': 'GJ',
+    'Haryana': 'HR',
+    'Himachal Pradesh': 'HP',
+    'Jammu and Kashmir': 'JK',
+    'Jharkhand': 'JH',
+    'Karnataka': 'KA',
+    'Kerala': 'KL',
+    'Ladakh': 'LA',
+    'Lakshadweep': 'LD',
+    'Madhya Pradesh': 'MP',
+    'Maharashtra': 'MH',
+    'Manipur': 'MN',
+    'Meghalaya': 'ML',
+    'Mizoram': 'MZ',
+    'Nagaland': 'NL',
+    'Odisha': 'OR',
+    'Puducherry': 'PY',
+    'Punjab': 'PB',
+    'Rajasthan': 'RJ',
+    'Sikkim': 'SK',
+    'Tamil Nadu': 'TN',
+    'Telangana': 'TG',
+    'Tripura': 'TR',
+    'Uttar Pradesh': 'UP',
+    'Uttarakhand': 'UK',
+    'West Bengal': 'WB',
   };
+
+  // Extra aliases
+  static final Map<String, String> isoCodeAliases = {
+    'CT': 'CG', // CT -> Chhattisgarh
+    'TS': 'TG', // TS -> Telangana
+    'OD': 'OR', // OD -> Odisha
+  };
+
+  static String? getStateNameFromCodeOrName(String input) {
+    // Direct name match
+    if (indianStateISOCodeMap.containsKey(input)) return input;
+
+    // Normalize code using aliases
+    String normalizedCode = isoCodeAliases[input] ?? input;
+
+    // Match ISO code
+    if (indianStateISOCodeMap.containsValue(normalizedCode)) {
+      return indianStateISOCodeMap.entries
+          .firstWhere((e) => e.value == normalizedCode)
+          .key;
+    }
+
+    return null;
+  }
 }
 
 class CountryData {

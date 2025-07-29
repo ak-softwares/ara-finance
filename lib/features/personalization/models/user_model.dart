@@ -5,6 +5,7 @@ import '../../../utils/constants/db_constants.dart';
 import '../../../utils/constants/enums.dart';
 import '../../setup/models/ecommerce_platform.dart';
 import 'address_model.dart';
+import 'bank_account.dart';
 
 class UserModel {
   String? id;
@@ -20,6 +21,8 @@ class UserModel {
   String? phone;
   String? companyName;
   String? gstNumber;
+  String? panNumber;
+  BankAccountModel? bankAccount;
   AddressModel? billing;
   AddressModel? shipping;
   double? balance;
@@ -57,6 +60,8 @@ class UserModel {
     this.phone,
     this.companyName,
     this.gstNumber,
+    this.panNumber,
+    this.bankAccount,
     this.billing,
     this.shipping,
     this.balance,
@@ -120,6 +125,8 @@ class UserModel {
       phone: json[UserFieldConstants.phone] ?? (json[UserFieldConstants.billing]?[UserFieldConstants.phone] ?? ''),
       companyName: json[UserFieldConstants.company],
       gstNumber: json[UserFieldConstants.gstNumber],
+      panNumber: json[UserFieldConstants.panNumber],
+      bankAccount: BankAccountModel.fromJson(json[UserFieldConstants.bankAccount] ?? {}),
       billing: AddressModel.fromJson(json[UserFieldConstants.billing] ?? {}),
       shipping: AddressModel.fromJson(json[UserFieldConstants.shipping] ?? {}),
       isPayingCustomer: json[UserFieldConstants.isPayingCustomer] ?? false,
@@ -174,6 +181,8 @@ class UserModel {
     addIfNotNull(UserFieldConstants.phone, phone);
     addIfNotNull(UserFieldConstants.company, companyName);
     addIfNotNull(UserFieldConstants.gstNumber, gstNumber);
+    addIfNotNull(UserFieldConstants.panNumber, panNumber);
+    addIfNotNull(UserFieldConstants.bankAccount, bankAccount?.toJson());
     addIfNotNull(UserFieldConstants.billing, billing?.toMap());
     addIfNotNull(UserFieldConstants.shipping, shipping?.toMap());
     addIfNotNull(UserFieldConstants.isPayingCustomer, isPayingCustomer);

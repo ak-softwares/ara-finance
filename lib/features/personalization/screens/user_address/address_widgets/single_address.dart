@@ -46,6 +46,14 @@ class SingleAddress extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if(address.companyName != null && address.companyName!.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(address.companyName!, style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 15), overflow: TextOverflow.ellipsis),
+                      Text(address.gstNumber ?? '', style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 15), overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
                 Text(address.name, style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 15), overflow: TextOverflow.ellipsis),
                 hidePhone
                     ? const SizedBox.shrink()

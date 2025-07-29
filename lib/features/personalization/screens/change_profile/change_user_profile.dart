@@ -77,6 +77,12 @@ class ChangeUserProfile extends StatelessWidget {
                           controller: controller.gstNumber,
                           decoration: const InputDecoration(prefixIcon: Icon(Iconsax.direct_right), labelText: 'GST Number'),
                         ),
+
+                        // Pan
+                        TextFormField(
+                          controller: controller.panNumber,
+                          decoration: const InputDecoration(prefixIcon: Icon(Iconsax.card), labelText: 'PAN Number'),
+                        ),
                       ]
                   )
               ),

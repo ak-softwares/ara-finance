@@ -193,6 +193,15 @@ class AddExpenseTransaction extends StatelessWidget {
                     ),
                   ],
                 ),
+
+                // Description
+                TextFormField(
+                  controller: controller.description,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
               ],
             ),
           ),

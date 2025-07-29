@@ -127,7 +127,7 @@ class MongoProductRepo extends GetxController {
 
       return products;
     } catch (e) {
-      throw 'Failed to fetch products by IDs: $e';
+      rethrow;
     }
   }
 

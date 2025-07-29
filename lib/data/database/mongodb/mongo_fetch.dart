@@ -572,7 +572,8 @@ class MongoFetch extends MongoDatabase {
           '${TransactionFieldName.fromAccountVoucher}._id', voucherId)
           .or(
           where.eq('${TransactionFieldName.toAccountVoucher}._id', voucherId))
-          .sortBy('_id', descending: false)
+          .sortBy(TransactionFieldName.date, descending: true)
+          .sortBy(TransactionFieldName.id, descending: true) // second-level sort
           .skip(skip)
           .limit(itemsPerPage);
 
@@ -656,10 +657,7 @@ class MongoFetch extends MongoDatabase {
     }
   }
 
-  Future<Set<int>> fetchDocumentIds({
-    required String collectionName,
-    required String userId,
-  }) async {
+  Future<Set<int>> fetchDocumentIds({required String collectionName, required String userId}) async {
     await _ensureConnected();
     try {
       final collection = db!.collection(collectionName);
@@ -668,20 +666,22 @@ class MongoFetch extends MongoDatabase {
       const pageSize = 1000;
 
       while (true) {
-        final batch = await collection
-            .find(
+        final batch = await collection.find(
           where
-              .eq(ProductFieldName.userId,
-              userId) // Using variables for field name and value
+              .eq(ProductFieldName.userId, userId) // Using variables for field name and value
               .fields([ProductFieldName.productId])
               .skip((page - 1) * pageSize)
               .limit(pageSize),
-        )
-            .toList();
+        ).toList();
 
         if (batch.isEmpty) break;
 
-        allIds.addAll(batch.map((p) => p[ProductFieldName.productId] as int));
+        allIds.addAll(
+            batch
+                .map((p) => p[ProductFieldName.productId])
+                .where((id) => id is int)
+                .cast<int>()
+        );
         page++;
       }
 

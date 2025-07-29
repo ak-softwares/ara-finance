@@ -30,6 +30,8 @@ class ProductModel {
   String? description;
   String? shortDescription;
   String? sku;
+  int? hsnCode;
+  TaxRate? taxRate;
   double? price;
   double? regularPrice;
   double? salePrice;
@@ -43,6 +45,7 @@ class ProductModel {
   String? taxClass;
   bool? manageStock;
   int? stockQuantity;
+  int? openingStock;
   String? weight;
   Map<String, dynamic>? dimensions;
   bool? shippingRequired;
@@ -90,6 +93,8 @@ class ProductModel {
     this.description,
     this.shortDescription,
     this.sku,
+    this.hsnCode,
+    this.taxRate,
     this.price,
     this.regularPrice,
     this.salePrice,
@@ -103,6 +108,7 @@ class ProductModel {
     this.taxClass,
     this.manageStock,
     this.stockQuantity,
+    this.openingStock,
     this.weight,
     this.dimensions,
     this.shippingRequired,
@@ -228,6 +234,8 @@ class ProductModel {
       description: json[ProductFieldName.description] ?? '',
       shortDescription: json[ProductFieldName.shortDescription] ?? '',
       sku: json[ProductFieldName.sku] ?? '',
+      hsnCode: json[ProductFieldName.hsnCode],
+      taxRate: TaxRateExtension.fromJson(json[ProductFieldName.taxRate]),
       price: double.tryParse(json[ProductFieldName.price] ?? '0.0'),
       salePrice: double.tryParse(json[ProductFieldName.salePrice] ?? '0.0'),
       regularPrice: double.tryParse(json[ProductFieldName.regularPrice] ?? '0.0'),
@@ -241,6 +249,7 @@ class ProductModel {
       taxClass: json[ProductFieldName.taxClass] ?? '',
       manageStock: json[ProductFieldName.manageStock] ?? false,
       stockQuantity: json[ProductFieldName.stockQuantity] ?? 0,
+      openingStock: json[ProductFieldName.openingStock] ?? 0,
       weight: json[ProductFieldName.weight] ?? '',
       dimensions: json[ProductFieldName.dimensions] != null
           ? Map<String, dynamic>.from(json[ProductFieldName.dimensions])
@@ -413,6 +422,8 @@ class ProductModel {
     add(ProductFieldName.description, description);
     add(ProductFieldName.shortDescription, shortDescription);
     add(ProductFieldName.sku, sku);
+    add(ProductFieldName.hsnCode, hsnCode);
+    add(ProductFieldName.taxRate, taxRate?.toJson());
     add(ProductFieldName.price, price?.toString());
     add(ProductFieldName.regularPrice, regularPrice?.toString());
     add(ProductFieldName.salePrice, salePrice?.toString());
@@ -456,7 +467,7 @@ class ProductModel {
 
     if (!isUpdate) {
       add(ProductFieldName.purchasePrice, purchasePrice);
-      add(ProductFieldName.stockQuantity, stockQuantity);
+      add(ProductFieldName.openingStock, openingStock);
     }
 
     return map;
