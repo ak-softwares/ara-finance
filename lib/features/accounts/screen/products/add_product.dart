@@ -7,9 +7,9 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/product/add_product_controller.dart';
+import '../../controller/search/search_delegate.dart';
 import '../../models/account_voucher_model.dart';
 import '../../models/product_model.dart';
-import '../search/search_and_select/search_products.dart';
 
 class AddProducts extends StatelessWidget {
   const AddProducts({super.key, this.product});
@@ -119,7 +119,7 @@ class AddProducts extends StatelessWidget {
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final AccountVoucherModel getSelectedVendor = await showSearch(context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.vendor),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.vendor, isPicker: true),
                             );
                             // If products are selected, update the state
                             if (getSelectedVendor.id != null) {

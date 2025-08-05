@@ -6,17 +6,16 @@ import 'package:http/http.dart' as http;
 
 import '../../../../features/accounts/models/order_model.dart';
 import '../../../../utils/constants/api_constants.dart';
+import '../initialization/woocommerce_initialization.dart';
 
 
 class WooOrdersRepository extends GetxController {
   static WooOrdersRepository get instance => Get.find();
 
-  void _ensureCredentialsInitialized() {
-    if (APIConstant.wooBaseDomain.isEmpty ||
-        APIConstant.wooConsumerKey.isEmpty ||
-        APIConstant.wooConsumerSecret.isEmpty) {
-      throw Exception('WooCommerce credentials are not initialized.');
-    }
+  @override
+  void onInit() {
+    Woocommerce().initialize();
+    super.onInit();
   }
 
   // Fetch Orders Count
@@ -28,15 +27,15 @@ class WooOrdersRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -61,24 +60,23 @@ class WooOrdersRepository extends GetxController {
   // fetchShippedOrders
   Future<List<OrderModel>> fetchOrdersByStatus({required List<String> status, required String page}) async {
     try{
-      _ensureCredentialsInitialized();
       final Map<String, String> queryParams = {
         'status': status.join(','), // Joins list elements into a single string
         'orderby': 'date', //date, id, include, title, slug, price, popularity and rating. Default is date.
-        'per_page': APIConstant.itemsPerPageSync,
+        'per_page': Woocommerce.wooItemsPerPageSync,
         'page': page,
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -105,20 +103,20 @@ class WooOrdersRepository extends GetxController {
     try{
       final Map<String, String> queryParams = {
         'orderby': 'date', //date, id, include, title, slug, price, popularity and rating. Default is date.
-        'per_page': APIConstant.itemsPerPage,
+        'per_page': Woocommerce.wooItemsPerPage,
         'page': page,
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -151,15 +149,15 @@ class WooOrdersRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -189,15 +187,15 @@ class WooOrdersRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -222,14 +220,14 @@ class WooOrdersRepository extends GetxController {
         'status': status,
       };
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath + orderId,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath + orderId,
       );
       final http.Response response = await http.put(
         uri,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
         body: jsonEncode(data),
       );
@@ -254,14 +252,14 @@ class WooOrdersRepository extends GetxController {
 
     try {
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooOrdersApiPath + orderId,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooOrdersApiPath + orderId,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
       if (response.statusCode == 200) {

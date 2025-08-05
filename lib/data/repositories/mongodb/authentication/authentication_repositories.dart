@@ -22,7 +22,7 @@ class MongoAuthenticationRepository extends GetxController {
   // variable
   final _auth = FirebaseAuth.instance;
   // Upload multiple products
-  Future<void> singUpWithEmailAndPass({required UserModel user}) async {
+  Future<String> singUpWithEmailAndPass({required UserModel user}) async {
     try {
       // Check if a user with the same email or phone already exists
       final existingUser = await _mongoFetch.findOne(
@@ -38,7 +38,8 @@ class MongoAuthenticationRepository extends GetxController {
         throw 'Email or phone number already exists';
       }
       Map<String, dynamic> userMap = user.toMap();
-      await _mongoInsert.insertDocument(collectionName, userMap); // Use batch insert function
+      final String id = await _mongoInsert.insertDocument(collectionName, userMap); // Use batch insert function
+      return id;
     } catch (e) {
       throw 'Failed to create account: $e';
     }

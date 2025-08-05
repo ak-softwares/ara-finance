@@ -70,7 +70,7 @@ class ProductTile extends StatelessWidget {
 
                       // Supplier
                       if(product.vendor != null)
-                        Text('Vendor: ${product.vendor?.title ?? ''}'),
+                        Text('Vendor: ${product.vendor?.title ?? ''}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, ),),
 
                       // Price and Stock
                       Row(
@@ -82,15 +82,15 @@ class ProductTile extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               color: product.stockQuantity == null || product.stockQuantity == 0
-                                  ? null
+                                  ? Theme.of(context).colorScheme.onSurface
                                   : product.stockQuantity! < 0
-                                  ? Colors.red
-                                  : Colors.green,
+                                      ? Colors.red
+                                      : Colors.green,
                             ),
                           ),
 
                           // Price
-                          Text('Purchase Price ${AppSettings.currencySymbol + product.purchasePrice.toString()}'),
+                          Text('Purchase Price ${AppSettings.currencySymbol + product.purchasePrice.toString()}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface),),
                         ],
                       )
                     ],

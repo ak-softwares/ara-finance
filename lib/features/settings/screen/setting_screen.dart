@@ -5,14 +5,12 @@ import '../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../common/navigation_bar/appbar.dart';
 import '../../../common/styles/spacing_style.dart';
 import '../../../utils/theme/ThemeController.dart';
-import '../controllers/settings_controller.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final settingsController = Get.put(SettingsController());
     final themeController = Get.put(ThemeController());
     // final themeProvider = Provider.of<ThemeProvider>(context);
 

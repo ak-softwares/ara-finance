@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,13 +7,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import '../../../../common/dialog_box_massages/dialog_massage.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../data/repositories/mongodb/authentication/authentication_repositories.dart';
-import '../../../../data/repositories/woocommerce/customers/woo_customer_repository.dart';
-import '../../../../utils/constants/api_constants.dart';
-import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/local_storage_constants.dart';
 import '../../../../utils/exceptions/firebase_auth_exceptions.dart';
 import '../../../../utils/exceptions/format_exceptions.dart';
@@ -45,29 +46,12 @@ class AuthenticationController extends GetxController {
     checkIsAdminLogin();
   }
 
-  Future<void> initializeEcommercePlatformCredentials() async {
-    try {
-      if (admin.value.email == null || admin.value.email!.isEmpty) {
-        final String localAuthUserToken = await fetchLocalAuthToken();
-        final userData = await mongoAuthenticationRepository.fetchUserById(userId: localAuthUserToken);
-        admin(userData);
-      }
-
-      if (admin.value.ecommercePlatform == EcommercePlatform.woocommerce) {
-        APIConstant.initializeWooCommerceCredentials(user: admin.value);
-      }
-    } catch (e) {
-      debugPrint('Failed to initialize platform credentials: $e');
-    }
-  }
-
-
   // Check if the user is logged in
   Future<void> checkIsAdminLogin() async {
     final String localAuthUserToken = await fetchLocalAuthToken();
     if (localAuthUserToken.isNotEmpty) {
       isAdminLogin.value = true;
-      admin.value = UserModel(id: localAuthUserToken);
+      admin.value = await loadUserFromLocal() ?? UserModel();
     }
   }
 
@@ -82,14 +66,14 @@ class AuthenticationController extends GetxController {
 
   String get userId {
     if (!isAdminLogin.value || admin.value.id == null || admin.value.id!.isEmpty) {
-      throw Exception("User not authenticated. Call `checkIsAdminLogin()` first.");
+      throw Exception("User not authenticated.");
     }
     return admin.value.id!;
   }
 
   Future<String> fetchLocalAuthToken() async {
-    final String? authToken = await secureStorage.read(key: LocalStorage.authUserID);
-    final String? expiryString = await secureStorage.read(key: LocalStorage.loginExpiry);
+    final String? authToken = await secureStorage.read(key: LocalStorageName.authUserID);
+    final String? expiryString = await secureStorage.read(key: LocalStorageName.loginExpiry);
 
     // Check if both values exist
     if (authToken == null || authToken.isEmpty || expiryString == null || expiryString.isEmpty) {
@@ -112,13 +96,14 @@ class AuthenticationController extends GetxController {
   Future<void> saveLocalAuthToken(String token) async {
     // Store user ID and login expiry
     final String expiry = DateTime.now().add(Duration(days: loginExpiryInDays)).toIso8601String();
-    await secureStorage.write(key: LocalStorage.authUserID, value: token);
-    await secureStorage.write(key: LocalStorage.loginExpiry, value: expiry);
+    await secureStorage.write(key: LocalStorageName.authUserID, value: token);
+    await secureStorage.write(key: LocalStorageName.loginExpiry, value: expiry);
   }
 
   Future<void> deleteLocalAuthToken() async {
-    await secureStorage.delete(key: LocalStorage.authUserID);
-    await secureStorage.delete(key: LocalStorage.loginExpiry);
+    await secureStorage.delete(key: LocalStorageName.authUserID);
+    await secureStorage.delete(key: LocalStorageName.loginExpiry);
+    await removeUserFromLocal();
   }
 
   // Fetch user record
@@ -167,7 +152,7 @@ class AuthenticationController extends GetxController {
   Future<void> mongoDeleteAccount() async {
     try {
       await mongoAuthenticationRepository.deleteUser(id: admin.value.id.toString());
-      logout();
+      await logout();
     } catch (error) {
       AppMassages.errorSnackBar(title: 'Error', message: error.toString());
     }
@@ -178,8 +163,8 @@ class AuthenticationController extends GetxController {
     admin.value = user; //update user value
     isAdminLogin.value = true; //make user login
     saveLocalAuthToken(user.id!);
+    await saveUserFromLocal(user);
     AppMassages.showToastMessage(message: 'Login successfully!'); //show massage for successful login
-    await initializeEcommercePlatformCredentials();
     await Future.delayed(Duration(milliseconds: 300)); // Add delay
     NavigationHelper.navigateToBottomNavigation(); //navigate to other screen
   }
@@ -189,7 +174,7 @@ class AuthenticationController extends GetxController {
     try {
       await GoogleSignIn().signOut();
       await _auth.signOut();
-      deleteLocalAuthToken();
+      await deleteLocalAuthToken();
       isAdminLogin.value = false;
       admin.value = UserModel.empty();
       NavigationHelper.navigateToLoginScreen();
@@ -206,6 +191,28 @@ class AuthenticationController extends GetxController {
     catch (error) {
       throw 'Something went wrong. Please try again $error';
     }
+  }
+
+  Future<void> saveUserFromLocal(UserModel user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = jsonEncode(user.toMap(isLocal: true));
+    await prefs.setString(LocalStorageName.userData, userJson);
+  }
+
+  Future<UserModel?> loadUserFromLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString(LocalStorageName.userData);
+
+    if (userJson != null) {
+      final Map<String, dynamic> jsonMap = jsonDecode(userJson);
+      return UserModel.fromJson(jsonMap, isLocal: true);
+    }
+    return null;
+  }
+
+  Future<void> removeUserFromLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(LocalStorageName.userData);
   }
 
 }

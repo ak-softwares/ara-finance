@@ -7,11 +7,11 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../../utils/formatters/formatters.dart';
+import '../../../../controller/search/search_delegate.dart';
 import '../../../../controller/transaction/receipt/add_receipt_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../../models/transaction_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
-import '../../../search/search_and_select/search_products.dart';
 
 class AddReceipt extends StatelessWidget {
   const AddReceipt({super.key, this.receipt});
@@ -94,10 +94,7 @@ class AddReceipt extends StatelessWidget {
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final AccountVoucherModel getSelectedCustomer = await showSearch(context: context,
-                              delegate: SearchVoucher1(
-                                  voucherType: AccountVoucherType.customer,
-                                  selectedItems: controller.selectedCustomer.value
-                              ),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.customer, isPicker: true),
                             );
                             // If products are selected, update the state
                             if (getSelectedCustomer.id != null) {
@@ -156,7 +153,7 @@ class AddReceipt extends StatelessWidget {
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final AccountVoucherModel getSelectedPayment = await showSearch(context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.bankAccount),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.bankAccount, isPicker: true),
                             );
                             // If products are selected, update the state
                             if (getSelectedPayment.id != null) {

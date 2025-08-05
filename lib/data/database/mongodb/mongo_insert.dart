@@ -12,10 +12,16 @@ class MongoInsert extends MongoDatabase {
   }
 
   // Insert a single document
-  Future<void> insertDocument(String collectionName, Map<String, dynamic> data) async {
+  Future<String> insertDocument(String collectionName, Map<String, dynamic> data) async {
     await _ensureConnected();
     try {
-      await db!.collection(collectionName).insert(data);
+      final result = await db!.collection(collectionName).insertOne(data);
+      if (result.isSuccess) {
+        final ObjectId id = data['_id'];
+        return id.toHexString(); // or: id.toString()
+      } else {
+        throw Exception('Insert failed: ${result.errmsg}');
+      }
     } catch (e) {
       throw Exception('Failed to insert document: $e');
     }

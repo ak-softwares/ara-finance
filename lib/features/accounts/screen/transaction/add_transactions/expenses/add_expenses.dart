@@ -7,11 +7,11 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../../utils/formatters/formatters.dart';
+import '../../../../controller/search/search_delegate.dart';
 import '../../../../controller/transaction/expense/add_expenses_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../../models/transaction_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
-import '../../../search/search_and_select/search_products.dart';
 
 class AddExpenseTransaction extends StatelessWidget {
   const AddExpenseTransaction({super.key, this.expense});
@@ -93,7 +93,7 @@ class AddExpenseTransaction extends StatelessWidget {
                           onTap: () async {
                             final AccountVoucherModel getSelectedExpense = await showSearch(
                               context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.expense),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.expense, isPicker: true),
                             );
                             if (getSelectedExpense.id != null) {
                               controller.selectedExpense(getSelectedExpense);
@@ -154,7 +154,7 @@ class AddExpenseTransaction extends StatelessWidget {
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final AccountVoucherModel getSelectedPayment = await showSearch(context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.bankAccount),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.bankAccount, isPicker: true),
                             );
                             // If products are selected, update the state
                             if (getSelectedPayment.id != null) {

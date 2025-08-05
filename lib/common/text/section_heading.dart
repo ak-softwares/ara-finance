@@ -33,12 +33,12 @@ class SectionHeading extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: titleParts[0],
-                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500),
                   ),
                   if (titleParts.length > 1) // Check if there's more than one part after splitting
                     TextSpan(
                       text: titleParts[1],
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(color: Colors.red, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
                     ),
                 ],
               ),

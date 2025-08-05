@@ -16,7 +16,7 @@ class MongoTransactionRepo extends GetxController {
   final MongoUpdate _mongoUpdate = MongoUpdate();
   final MongoDelete _mongoDelete = MongoDelete();
   final String collectionName = DbCollections.transactions;
-  final int itemsPerPage = int.tryParse(APIConstant.itemsPerPage) ?? 10;
+  final int itemsPerPage = APIConstant.itemsPerPage;
 
   // Fetch transactions by search query & pagination
   Future<List<TransactionModel>> fetchTransactionsBySearchQuery({

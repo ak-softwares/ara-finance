@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../../features/accounts/screen/search/search/search.dart';
+import '../../features/accounts/controller/search/search_delegate.dart';
 import '../../features/authentication/controllers/authentication_controller/authentication_controller.dart';
 import '../../features/settings/app_settings.dart';
 import '../../features/settings/screen/setting_screen.dart';
@@ -58,7 +58,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget{
         IconButton(
             icon: Icon(AppIcons.search),
             onPressed: () => showSearch(context: context,
-                delegate: SearchVoucher(searchType: searchType!, voucherType: voucherType)
+                delegate: AppSearchDelegate(searchType: searchType!, voucherType: voucherType)
             )
         ),
         if(seeLogoutButton) ...[

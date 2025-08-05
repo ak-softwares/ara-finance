@@ -16,8 +16,8 @@ import '../../account_voucher/widget/account_voucher_simmer.dart';
 import '../../account_voucher/widget/account_voucher_tile.dart';
 import '../../products/widget/product_tile.dart';
 
-class SearchScreen3 extends StatelessWidget {
-  const SearchScreen3({
+class SearchPickerScreen extends StatelessWidget {
+  const SearchPickerScreen({
     super.key,
     required this.title,
     required this.searchQuery,
@@ -62,7 +62,7 @@ class SearchScreen3 extends StatelessWidget {
 
     return Scaffold(
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSizes.md),
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.md, vertical: AppSizes.sm),
         child: ElevatedButton(
             onPressed: () => searchController.confirmSelection(context: context, voucherType: voucherType),
             child: Obx(() => Row(

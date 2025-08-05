@@ -7,7 +7,6 @@ import '../../../utils/constants/db_constants.dart';
 import '../../../utils/constants/enums.dart';
 import '../../personalization/models/user_model.dart';
 import 'account_voucher_model.dart';
-import 'brand_model.dart';
 import 'category_model.dart';
 import 'product_attribute_model.dart';
 
@@ -59,7 +58,6 @@ class ProductModel {
   List<int>? crossSellIds;
   int? parentId;
   String? purchaseNote;
-  List<BrandModel>? brands;
   List<CategoryModel>? categories;
   List<Map<String, dynamic>>? tags;
   List<Map<String, dynamic>>? images;
@@ -123,7 +121,6 @@ class ProductModel {
     this.parentId,
     this.purchaseNote,
     this.categories,
-    this.brands,
     this.tags,
     this.images,
     this.image,
@@ -192,11 +189,6 @@ class ProductModel {
       categories = (json[ProductFieldName.categories] as List).map((category) => CategoryModel.fromJson(category)).toList();
     }
 
-    // Extracting brands data from the JSON
-    List<BrandModel>? brands = [];
-    if (json.containsKey(ProductFieldName.brands) && json[ProductFieldName.brands] is List) {
-      brands = (json[ProductFieldName.brands] as List).map((brand) => BrandModel.fromJson(brand)).toList();
-    }
 
     // Extracting Attribute data from the JSON
     List<ProductAttributeModel>? attributes = [];
@@ -272,7 +264,6 @@ class ProductModel {
       image: json[ProductFieldName.image] != null && json[ProductFieldName.image].isNotEmpty
           ? json[ProductFieldName.image]['src'] : '',
       categories: categories,
-      brands: brands,
       attributes: attributes,
       defaultAttributes: defaultAttributes,
       variations: List<int>.from(json[ProductFieldName.variations] ?? []),
@@ -295,12 +286,6 @@ class ProductModel {
     List<CategoryModel>? categories = [CategoryModel.empty()];
     if (json.containsKey(ProductFieldName.categories) && json[ProductFieldName.categories] is List) {
       categories = (json[ProductFieldName.categories] as List).map((category) => CategoryModel.fromJson(category)).toList();
-    }
-
-    // Extracting brands data from the JSON
-    List<BrandModel>? brands = [];
-    if (json.containsKey(ProductFieldName.brands) && json[ProductFieldName.brands] is List) {
-      brands = (json[ProductFieldName.brands] as List).map((brand) => BrandModel.fromJson(brand)).toList();
     }
 
     // Extracting Attribute data from the JSON
@@ -375,7 +360,6 @@ class ProductModel {
       image: json[ProductFieldName.image] != null && json[ProductFieldName.image].isNotEmpty
           ? json[ProductFieldName.image]['src'] : '',
       categories: categories,
-      brands: brands,
       attributes: attributes,
       defaultAttributes: defaultAttributes,
       variations: List<int>.from(json[ProductFieldName.variations] ?? []),
@@ -449,7 +433,6 @@ class ProductModel {
     add(ProductFieldName.parentId, parentId);
     add(ProductFieldName.purchaseNote, purchaseNote);
 
-    add(ProductFieldName.brands, brands?.map((b) => b.toMap()).toList());
     add(ProductFieldName.categories, categories?.map((c) => c.toMap()).toList());
     add(ProductFieldName.tags, tags);
     add(ProductFieldName.images, images);

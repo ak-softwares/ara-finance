@@ -99,7 +99,7 @@ class UserModel {
   bool get isCustomer => userType == UserType.customer;
   bool get isAdmin => userType == UserType.admin;
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
+  factory UserModel.fromJson(Map<String, dynamic> json, {bool isLocal = false}) {
     final UserType userType = UserType.values.firstWhere(
           (e) => e.name == json[UserFieldConstants.userType],
       orElse: () => UserType.customer, // or a default fallback
@@ -131,8 +131,12 @@ class UserModel {
       shipping: AddressModel.fromJson(json[UserFieldConstants.shipping] ?? {}),
       isPayingCustomer: json[UserFieldConstants.isPayingCustomer] ?? false,
       avatarUrl: json[UserFieldConstants.avatarUrl] ?? '',
-      dateCreated: json[UserFieldConstants.dateCreated],
-      dateModified: json[UserFieldConstants.dateModified],
+      dateCreated: isLocal && json[UserFieldConstants.dateCreated] != null
+          ? DateTime.parse(json[UserFieldConstants.dateCreated])
+          : json[UserFieldConstants.dateCreated],
+      dateModified: isLocal && json[UserFieldConstants.dateModified] != null
+          ? DateTime.parse(json[UserFieldConstants.dateModified])
+          : json[UserFieldConstants.dateModified],
       activeTime: json[UserFieldConstants.activeTime],
       isPhoneVerified: (json[UserFieldConstants.metaData] as List?)?.any((meta) =>
       meta['key'] == UserFieldConstants.verifyPhone && meta['value'] == true) ?? false,
@@ -164,7 +168,7 @@ class UserModel {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({bool isLocal = false}) {
     final map = <String, dynamic>{};
 
     void addIfNotNull(String key, dynamic value) {
@@ -187,8 +191,8 @@ class UserModel {
     addIfNotNull(UserFieldConstants.shipping, shipping?.toMap());
     addIfNotNull(UserFieldConstants.isPayingCustomer, isPayingCustomer);
     addIfNotNull(UserFieldConstants.avatarUrl, avatarUrl);
-    addIfNotNull(UserFieldConstants.dateCreated, dateCreated);
-    addIfNotNull(UserFieldConstants.dateModified, dateModified);
+    addIfNotNull(UserFieldConstants.dateCreated, isLocal ? dateCreated?.toIso8601String() : dateCreated);
+    addIfNotNull(UserFieldConstants.dateModified, isLocal ? dateModified?.toIso8601String() : dateModified);
     addIfNotNull(UserFieldConstants.activeTime, activeTime);
     addIfNotNull(UserFieldConstants.balance, balance);
     addIfNotNull(UserFieldConstants.openingBalance, openingBalance);

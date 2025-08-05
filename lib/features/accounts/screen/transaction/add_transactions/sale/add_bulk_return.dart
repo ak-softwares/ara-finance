@@ -9,12 +9,11 @@ import '../../../../../../common/widgets/common/input_field_with_button.dart';
 import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
-import '../../../../../personalization/models/user_model.dart';
 import '../../../../../settings/app_settings.dart';
+import '../../../../controller/search/search_delegate.dart';
 import '../../../../controller/transaction/sale/sale_bulk_return_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
-import '../../../search/search_and_select/search_products.dart';
 import 'widget/barcode_sale_tile.dart';
 
 class AddBulkReturn extends StatelessWidget {
@@ -118,10 +117,7 @@ class AddBulkReturn extends StatelessWidget {
                       onTap: () async {
                         // Navigate to the search screen and wait for the result
                         final AccountVoucherModel getSelectedCustomer = await showSearch(context: context,
-                          delegate: SearchVoucher1(
-                              voucherType: AccountVoucherType.customer,
-                              selectedItems: controller.selectedCustomer.value
-                          ),
+                          delegate: AppSearchDelegate(voucherType: AccountVoucherType.customer, isPicker: true),
                         );
                         // If products are selected, update the state
                         if (getSelectedCustomer.id != null) {
@@ -173,7 +169,7 @@ class AddBulkReturn extends StatelessWidget {
                       onTap: () async {
                         final AccountVoucherModel getSelectedSaleVoucher = await showSearch(
                           context: context,
-                          delegate: SearchVoucher1(voucherType: AccountVoucherType.sale),
+                          delegate: AppSearchDelegate(voucherType: AccountVoucherType.sale, isPicker: true),
                         );
                         if (getSelectedSaleVoucher.id != null) {
                           controller.selectedSaleVoucher(getSelectedSaleVoucher);

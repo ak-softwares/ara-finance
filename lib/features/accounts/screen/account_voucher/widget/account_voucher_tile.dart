@@ -38,49 +38,49 @@ class AccountVoucherTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Voucher Id'),
-                Text('#${accountVoucher.voucherId}', style: const TextStyle(fontSize: 14)),
+                Text('Voucher Id', style: TextStyle(color: Theme.of(context).colorScheme.onSurface),),
+                Text('#${accountVoucher.voucherId}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Title'),
-                Text(accountVoucher.title ?? '', style: const TextStyle(fontSize: 14)),
+                Text('Title', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                Text(accountVoucher.title ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Date created'),
-                Text(AppFormatter.formatDate(accountVoucher.dateCreated), style: const TextStyle(fontSize: 14)),
+                Text('Date created', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                Text(AppFormatter.formatDate(accountVoucher.dateCreated), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Voucher Type'),
-                Text(accountVoucher.voucherType?.name.capitalizeFirst ?? '', style: const TextStyle(fontSize: 14)),
+                Text('Voucher Type', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                Text(accountVoucher.voucherType?.name.capitalizeFirst ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Opening Balance'),
-                Text(accountVoucher.openingBalance?.toStringAsFixed(0) ?? '', style: const TextStyle(fontSize: 14)),
+                Text('Opening Balance', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                Text(accountVoucher.openingBalance?.toStringAsFixed(0) ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Current Balance'),
-                Text(accountVoucher.currentBalance?.toStringAsFixed(0) ?? '', style: const TextStyle(fontSize: 14)),
+                Text('Current Balance', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                Text(accountVoucher.currentBalance?.toStringAsFixed(0) ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Closing Balance'),
+                Text('Closing Balance', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
                 ColoredAmount(amount: accountVoucher.closingBalance),
               ],
             ),

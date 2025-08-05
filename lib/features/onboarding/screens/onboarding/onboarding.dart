@@ -32,7 +32,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
 
   void skip() {
     final storage = GetStorage();
-    storage.write(LocalStorage.isFirstRun, false);
+    storage.write(LocalStorageName.isFirstRun, false);
     NavigationHelper.navigateToBottomNavigation();
   }
 

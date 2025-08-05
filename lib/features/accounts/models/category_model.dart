@@ -1,3 +1,4 @@
+import '../../../data/repositories/woocommerce/initialization/woocommerce_initialization.dart';
 import '../../../utils/constants/api_constants.dart';
 import '../../../utils/constants/db_constants.dart';
 
@@ -45,7 +46,7 @@ class CategoryModel {
   // Map JSON to CategoryModel
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     final slug = json[CategoryFieldName.slug] ?? '';
-    final permalink = '${APIConstant.allCategoryUrl + slug}/';
+    final permalink = '${Woocommerce().allCategoryUrl + slug}/';
     return CategoryModel(
       id: json[CategoryFieldName.id].toString(),
       name: (json[CategoryFieldName.name]).replaceAll('&amp;', '&') ?? '',

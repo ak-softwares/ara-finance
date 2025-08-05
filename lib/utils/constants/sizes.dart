@@ -19,6 +19,9 @@ class AppSizes {
   static const double defaultBtwTiles = 10.0;
   static const double defaultBorderWidth = 0.2;
 
+  // Search Field
+  static const double searchFieldRadius = 25;
+
   // Input Field
   static const double inputFieldHeight = 18.0;
   static const double inputFieldWidth = 120.0;
@@ -35,7 +38,7 @@ class AppSizes {
   static const double buttonPadding = 16.0;
   static const double buttonTextSize = 16.0;
   static const FontWeight buttonTextWeight = FontWeight.w500;
-  static const double buttonRadius = defaultRadius;
+  static const double buttonRadius = 25;
   static const double buttonElevation = 4.0;
   static const double buttonBorderWidth = 1.0;
 
@@ -206,7 +209,7 @@ class AppSizes {
   static const double cardRadiusMd = 12.0;
   static const double cardRadiusSm = 10.0;
   static const double cardRadiusXs = 6.0;
-  static const double cardElevaion = 2.0;
+  static const double cardElevation = 2.0;
 
   // Image carouser height
   static const double imageCarouselHeight = 200.0;

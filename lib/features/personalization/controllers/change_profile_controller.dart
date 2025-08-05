@@ -84,7 +84,7 @@ class ChangeProfileController extends GetxController {
       auth.admin(updatedUser);
 
       // update email to local storage too
-      localStorage.write(LocalStorage.rememberMeEmail, email.text.trim());
+      localStorage.write(LocalStorageName.rememberMeEmail, email.text.trim());
 
       //remove Loader
       FullScreenLoader.stopLoading();
@@ -93,7 +93,7 @@ class ChangeProfileController extends GetxController {
       AppMassages.showToastMessage(message: 'Details updated successfully!');
       // move to next screen
       Get.close(1);
-      Get.off(() => const UserProfileScreen());
+      Get.off(() => const UserProfileInfo());
     } catch (error) {
       //remove Loader
       FullScreenLoader.stopLoading();

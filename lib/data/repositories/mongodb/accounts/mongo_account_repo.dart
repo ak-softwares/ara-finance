@@ -14,7 +14,7 @@ class MongoAccountsRepo extends GetxController {
   final MongoUpdate _mongoUpdate = MongoUpdate();
   final MongoDelete _mongoDelete = MongoDelete();
   final String collectionName = DbCollections.accounts;
-  final int itemsPerPage = int.tryParse(APIConstant.itemsPerPage) ?? 10;
+  final int itemsPerPage = APIConstant.itemsPerPage;
 
   // Fetch products by search query & pagination
   Future<List<AccountModel>> fetchAccountsBySearchQuery({required String query, int page = 1}) async {

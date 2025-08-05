@@ -69,7 +69,7 @@ class AddBulkSaleController extends GetxController {
     if (isScanning.value) return;
     try {
       FullScreenLoader.onlyCircularProgressDialog('Fetching Order...');
-      isScanning.value = true;
+      isScanning(true);
 
       for (final barcode in capture.barcodes) {
         final orderNumber = barcode.rawValue;
@@ -77,12 +77,13 @@ class AddBulkSaleController extends GetxController {
       }
 
       Future.delayed(const Duration(seconds: 2), () {
-        isScanning.value = false;
+        isScanning(false);
       });
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error: ', message: e.toString());
     } finally {
       FullScreenLoader.stopLoading();
+      isScanning(false);
     }
   }
 

@@ -62,7 +62,6 @@ class SearchScreen extends StatelessWidget {
     });
 
     return Scaffold(
-
       body: RefreshIndicator(
         color: AppColors.refreshIndicator,
         onRefresh: () async => searchVoucherController.refreshSearch(query: searchQuery, searchType: searchType, voucherType: voucherType),

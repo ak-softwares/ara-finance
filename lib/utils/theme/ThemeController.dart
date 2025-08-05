@@ -15,7 +15,7 @@ class ThemeController extends GetxController {
   }
 
   void loadTheme() {
-    int? savedThemeIndex = localStorage.read<int>(LocalStorage.themeMode);
+    int? savedThemeIndex = localStorage.read<int>(LocalStorageName.themeMode);
     if (savedThemeIndex != null) {
       themeMode.value = ThemeMode.values[savedThemeIndex];
       Get.changeThemeMode(themeMode.value); // Apply stored theme
@@ -25,6 +25,6 @@ class ThemeController extends GetxController {
   void toggleTheme(ThemeMode mode) {
     themeMode.value = mode;
     Get.changeThemeMode(mode); // Apply theme instantly
-    localStorage.write(LocalStorage.themeMode, mode.index); // Store theme in local storage
+    localStorage.write(LocalStorageName.themeMode, mode.index); // Store theme in local storage
   }
 }

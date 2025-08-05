@@ -48,18 +48,19 @@ class AddBulkReturnController extends GetxController {
     if (isScanning.value) return;
     try {
       FullScreenLoader.onlyCircularProgressDialog('Fetching Order...');
-      isScanning.value = true;
+      isScanning(true);
 
       for (final barcode in capture.barcodes) {
         final orderNumber = int.tryParse(barcode.rawValue ?? '') ?? 0;
         await processAddReturn(orderNumber: orderNumber);
       }
       Future.delayed(const Duration(seconds: 2), () {
-        isScanning.value = false;
+        isScanning(false);
       });
     } catch (e) {
       AppMassages.errorSnackBar(title: 'Error in Order Fetching', message: e.toString());
     } finally {
+      isScanning(false);
       FullScreenLoader.stopLoading();
     }
   }

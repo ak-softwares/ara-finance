@@ -10,10 +10,10 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../settings/app_settings.dart';
+import '../../../../controller/search/search_delegate.dart';
 import '../../../../controller/transaction/sale/add_bulk_sale_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
-import '../../../search/search_and_select/search_products.dart';
 import 'widget/barcode_sale_tile.dart';
 
 class AddBarcodeSale extends StatelessWidget {
@@ -116,7 +116,7 @@ class AddBarcodeSale extends StatelessWidget {
                       onTap: () async {
                         final AccountVoucherModel getSelectedCustomer = await showSearch(
                           context: context,
-                          delegate: SearchVoucher1(voucherType: AccountVoucherType.customer),
+                          delegate: AppSearchDelegate(voucherType: AccountVoucherType.customer, isPicker: true),
                         );
                         if (getSelectedCustomer.id != null) {
                           controller.selectedCustomer(getSelectedCustomer);
@@ -170,7 +170,7 @@ class AddBarcodeSale extends StatelessWidget {
                       onTap: () async {
                         final AccountVoucherModel getSelectedSaleVoucher = await showSearch(
                           context: context,
-                          delegate: SearchVoucher1(voucherType: AccountVoucherType.sale),
+                          delegate: AppSearchDelegate(voucherType: AccountVoucherType.sale, isPicker: true),
                         );
                         if (getSelectedSaleVoucher.id != null) {
                           controller.selectedSaleVoucher(getSelectedSaleVoucher);

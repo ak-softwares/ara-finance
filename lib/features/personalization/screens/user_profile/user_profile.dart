@@ -20,8 +20,8 @@ import '../change_profile/change_user_profile.dart';
 import '../user_address/address_widgets/single_address.dart';
 import '../user_address/update_user_address.dart';
 
-class UserProfileScreen extends StatelessWidget {
-  const UserProfileScreen({super.key});
+class UserProfileInfo extends StatelessWidget {
+  const UserProfileInfo({super.key});
 
   @override
   Widget build(BuildContext context) {

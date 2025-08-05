@@ -17,7 +17,7 @@ class MongoUserRepository extends GetxController {
   final MongoUpdate _mongoUpdate = MongoUpdate();
   final MongoDelete _mongoDelete = MongoDelete();
   final String collectionName = DbCollections.users;
-  final int itemsPerPage = int.tryParse(APIConstant.itemsPerPage) ?? 10;
+  final int itemsPerPage = APIConstant.itemsPerPage;
 
   // Fetch products by search query & pagination
   Future<List<UserModel>> fetchUsersBySearchQuery(

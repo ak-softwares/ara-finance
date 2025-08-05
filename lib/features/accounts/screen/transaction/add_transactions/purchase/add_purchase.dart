@@ -13,12 +13,12 @@ import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../../utils/formatters/formatters.dart';
 import '../../../../../settings/app_settings.dart';
+import '../../../../controller/search/search_delegate.dart';
 import '../../../../controller/transaction/purchase/add_purchase_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../../models/product_model.dart';
 import '../../../../models/transaction_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
-import '../../../search/search_and_select/search_products.dart';
 import 'widget/product_tile.dart';
 
 class AddPurchase extends StatelessWidget {
@@ -102,7 +102,7 @@ class AddPurchase extends StatelessWidget {
                           onTap: () async {
                             final AccountVoucherModel getSelectedVendor = await showSearch(
                               context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.vendor),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.vendor, isPicker: true),
                             );
                             if (getSelectedVendor.id != null) {
                               controller.selectedVendor(getSelectedVendor);
@@ -153,7 +153,7 @@ class AddPurchase extends StatelessWidget {
                           onTap: () async {
                             final AccountVoucherModel getSelectedPurchaseVoucher = await showSearch(
                               context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.purchase),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.purchase, isPicker: true),
                             );
                             if (getSelectedPurchaseVoucher.id != null) {
                               controller.selectedPurchaseVoucher(getSelectedPurchaseVoucher);
@@ -205,7 +205,7 @@ class AddPurchase extends StatelessWidget {
                           onTap: () async {
                             // Navigate to the search screen and wait for the result
                             final List<ProductModel> getSelectedProducts = await showSearch(context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.product),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.product, isPicker: true),
                             );
                             // If products are selected, update the state
                             if (getSelectedProducts.isNotEmpty) {

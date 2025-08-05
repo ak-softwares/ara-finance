@@ -17,7 +17,7 @@ class MongoPurchaseListRepo extends GetxController {
   final MongoDelete _mongoDelete = MongoDelete();
   final String collectionName = DbCollections.purchaseList;
   final String collectionNameMetaData = DbCollections.meta;
-  final int itemsPerPage = int.tryParse(APIConstant.itemsPerPageSync) ?? 10;
+  final int itemsPerPage = APIConstant.itemsPerPage;
 
   // Fetch All Orders from MongoDB
   Future<List<OrderModel>> fetchOrders({required String userId, int page = 1}) async {

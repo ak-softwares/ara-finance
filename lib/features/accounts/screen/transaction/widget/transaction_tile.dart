@@ -36,15 +36,15 @@ class TransactionTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Transaction Id', style: TextStyle(fontSize: 14)),
+                Text('Transaction Id', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
                 Row(
                   children: [
-                    Text('#${transaction.transactionId.toString()}', style: const TextStyle(fontSize: 14)),
+                    Text('#${transaction.transactionId.toString()}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
                     if(transaction.transactionType == AccountVoucherType.sale)
                     Row(
                       spacing: AppSizes.spaceBtwItems,
                       children: [
-                        Text('/${transaction.orderIds?.first.toString()}', style: const TextStyle(fontSize: 14)),
+                        Text('/${transaction.orderIds?.first.toString()}', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
                         InkWell(
                           onTap: () {
                             Clipboard.setData(ClipboardData(text: (transaction.orderIds?.first).toString()));
@@ -63,44 +63,44 @@ class TransactionTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Date', style: TextStyle(fontSize: 14)),
-                Text(AppFormatter.formatStringDate(transaction.date.toString()), style: const TextStyle(fontSize: 14)),
+                Text('Date', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
+                Text(AppFormatter.formatStringDate(transaction.date.toString()), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             if(transaction.transactionType == AccountVoucherType.sale)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Status', style: TextStyle(fontSize: 14)),
+                  Text('Status', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
                   ColoredStatusText(status: transaction.status),                ],
               )
             else
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('From Entity', style: TextStyle(fontSize: 14)),
-                  Text(transaction.fromAccountVoucher?.title ?? '', style: const TextStyle(fontSize: 14)),
+                  Text('From Entity', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
+                  Text(transaction.fromAccountVoucher?.title ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
                 ],
               ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Amount', style: TextStyle(fontSize: 14)),
-                Text(transaction.amount?.toStringAsFixed(2) ?? 'N/A', style: const TextStyle(fontSize: 14)),
+                Text('Amount', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
+                Text(transaction.amount?.toStringAsFixed(2) ?? 'N/A', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('To Entity', style: TextStyle(fontSize: 14)),
-                Text(transaction.toAccountVoucher?.title ?? '', style: const TextStyle(fontSize: 14)),
+                Text('To Entity', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
+                Text(transaction.toAccountVoucher?.title ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Transaction Type', style: TextStyle(fontSize: 14)),
-                Text(transaction.transactionType?.name.capitalizeFirst ?? '', style: const TextStyle(fontSize: 14)),
+                Text('Transaction Type', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
+                Text(transaction.transactionType?.name.capitalizeFirst ?? '', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
               ],
             ),
           ],

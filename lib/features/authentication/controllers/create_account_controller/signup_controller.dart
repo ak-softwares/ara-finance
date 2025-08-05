@@ -60,16 +60,17 @@ class SignupController extends GetxController{
         userType: UserType.admin,
       );
 
-      await mongoAuthenticationRepository.singUpWithEmailAndPass(user: user);
+      final String id = await mongoAuthenticationRepository.singUpWithEmailAndPass(user: user);
+      user.id = id;
 
-      //save to local storage
+      // save to local storage
       if(loginController.rememberMe.value) {
-        localStorage.write(LocalStorage.rememberMeEmail, email.text.trim());
-        localStorage.write(LocalStorage.rememberMePassword, password.text);
+        localStorage.write(LocalStorageName.rememberMeEmail, email.text.trim());
+        localStorage.write(LocalStorageName.rememberMePassword, password.text);
       }
 
       FullScreenLoader.stopLoading();
-      userController.login(user: user);
+      await userController.login(user: user);
     } catch (error) {
       FullScreenLoader.stopLoading();
       AppMassages.errorSnackBar(title: 'Oh Snap!', message: error.toString());

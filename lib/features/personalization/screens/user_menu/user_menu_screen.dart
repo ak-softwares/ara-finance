@@ -21,89 +21,61 @@ class UserMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    final userController = Get.put(AuthenticationController());
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      userController.refreshAdmin();
-    });
-
-    return  Obx(() => Scaffold(
+    final auth = Get.put(AuthenticationController());
+    return Scaffold(
         appBar: const AppAppBar(title: 'Profile Setting', seeLogoutButton: true, seeSettingButton: true,),
-        body: !userController.isAdminLogin.value
-            ? const CheckLoginScreen()
-            : RefreshIndicator(
+        body: RefreshIndicator(
                 color: AppColors.refreshIndicator,
-                onRefresh: () async => userController.refreshAdmin(),
-                child: SingleChildScrollView(
-                  padding: AppSpacingStyle.defaultPageVertical,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      //User profile
-                      Heading(title: 'Your profile', paddingLeft: AppSizes.defaultSpace),
-                      CustomerProfileCard(userController: userController, showHeading: true),
+                onRefresh: () async => await auth.refreshAdmin(),
+                child: ListView(
+                  children: [
+                    // User profile
+                    const CustomerProfileCard(),
 
-                      //Menu
-                      Heading(title: 'Menu', paddingLeft: AppSizes.defaultSpace),
-                      const Menu(),
+                    // Menu
+                    Heading(title: 'Menu', paddingLeft: AppSizes.defaultSpace),
+                    const Menu(),
 
-                      // Contacts
-                      SupportWidget(),
+                    // Contacts
+                    SupportWidget(),
 
-                      // Version
-                      Center(
-                        child: Column(
-                          children: [
-                            Text('Accounts', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
-                            Text('v${AppSettings.appVersion}', style: TextStyle(fontSize: 12),)
-                          ],
-                        ),
+                    // Version
+                    Center(
+                      child: Column(
+                        children: [
+                          Text('Accounts', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+                          Text('v${AppSettings.appVersion}', style: TextStyle(fontSize: 12),)
+                        ],
                       ),
-                      const SizedBox(height: AppSizes.md),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: AppSizes.md),
+                  ],
                 ),
             ),
-      ),
-    );
+      );
   }
 }
 
 class CustomerProfileCard extends StatelessWidget {
-  const CustomerProfileCard({
-    super.key,
-    required this.userController, this.showHeading = false,
-  });
-
-  final bool showHeading;
-  final AuthenticationController userController;
+  const CustomerProfileCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Obx(() {
-          if(userController.isLoading.value) {
-            return const UserTileShimmer();
-          } else {
-             return ListTile(
-               onTap: () => Get.to(() => const UserProfileScreen()),
-                leading: RoundedImage(
-                  padding: 0,
-                  height: 40,
-                  width: 40,
-                  borderRadius: 100,
-                  isNetworkImage: userController.admin.value.avatarUrl != null ? true : false,
-                  image: userController.admin.value.avatarUrl ?? Images.tProfileImage
-                ),
-                title: Text((userController.admin.value.name?.isNotEmpty ?? false) ? userController.admin.value.name! : "User",),
-                subtitle: Text(userController.admin.value.email?.isNotEmpty ?? false ? userController.admin.value.email! : 'Email',),
-                trailing: Icon(Icons.arrow_forward_ios, size: 20,),
-             );
-          }
-        }),
-      ],
+    final auth = Get.put(AuthenticationController());
+    return Obx(() => ListTile(
+      onTap: () => Get.to(() => const UserProfileInfo()),
+      leading: RoundedImage(
+        padding: 0,
+        height: 40,
+        width: 40,
+        borderRadius: 100,
+        isNetworkImage: auth.admin.value.avatarUrl != null ? true : false,
+        image: auth.admin.value.avatarUrl ?? Images.tProfileImage
+      ),
+      title: Text(auth.admin.value.name ?? 'User'),
+      subtitle: Text(auth.admin.value.email ?? 'Email',),
+      trailing: Icon(Icons.arrow_forward_ios, size: 20),
+    ),
     );
   }
 

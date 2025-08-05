@@ -6,10 +6,17 @@ import 'package:get/get.dart';
 
 import '../../../../features/accounts/models/product_model.dart';
 import '../../../../utils/constants/api_constants.dart';
+import '../initialization/woocommerce_initialization.dart';
 
 class WooProductRepository extends GetxController {
   static WooProductRepository get instance => Get.find();
 
+  @override
+  void onInit() {
+    Woocommerce().initialize();
+    super.onInit();
+  }
+  
   // Fetch Product Count
   Future<int> fetchProductCount() async {
     try {
@@ -19,15 +26,15 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -54,13 +61,13 @@ class WooProductRepository extends GetxController {
     try{
       final Map<String, String> queryParams = {
         // 'orderby': 'date', //date, id, include, title, slug, price, popularity and rating. Default is date.
-        'per_page': APIConstant.itemsPerPageSync,
+        'per_page': Woocommerce.wooItemsPerPageSync,
         'page': page,
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
@@ -68,7 +75,7 @@ class WooProductRepository extends GetxController {
         uri,
         // Uri.parse('https://aramarket.in/wp-json/wc/v3/products?category=246&orderby=popularity'),
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -101,8 +108,8 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
@@ -110,7 +117,7 @@ class WooProductRepository extends GetxController {
         uri,
         // Uri.parse('https://aramarket.in/wp-json/wc/v3/products?category=246&orderby=popularity'),
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -141,8 +148,8 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
@@ -150,7 +157,7 @@ class WooProductRepository extends GetxController {
         uri,
         // Uri.parse('https://aramarket.in/wp-json/wc/v3/products?category=246&orderby=popularity'),
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -183,8 +190,8 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
@@ -192,7 +199,7 @@ class WooProductRepository extends GetxController {
         uri,
         // Uri.parse('https://aramarket.in/wp-json/wc/v3/products?category=246&orderby=popularity'),
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -222,15 +229,15 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30));
 
@@ -264,8 +271,8 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
@@ -273,7 +280,7 @@ class WooProductRepository extends GetxController {
         uri,
         // Uri.parse('https://aramarket.in/wp-json/wc/v3/products?category=246&orderby=popularity'),
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30)); // Set a timeout of 30 seconds for the HTTP request
 
@@ -300,14 +307,14 @@ class WooProductRepository extends GetxController {
     try {
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        '${APIConstant.wooProductsApiPath}$parentID/variations/',
+        Woocommerce().wooBaseDomain,
+        '${Woocommerce.wooProductsApiPath}$parentID/variations/',
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       ).timeout(const Duration(seconds: 30)); // Set a timeout of 30 seconds for the HTTP request
 
@@ -334,14 +341,14 @@ class WooProductRepository extends GetxController {
   Future<ProductModel> fetchProductById(String productId) async {
     try{
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath + productId,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath + productId,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -367,15 +374,15 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -412,8 +419,8 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooProductsApiPath,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooProductsApiPath,
         queryParams,
       );
 
@@ -421,7 +428,7 @@ class WooProductRepository extends GetxController {
         uri,
         // Uri.parse('https://aramarket.in/wp-json/wc/v3/products?category=246&orderby=popularity'),
         headers: {
-          'Authorization': APIConstant.authorization,
+          'Authorization': Woocommerce().authorization,
         },
       );
 
@@ -447,8 +454,8 @@ class WooProductRepository extends GetxController {
       };
 
       final Uri uri = Uri.https(
-        APIConstant.wooBaseDomain,
-        APIConstant.wooFBT,
+        Woocommerce().wooBaseDomain,
+        Woocommerce.wooFBT,
         queryParams,
       );
 

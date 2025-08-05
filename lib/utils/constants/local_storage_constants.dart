@@ -1,4 +1,4 @@
-class LocalStorage{
+class LocalStorageName{
   static const String isFirstRun      = 'IS_FIRST_TIME';
   static const String recentlyViewed  = 'RECENTLY_VIEW';
   static const String searches        = 'SEARCHES';
@@ -9,6 +9,7 @@ class LocalStorage{
   static const String rememberMePassword  = 'REMEMBER_ME_PASSWORD';
   static const String authUserID          = 'AUTH_USER_ID';
   static const String loginExpiry         = 'LOGIN_EXPIRY';
+  static const String userData            = 'USER_DATA';
 
   static const String themeMode          = 'THEME_MODE';
 

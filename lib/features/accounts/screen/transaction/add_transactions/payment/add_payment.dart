@@ -7,11 +7,11 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/enums.dart';
 import '../../../../../../utils/constants/sizes.dart';
 import '../../../../../../utils/formatters/formatters.dart';
+import '../../../../controller/search/search_delegate.dart';
 import '../../../../controller/transaction/payment/add_payment_controller.dart';
 import '../../../../models/account_voucher_model.dart';
 import '../../../../models/transaction_model.dart';
 import '../../../account_voucher/widget/account_voucher_tile.dart';
-import '../../../search/search_and_select/search_products.dart';
 
 class AddPayment extends StatelessWidget {
   const AddPayment({super.key, this.payment});
@@ -93,7 +93,7 @@ class AddPayment extends StatelessWidget {
                           onTap: () async {
                             final AccountVoucherModel getSelectedAccount = await showSearch(
                               context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.bankAccount),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.bankAccount, isPicker: true),
                             );
                             if (getSelectedAccount.id != null) {
                               controller.selectedBankAccount(getSelectedAccount);
@@ -154,7 +154,7 @@ class AddPayment extends StatelessWidget {
                           onTap: () async {
                             final AccountVoucherModel getSelectedParty = await showSearch(
                               context: context,
-                              delegate: SearchVoucher1(voucherType: AccountVoucherType.vendor),
+                              delegate: AppSearchDelegate(voucherType: AccountVoucherType.vendor, isPicker: true),
                             );
                             if (getSelectedParty.id != null) {
                               controller.selectedVendor(getSelectedParty);

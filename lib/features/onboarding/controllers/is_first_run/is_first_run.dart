@@ -16,11 +16,11 @@ class IsFirstRunController extends GetxController {
 
 
   static bool isFirstRun() {
-    return localStorage.read(LocalStorage.isFirstRun) ?? true;
+    return localStorage.read(LocalStorageName.isFirstRun) ?? true;
   }
 
   static void updateIsFirstRun() {
-    localStorage.write(LocalStorage.isFirstRun, false);
+    localStorage.write(LocalStorageName.isFirstRun, false);
   }
 
   static Future<void> activation(UserModel customer) async {

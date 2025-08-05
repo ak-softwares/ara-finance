@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import '../../../../common/dialog_box_massages/full_screen_loader.dart';
 import '../../../../common/dialog_box_massages/snack_bar_massages.dart';
 import '../../../../common/widgets/network_manager/network_manager.dart';
-import '../../../../data/repositories/woocommerce/authentication/woo_authentication.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../screens/email_login/reset_password_screen.dart';
 
@@ -15,8 +14,6 @@ class ForgetPasswordController extends GetxController{
   ///variables
   final email = TextEditingController();
   GlobalKey<FormState> forgetPasswordFormKey = GlobalKey<FormState>(); //Form key for form validation
-
-  final wooAuthenticationRepository = Get.put(WooAuthenticationRepository());
 
   Future<void> sendPasswordResetEmail(String email) async {
     try {
@@ -37,7 +34,7 @@ class ForgetPasswordController extends GetxController{
       }
 
       // Register user in the Firebase Authentication & save user data in the Firebase
-      await wooAuthenticationRepository.resetPasswordWithEmail(email);
+      // await wooAuthenticationRepository.resetPasswordWithEmail(email);
 
       //remove Loader
       FullScreenLoader.stopLoading();
